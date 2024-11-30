@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "952750487663",
+    "project_id": "outnow-8fb25",
+    "storage_bucket": "outnow-8fb25.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:952750487663:android:35e728321ccb0a7769359a",
+        "android_client_info": {
+          "package_name": "com.cristi.outnow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "952750487663-ei30bfcnj337lqc3g34kspep1uom34lp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cristi.outnow",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "952750487663-gf79r44mdi3prnm22vi224laklrromlo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2gG4Ro8KNIfDIsOt97Krk_d-MPLyN_e8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "952750487663-gf79r44mdi3prnm22vi224laklrromlo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "952750487663-5ot7chpa9o23o0sr105asi3o1hb6qvkj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cristi.outnow"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
