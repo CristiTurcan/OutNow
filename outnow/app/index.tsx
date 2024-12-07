@@ -11,6 +11,8 @@ import {
 import auth from '@react-native-firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import React from 'react';
+import CustomButton from "@/components/customButton";
+import {router} from "expo-router";
 
 export default function Index() {
 	const [email, setEmail] = useState('');
@@ -44,7 +46,7 @@ export default function Index() {
 
 	return (
 		<View style={styles.container}>
-			<KeyboardAvoidingView behavior="padding">
+			<KeyboardAvoidingView behavior="padding" style={styles.keyboardAvoidingView}>
 				<TextInput
 					style={styles.input}
 					value={email}
@@ -61,12 +63,12 @@ export default function Index() {
 					placeholder="Password"
 				/>
 				{loading ? (
-					<ActivityIndicator size={'small'} style={{ margin: 28 }} />
+					<ActivityIndicator size="small" style={{ margin: 28 }} />
 				) : (
-					<>
-						<Button onPress={signIn} title="Login" />
-						<Button onPress={signUp} title="Create account" />
-					</>
+					<View style={styles.buttonContainer}>
+						<CustomButton onPress={signIn} title="Login" />
+						<Button onPress={ () => router.push('/signup')} title="or create account" />
+					</View>
 				)}
 			</KeyboardAvoidingView>
 		</View>
@@ -79,12 +81,30 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'center'
 	},
+	keyboardAvoidingView: {
+		alignItems: 'center', // Center all elements horizontally
+		width: '100%', // Ensures it spans the full width
+	},
 	input: {
-		marginVertical: 4,
-		height: 50,
-		borderWidth: 1,
-		borderRadius: 4,
-		padding: 10,
-		backgroundColor: '#fff'
-	}
+		marginVertical: 8, // Increased for better spacing
+		height: 48, // Adjusted to standardize height
+		width: '100%',
+		borderWidth: 1, // Keep borders for structure
+		borderRadius: 8, // More rounded corners for a modern feel
+		paddingHorizontal: 16, // Better padding for text placement
+		backgroundColor: '#f9f9f9', // Subtle background color for contrast
+		borderColor: '#ddd', // Light border for clean aesthetics
+		fontSize: 16, // Slightly larger font for readability
+		color: '#333', // Darker text color for better visibility
+		shadowColor: '#000', // Adds subtle shadow
+		shadowOffset: { width: 0, height: 2 }, // Horizontal and vertical shadow offset
+		shadowOpacity: 0.1, // Light shadow opacity
+		shadowRadius: 4, // Soft shadow edges
+		elevation: 2 // For shadow effect on Android
+	},
+	buttonContainer: {
+		marginTop: 20, // Spacing between inputs and buttons
+		alignItems: 'center', // Center buttons horizontally
+		width: '100%', // Ensures the buttons are properly aligned
+	},
 });
