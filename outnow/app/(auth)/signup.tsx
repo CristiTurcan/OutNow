@@ -24,7 +24,7 @@ export default function SignUp() {
         setLoading(true);
         try {
             await auth().createUserWithEmailAndPassword(email, password);
-            router.replace('/home');
+            router.replace('(tabs)/home');
         } catch (e: any) {
             const err = e as FirebaseError;
             alert('Registration failed: ' + err.message);

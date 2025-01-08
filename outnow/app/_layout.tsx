@@ -21,14 +21,17 @@ export default function RootLayout() {
 	}, []);
 
 	useEffect(() => {
-		if (initializing) return;
+		if (initializing) return; // Ensure we don't route while still initializing
 
-		const inAuthGroup = segments[0] === '(auth)' as string;
+		const inAuthGroup = segments[0] === '(auth)'; // Previously cast as string, which might be incorrect
+		console.log("Routing status:", { user, inAuthGroup });
 
 		if (user && !inAuthGroup) {
-			router.replace('/home' as RelativePathString);
+			console.log("Navigating to home...");
+			router.replace('(tabs)/home'); // Make sure this path is correct
 		} else if (!user && inAuthGroup) {
-			router.replace('/');
+			console.log("Navigating to root...");
+			router.replace('/'); // Ensure this navigates to the login screen
 		}
 	}, [user, initializing]);
 
@@ -49,6 +52,7 @@ export default function RootLayout() {
 		<Stack>
 			<Stack.Screen name="index" options={{ headerShown: false }} />
 			<Stack.Screen name="(auth)" options={{headerShown: false}}/>
+			<Stack.Screen name="(tabs)" options={{headerShown: false}}/>
 		</Stack>
 	);
 }
