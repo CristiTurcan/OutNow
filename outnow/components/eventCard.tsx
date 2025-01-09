@@ -15,7 +15,7 @@ const EventCard = ({ event, cardWidth }) => {
 
     return (
         <View style={[styles.card, {width: cardWidth}]}>
-            <Image source={event.image} style={styles.image} />
+            <Image source={{ uri: event.image_url }} style={styles.image} />
             <View style={styles.info}>
                 <Text style={styles.title}>{event.title}</Text>
                 <Text style={styles.details}>{event.location}</Text>
