@@ -8,11 +8,12 @@ import {
 	Button,
 	ActivityIndicator
 } from 'react-native';
-import auth from '@react-native-firebase/auth';
+import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import React from 'react';
 import CustomButton from "@/components/customButton";
 import {router} from "expo-router";
+import axios from "axios";
 
 export default function Index() {
 	const [email, setEmail] = useState('');
@@ -23,7 +24,20 @@ export default function Index() {
 		console.log("Attempting to sign in...");
 		setLoading(true);
 		try {
-			await auth().signInWithEmailAndPassword(email, password);
+			const userCredential = await auth().signInWithEmailAndPassword(email, password);
+
+			// Prepare user data
+			const userData = {
+				email: userCredential.user?.email
+			};
+
+			console.log("userdata:\n" + JSON.stringify(userData));
+
+			// Send user data to backend to create/update
+			await axios.post('http://localhost:8080/users/upsert', userData)
+				.then(response => console.log('User upserted successfully:', response.data))
+				.catch(error => console.error('Failed to upsert user:', error));
+
 			router.replace('(tabs)/home');
 			console.log("Signed in successfully");
 		} catch (e: any) {

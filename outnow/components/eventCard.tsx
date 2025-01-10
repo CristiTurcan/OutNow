@@ -1,12 +1,40 @@
 import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import {Feather, Ionicons} from '@expo/vector-icons';
-const EventCard = ({ event, cardWidth }) => {
-    const [isFavorited, setIsFavorited] = useState(false);
-    const [isConfirmed, setIsConfirmed] = useState(false);
+import { Feather, Ionicons } from '@expo/vector-icons';
+import useAuth from "@/hooks/useAuth";
+import useFavoriteEvent from "@/hooks/useFavoriteEvent";
+import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
 
-    const toggleFavorite = () => {
-        setIsFavorited(!isFavorited);
+const EventCard = ({ event, cardWidth, onToggleFavorite }) => {
+    const [isFavorited, setIsFavorited] = useState(event.isFavorited);
+    const { favoriteEvent, removeFavoriteEvent } = useFavoriteEvent();
+    const [isConfirmed, setIsConfirmed] = useState(false);
+    const user = useAuth();
+    const { userId } = useUserIdByEmail(user?.email || null);
+
+    const toggleFavorite = async () => {
+        if (!userId) {
+            console.error('User ID not found for email:', user?.email);
+            return;
+        }
+
+        try {
+            if (isFavorited) {
+                await removeFavoriteEvent(userId, event.event_id); // Call unfavorite logic
+                console.log(`Event ${event.event_id} unfavorited by user ${userId}`);
+            } else {
+                await favoriteEvent(userId, event.event_id); // Call favorite logic
+                console.log(`Event ${event.event_id} favorited by user ${userId}`);
+            }
+
+            const newFavoriteState = !isFavorited; // Determine the new favorite state
+            setIsFavorited(newFavoriteState); // Update the local state
+            if (onToggleFavorite) {
+                onToggleFavorite(event.event_id, newFavoriteState); // Trigger the callback
+            }
+        } catch (error) {
+            console.error('Error toggling favorite status:', error);
+        }
     };
 
     const toggleConfirm = () => {
@@ -14,7 +42,7 @@ const EventCard = ({ event, cardWidth }) => {
     };
 
     return (
-        <View style={[styles.card, {width: cardWidth}]}>
+        <View style={[styles.card, { width: cardWidth }]}>
             <Image source={{ uri: event.image_url }} style={styles.image} />
             <View style={styles.info}>
                 <Text style={styles.title}>{event.title}</Text>
@@ -26,7 +54,12 @@ const EventCard = ({ event, cardWidth }) => {
                         <Ionicons name={isFavorited ? "heart" : "heart-outline"} size={24} color={isFavorited ? "red" : "gray"} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={toggleConfirm}>
-                        <Ionicons name={isConfirmed ? "checkmark-circle" : "checkmark-circle-outline"} size={24} color={isConfirmed ? "green" : "gray"} style={styles.icon}/>
+                        <Ionicons
+                            name={isConfirmed ? "checkmark-circle" : "checkmark-circle-outline"}
+                            size={24}
+                            color={isConfirmed ? "green" : "gray"}
+                            style={styles.icon}
+                        />
                     </TouchableOpacity>
                     <TouchableOpacity>
                         <Feather name="send" size={24} color="grey" />
