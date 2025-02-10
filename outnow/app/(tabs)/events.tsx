@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from 'react';
+// src/screens/Favorites.tsx
+import React, { useEffect, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import EventCard from '../../components/eventCard';
 import useFavoriteEvent from '@/hooks/useFavoriteEvent';
@@ -6,70 +7,30 @@ import useAuth from '@/hooks/useAuth';
 import useUserIdByEmail from '@/hooks/useUserByIdByEmail';
 import { Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useEvents } from '@/hooks/useEvents';
 
 const windowWidth = Dimensions.get('window').width;
 const cardWidth = (windowWidth - 40) / 2;
 
 export default function Favorites() {
-    const [events, setEvents] = useState([]);
-    const [favoritedEventIds, setFavoritedEventIds] = useState<number[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
     const user = useAuth();
     const { userId } = useUserIdByEmail(user?.email || null);
-    const { fetchFavoritedEvents, removeFavoriteEvent, favoriteEvent } = useFavoriteEvent();
+    const { fetchFavoritedEvents, favoritedEvents, removeFavoriteEvent, favoriteEvent } = useFavoriteEvent();
+    const { events, loading, error, loadEvents } = useEvents(favoritedEvents);
 
-    // Fetch favorited event IDs from the backend
-    const fetchFavorites = useCallback(async () => {
-        if (userId) {
-            setLoading(true);
-            try {
-                const favorites = await fetchFavoritedEvents(userId);
-                setFavoritedEventIds(favorites); // Store the IDs of favorited events
-            } catch (err) {
-                console.error('Error fetching favorited events:', err);
-                setError('Failed to load favorited events');
-            } finally {
-                setLoading(false);
-            }
-        }
-    }, [userId, fetchFavoritedEvents]);
-
-    // Fetch event details and filter by favoritedEventIds
-    const fetchEvents = useCallback(async () => {
-        setLoading(true);
-        try {
-            const response = await fetch('http://localhost:8080/event/v1/');
-            const allEvents = await response.json();
-
-            // Filter events based on favorited IDs
-            const filteredEvents = allEvents.filter(event => favoritedEventIds.includes(event.event_id));
-            setEvents(filteredEvents); // Update the displayed events
-        } catch (err) {
-            console.error('Error fetching events:', err);
-            setError('Failed to load events');
-        } finally {
-            setLoading(false);
-        }
-    }, [favoritedEventIds]);
-
+    // Fetch favorites when screen is focused
     useFocusEffect(
         useCallback(() => {
-            fetchFavorites(); // Fetch favorites whenever the screen is focused
-        }, [fetchFavorites])
+            if (userId) {
+                fetchFavoritedEvents(userId);
+            }
+        }, [userId, fetchFavoritedEvents])
     );
 
-    useFocusEffect(
-        useCallback(() => {
-            if (favoritedEventIds.length > 0) {
-                fetchEvents();
-            } else {
-                setEvents([]); // Clear events if no favorites
-                setLoading(false);
-            }
-        }, [favoritedEventIds, fetchEvents])
-    );
+    // Reload events whenever the favorites change
+    useEffect(() => {
+        loadEvents();
+    }, [favoritedEvents, loadEvents]);
 
     // Callback to handle favorite/unfavorite toggle
     const handleToggleFavorite = async (eventId: number, isFavorited: boolean) => {
@@ -81,18 +42,11 @@ export default function Favorites() {
         try {
             if (isFavorited) {
                 await removeFavoriteEvent(userId, eventId);
-                setFavoritedEventIds((prev) => prev.filter((id) => id !== eventId));
             } else {
                 await favoriteEvent(userId, eventId);
-                setFavoritedEventIds((prev) => [...prev, eventId]);
             }
-
-            // Update events to reflect the change
-            setEvents((prevEvents) =>
-                prevEvents.map((event) =>
-                    event.event_id === eventId ? { ...event, isFavorited: !isFavorited } : event
-                )
-            );
+            // Refresh favorites list to update UI
+            fetchFavoritedEvents(userId);
         } catch (err) {
             console.error('Error toggling favorite status:', err);
         }
@@ -127,7 +81,7 @@ export default function Favorites() {
             data={events}
             renderItem={({ item }) => (
                 <EventCard
-                    event={{ ...item, isFavorited: favoritedEventIds.includes(item.event_id) }}
+                    event={{ ...item, isFavorited: favoritedEvents.includes(item.event_id) }}
                     cardWidth={cardWidth}
                     onToggleFavorite={(isFavorited) => handleToggleFavorite(item.event_id, isFavorited)}
                 />

@@ -1,65 +1,36 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, FlatList, StyleSheet, Text, ActivityIndicator } from 'react-native';
-import EventCard from '../../components/eventCard'; // Ensure path correctness
+// src/screens/Home.tsx
+import React, { useCallback } from 'react';
+import { FlatList, StyleSheet, Text } from 'react-native';
+import EventCard from '../../components/eventCard';
 import { Dimensions } from 'react-native';
 import useFavoriteEvent from "@/hooks/useFavoriteEvent";
 import useAuth from "@/hooks/useAuth";
 import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
 import { useFocusEffect } from '@react-navigation/native';
+import { useAllEvents } from '@/hooks/useAllEvents';
+import LoadingIndicator from '@/components/LoadingIndicator';
 
 const windowWidth = Dimensions.get('window').width;
-const cardWidth = (windowWidth - 40) / 2; // Adjust 40 to account for padding and any space between cards
+const cardWidth = (windowWidth - 40) / 2;
 
 const Home = () => {
-    const [events, setEvents] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [favoritedEvents, setFavoritedEvents] = useState<number[]>([]);
     const user = useAuth(); // Get Firebase user
     const { userId } = useUserIdByEmail(user?.email || null); // Get userId from backend
-    const { fetchFavoritedEvents } = useFavoriteEvent();
+    const { fetchFavoritedEvents, favoritedEvents } = useFavoriteEvent();
+    const { events, loading, error, loadEvents } = useAllEvents();
 
-    // Fetch favorited events
-    const fetchFavorites = useCallback(async () => {
-        if (userId) {
-            try {
-                const favorites = await fetchFavoritedEvents(userId); // Fetch favorited event IDs
-                setFavoritedEvents(favorites);
-                console.log("Favorited events set: ", favorites);
-            } catch (err) {
-                console.error("Error fetching favorited events:", err);
-            }
-        }
-    }, [userId, fetchFavoritedEvents]);
-
-    // Fetch events from the server
-    const fetchEvents = useCallback(async () => {
-        setIsLoading(true);
-        try {
-            const response = await fetch('http://localhost:8080/event/v1/'); // Adjust this URL to your server
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            setEvents(data);
-        } catch (err) {
-            console.error('Error fetching events:', err);
-            setError(err.toString());
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    // Use focus effect to fetch data when the screen is focused
+    // Fetch both events and favorites when the screen is focused
     useFocusEffect(
         useCallback(() => {
-            fetchFavorites();
-            fetchEvents();
-        }, [fetchFavorites, fetchEvents])
+            if (userId) {
+                fetchFavoritedEvents(userId);
+            }
+            loadEvents();
+        }, [userId, fetchFavoritedEvents, loadEvents])
     );
 
-    if (isLoading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
+    if (loading) {
+        return <LoadingIndicator />;
     }
 
     if (error) {
@@ -76,8 +47,8 @@ const Home = () => {
                     userId={userId}
                 />
             )}
-            keyExtractor={(item) => item.event_id.toString()} // Ensure your key extractor matches the unique identifier from your API
-            numColumns={2} // Use two columns
+            keyExtractor={(item) => item.event_id.toString()}
+            numColumns={2}
             columnWrapperStyle={styles.column}
             contentContainerStyle={styles.container}
         />
@@ -86,12 +57,12 @@ const Home = () => {
 
 const styles = StyleSheet.create({
     container: {
-        paddingHorizontal: 10, // Horizontal padding around the grid
-        paddingTop: 10, // Padding at the top of the list
+        paddingHorizontal: 10,
+        paddingTop: 10,
     },
     column: {
-        justifyContent: 'space-between', // Ensures there is space between columns
-        marginBottom: 10, // Bottom margin for each row
+        justifyContent: 'space-between',
+        marginBottom: 10,
     },
 });
 
