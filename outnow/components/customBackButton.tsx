@@ -16,16 +16,6 @@ export default function CustomBackButton({ text = '← Back' }: CustomBackButton
     );
 }
 
-// export default function CustomBackButton() {
-//     const router = useRouter();
-//
-//     return (
-//         <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-//             <Text style={styles.text}>← Back</Text>
-//         </TouchableOpacity>
-//     );
-// }
-
 const styles = StyleSheet.create({
     button: {
         position: 'absolute',

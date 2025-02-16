@@ -16,24 +16,29 @@ export default function RootLayout() {
 	};
 
 	useEffect(() => {
-		const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-		return subscriber;
+		const unsubscribe = auth().onAuthStateChanged((user) => {
+			setUser(user);
+			setInitializing(false);
+		});
+		return unsubscribe;
 	}, []);
 
 	useEffect(() => {
-		if (initializing) return; // Ensure we don't route while still initializing
+		if (initializing) return;
 
-		const inAuthGroup = segments[0] === '(auth)'; // Previously cast as string, which might be incorrect
+		const inAuthGroup = segments[0] === '(auth)';
+
 		console.log("Routing status:", { user, inAuthGroup });
 
-		if (user && !inAuthGroup) {
-			console.log("Navigating to home...");
-			router.replace('(tabs)/home'); // Make sure this path is correct
-		} else if (!user && inAuthGroup) {
-			console.log("Navigating to root...");
-			router.replace('/'); // Ensure this navigates to the login screen
+		if (!user && !inAuthGroup) {
+			console.log("Redirecting to login...");
+			router.replace('(auth)/login');
+		} else if (user && inAuthGroup) {
+			console.log("Redirecting to home...");
+			router.replace('(tabs)/home');
 		}
 	}, [user, initializing]);
+
 
 	if (initializing)
 		return (

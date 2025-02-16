@@ -2,15 +2,19 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import React from "react";
 import auth from "@react-native-firebase/auth";
-import {Ionicons} from "@expo/vector-icons";
 
 export default function Profile() {
     const router = useRouter();
     const user = auth().currentUser;
 
-    const handleLogout = () => {
-        // Perform any logout logic if needed (e.g., clearing session, Firebase logout, etc.)
-        router.replace('/'); // Navigate back to the login screen
+    const handleLogout = async () => {
+        try {
+            await auth().signOut(); // Sign out from Firebase
+            router.replace('/(auth)/login'); // Redirect to login screen
+        } catch (error) {
+            console.error("Logout failed:", error);
+            alert("Logout failed. Please try again.");
+        }
     };
 
     return (

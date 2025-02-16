@@ -14,7 +14,7 @@ const windowWidth = Dimensions.get('window').width;
 const cardWidth = (windowWidth - 40) / 2;
 
 const Home = () => {
-    const user = useAuth(); // Get Firebase user
+    const {user} = useAuth(); // Get Firebase user
     const { userId } = useUserIdByEmail(user?.email || null); // Get userId from backend
     const { fetchFavoritedEvents, favoritedEvents } = useFavoriteEvent();
     const { events, loading, error, loadEvents } = useAllEvents();

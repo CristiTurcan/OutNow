@@ -13,7 +13,7 @@ const windowWidth = Dimensions.get('window').width;
 const cardWidth = (windowWidth - 40) / 2;
 
 export default function Favorites() {
-    const user = useAuth();
+    const { user } = useAuth();
     const { userId } = useUserIdByEmail(user?.email || null);
     const { fetchFavoritedEvents, favoritedEvents, removeFavoriteEvent, favoriteEvent } = useFavoriteEvent();
     const { events, loading, error, loadEvents } = useEvents(favoritedEvents);

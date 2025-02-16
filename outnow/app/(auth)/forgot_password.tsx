@@ -1,0 +1,79 @@
+import { useState } from 'react';
+import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
+import auth from '@react-native-firebase/auth';
+import { router } from 'expo-router';
+import CustomBackButton from "@/components/customBackButton";
+
+export default function ForgotPassword() {
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const resetPassword = async () => {
+        if (!email) {
+            Alert.alert("Error", "Please enter your email");
+            return;
+        }
+
+        setLoading(true);
+        try {
+            await auth().sendPasswordResetEmail(email);
+            Alert.alert("Success", "Check your email for reset instructions.");
+            router.replace('/(auth)/login'); // Redirect to login after sending email
+        } catch (error: any) {
+            Alert.alert("Error", error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            <CustomBackButton text="Login"/>
+            <Text style={styles.title}>Reset Password</Text>
+
+            <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+            />
+
+            <Button title="Send Reset Link" onPress={resetPassword} disabled={loading} />
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        marginHorizontal: 20,
+        flex: 1,
+        justifyContent: 'center',
+    },
+    title: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 10,
+    },
+    instructions: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 20,
+        color: '#555',
+    },
+    input: {
+        marginVertical: 10,
+        height: 48,
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 16,
+        backgroundColor: '#f9f9f9',
+        borderColor: '#ddd',
+        fontSize: 16,
+        color: '#333',
+    },
+});
+
+export default ForgotPassword;

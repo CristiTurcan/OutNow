@@ -9,7 +9,7 @@ const EventCard = ({ event, cardWidth, onToggleFavorite }) => {
     const [isFavorited, setIsFavorited] = useState(event.isFavorited);
     const { favoriteEvent, removeFavoriteEvent } = useFavoriteEvent();
     const [isConfirmed, setIsConfirmed] = useState(false);
-    const user = useAuth();
+    const {user} = useAuth();
     const { userId } = useUserIdByEmail(user?.email || null);
 
     const toggleFavorite = async () => {
