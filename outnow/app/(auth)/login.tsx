@@ -48,7 +48,7 @@ export default function Login() {
                 <ActivityIndicator size="small" style={{ margin: 28 }} />
             ) : (
                 <View style={styles.buttonContainer}>
-                    <CustomButton onPress={handleSignIn} title="Login" />
+                    <CustomButton onPress={handleSignIn} title="Login" style={styles.loginButton} />
                     <Button onPress={() => router.push('/(auth)/signup')} title="or create account" />
                 </View>
             )}
@@ -82,9 +82,16 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     buttonContainer: {
-        marginTop: 20,
+        flexDirection: 'column',
+        justifyContent: 'center',
         alignItems: 'center',
-        width: '100%',
+        marginTop: 20,
+    },
+    loginButton: {
+        backgroundColor: '#0D2C66',
+        borderRadius: 8,
+        paddingVertical: 12,
+        paddingHorizontal: 24,
     },
 });
 

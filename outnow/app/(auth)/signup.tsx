@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, TextInput, StyleSheet, KeyboardAvoidingView, Text } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
+import {View, TextInput, StyleSheet, KeyboardAvoidingView, Text} from 'react-native';
+import {useForm, Controller} from 'react-hook-form';
 import * as yup from 'yup';
-import { yupResolver } from '@hookform/resolvers/yup';
+import {yupResolver} from '@hookform/resolvers/yup';
 import CustomButton from '@/components/customButton';
 import CustomBackButton from '@/components/customBackButton';
-import { router } from 'expo-router';
+import {router} from 'expo-router';
 import useAuth from '@/hooks/useAuth';
 import auth from '@react-native-firebase/auth';
 
@@ -48,13 +48,13 @@ const schema = yup.object().shape({
 });
 
 export default function SignUp() {
-    const { signUp, loading } = useAuth();
+    const {signUp, loading} = useAuth();
     const {
         control,
         handleSubmit,
-        formState: { errors },
+        formState: {errors},
     } = useForm<FormData>({
-        resolver: yupResolver(schema, { abortEarly: false }),
+        resolver: yupResolver(schema, {abortEarly: false}),
         mode: 'onBlur',
         criteriaMode: 'all',
     });
@@ -62,7 +62,7 @@ export default function SignUp() {
     const onSubmit = async (data: FormData) => {
         try {
             await signUp(data.email, data.password, data.username);
-            router.replace('(tabs)/home');
+            router.replace('(auth)/createProfile');
         } catch (error: any) {
             alert('Registration failed: ' + error.message);
         }
@@ -85,12 +85,12 @@ export default function SignUp() {
 
     return (
         <View style={styles.container}>
-            <CustomBackButton text="Login" />
+            <CustomBackButton text="Login"/>
             <KeyboardAvoidingView behavior="padding" style={styles.keyboardAvoidingView}>
                 <Controller<FormData>
                     control={control}
                     name="email"
-                    render={({ field: { onChange, onBlur, value } }) => (
+                    render={({field: {onChange, onBlur, value}}) => (
                         <>
                             <TextInput
                                 style={styles.input}
@@ -108,7 +108,7 @@ export default function SignUp() {
                 <Controller<FormData>
                     control={control}
                     name="username"
-                    render={({ field: { onChange, onBlur, value } }) => (
+                    render={({field: {onChange, onBlur, value}}) => (
                         <>
                             <TextInput
                                 style={styles.input}
@@ -124,7 +124,7 @@ export default function SignUp() {
                 <Controller<FormData>
                     control={control}
                     name="password"
-                    render={({ field: { onChange, onBlur, value } }) => (
+                    render={({field: {onChange, onBlur, value}}) => (
                         <>
                             <TextInput
                                 style={styles.input}
@@ -141,7 +141,7 @@ export default function SignUp() {
                 <Controller<FormData>
                     control={control}
                     name="confirmPassword"
-                    render={({ field: { onChange, onBlur, value } }) => (
+                    render={({field: {onChange, onBlur, value}}) => (
                         <>
                             <TextInput
                                 style={styles.input}
@@ -156,7 +156,8 @@ export default function SignUp() {
                     )}
                 />
                 <View style={styles.buttonContainer}>
-                    <CustomButton onPress={handleSubmit(onSubmit)} title="Sign Up" disabled={loading} />
+                    <CustomButton onPress={() => router.push('(auth)/createProfile')} title="Sign Up"
+                                  disabled={loading} style={styles.signupButton}/>
                 </View>
             </KeyboardAvoidingView>
         </View>
@@ -185,15 +186,22 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 2,
     },
     buttonContainer: {
-        marginTop: 20,
+        flexDirection: 'column',
+        justifyContent: 'center',
         alignItems: 'center',
-        width: '100%',
+        marginTop: 20,
+    },
+    signupButton: {
+        backgroundColor: '#0D2C66',
+        borderRadius: 8,
+        paddingVertical: 12,
+        paddingHorizontal: 24,
     },
     errorText: {
         color: 'red',
