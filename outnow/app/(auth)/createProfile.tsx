@@ -14,25 +14,27 @@ import {
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import {router} from 'expo-router';
-import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import 'react-native-get-random-values';
 import * as ImagePicker from 'expo-image-picker';
 import CustomButton from "@/components/customButton";
 import CustomBackButton from "@/components/customBackButton";
+import Constants from 'expo-constants';
+import globalStyles from "@/styles/globalStyles";
 
 
 export default function CreateProfile() {
     const [bio, setBio] = useState('');
-    const [gender, setGender] = useState(''); // default empty
+    const [gender, setGender] = useState('');
     const [showGenderPicker, setShowGenderPicker] = useState(false);
-    const [dateOfBirth, setDateOfBirth] = useState(new Date()); // default date now
+    const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [location, setLocation] = useState('');
     const [photoUri, setPhotoUri] = useState<string | null>(null);
     const [showPhotoOptions, setShowPhotoOptions] = useState(false);
     const [ageError, setAgeError] = useState('');
-
+    const googleApiKey = Constants.expoConfig?.extra?.googleApiKey;
 
     const handleAddPhoto = () => {
         if (Platform.OS === 'ios') {
@@ -55,34 +57,41 @@ export default function CreateProfile() {
         }
     };
 
-    const calculateAndSetAge = (birthDate: Date, setAgeError: (error: string) => void): number => {
+    const calculateAndSetAge = (birthDate: Date | null, setAgeError: (error: string) => void): number => {
+        if (!birthDate) {
+            setAgeError('Please select your date of birth.');
+            return 0;
+        }
+
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
         const m = today.getMonth() - birthDate.getMonth();
+
         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
             age--;
         }
+
         if (age < 18) {
             setAgeError('You must be at least 18 years old.');
         } else {
             setAgeError('');
         }
+
         return age;
     };
 
 
-    const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    const handleConfirm = (selectedDate: Date) => {
+        const age = calculateAndSetAge(selectedDate, setAgeError);
+        setDateOfBirth(selectedDate);
         setShowDatePicker(false);
-        if (selectedDate) {
-            const age = calculateAndSetAge(selectedDate, setAgeError);
-            setDateOfBirth(selectedDate);
-        }
     };
+
 
     const handleNext = () => {
         const age = calculateAndSetAge(dateOfBirth, setAgeError);
-        // if (age < 18) return;    // this blocks next if age is not set properly
-        router.replace('(auth)/addInterests');
+        if (age < 18) return;    // this blocks next if age is not set properly
+        router.push('(auth)/addInterests');
     };
 
 
@@ -98,7 +107,6 @@ export default function CreateProfile() {
             quality: 1,
         });
         if (!result.canceled) {
-            // result.assets is an array; get the first asset's URI.
             setPhotoUri(result.assets[0].uri);
         }
     };
@@ -122,15 +130,15 @@ export default function CreateProfile() {
 
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={globalStyles.container}>
             {/*Header*/}
-            <View style={styles.headerRow}>
-                <CustomBackButton text="" style={styles.backButton}/>
-                <Text style={styles.title}>Create Profile</Text>
+            <View style={globalStyles.headerRow}>
+                <CustomBackButton text="" style={globalStyles.backButton}/>
+                <Text style={globalStyles.title}>Create Profile</Text>
             </View>
 
             {/* Body */}
-            <View style={styles.bodyContainer}>
+            <View style={globalStyles.bodyContainer}>
                 {/* Avatar Section */}
                 <View style={styles.avatarContainer}>
                     <TouchableOpacity onPress={handleAddPhoto}>
@@ -163,7 +171,7 @@ export default function CreateProfile() {
                     }}
                 />
                 {bio.length === 150 && (
-                    <Text style={styles.charLimitText}>Character limit reached: 150/150</Text>
+                    <Text style={globalStyles.errorText}>Character limit reached: 150/150</Text>
                 )}
 
                 {/* Gender */}
@@ -175,7 +183,10 @@ export default function CreateProfile() {
                         setShowGenderPicker(true);
                     }}
                 >
-                    <Text style={styles.genderButtonText}>{gender ? gender : ''}</Text>
+                    <Text style={[styles.genderButtonText, !gender && globalStyles.placeholderText]}>
+                        {gender ? gender : "Select your gender"}
+                    </Text>
+
                 </TouchableOpacity>
 
                 {/* Gender Picker Modal */}
@@ -216,22 +227,27 @@ export default function CreateProfile() {
                         setShowDatePicker(true);
                     }}
                 >
-                    <Text style={styles.datePickerButtonText}>
-                        {dateOfBirth.toDateString()}
+                    <Text
+                        style={[
+                            styles.datePickerButtonText,
+                            !dateOfBirth && globalStyles.placeholderText
+                        ]}
+                    >
+                        {dateOfBirth ? dateOfBirth.toDateString() : "Select your date of birth"}
                     </Text>
+
+
                 </TouchableOpacity>
                 {ageError !== '' && (
-                    <Text style={styles.errorText}>{ageError}</Text>
+                    <Text style={globalStyles.errorText}>{ageError}</Text>
                 )}
-                {showDatePicker && (
-                    <DateTimePicker
-                        value={dateOfBirth}
-                        mode="date"
-                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                        maximumDate={new Date()}
-                        onChange={handleDateChange}
-                    />
-                )}
+                <DateTimePickerModal
+                    isVisible={showDatePicker}
+                    mode="date"
+                    maximumDate={new Date()}
+                    onConfirm={handleConfirm}
+                    onCancel={() => setShowDatePicker(false)}
+                />
 
                 {/* Location with Google Places Autocomplete */}
                 <Text style={styles.fieldLabel}>Location</Text>
@@ -239,11 +255,11 @@ export default function CreateProfile() {
                     placeholder="Where do you live?"
                     fetchDetails={true}
                     onPress={(data, details = null) => {
-                        // extract detailed address info from details.address_components if needed.
+                        // here i can extract detailed address info from details.address_components
                         setLocation(data.description);
                     }}
                     query={{
-                        key: 'AIzaSyC1yLEaRaI8I0Axi2f8jzjSkqLEjiDbmbw',
+                        key: googleApiKey,
                         language: 'en',
                         types: '(regions)',
                     }}
@@ -259,11 +275,11 @@ export default function CreateProfile() {
                 />
 
                 {/* Next Button */}
-                <View style={styles.footer}>
+                <View style={globalStyles.footer}>
                     <CustomButton
                         onPress={handleNext}
                         title="Next"
-                        style={styles.nextButton}
+                        style={globalStyles.nextButton}
                     />
                 </View>
             </View>
@@ -307,39 +323,6 @@ export default function CreateProfile() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff'
-    },
-    headerRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 20,
-        marginHorizontal: 16,
-    },
-    backButton: {
-        position: "relative",
-        top: 0,
-        left: 0,
-        zIndex: 0,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: '600',
-        marginLeft: 10,
-        color: '#000',
-    },
-    errorText: {
-        color: 'red',
-        fontSize: 12,
-        marginTop: -10,
-        marginBottom: 12,
-        alignSelf: 'flex-start',
-    },
-    bodyContainer: {
-        flex: 1,
-        padding: 20, alignItems: 'center'
-    },
     fieldLabel: {
         width: '100%',
         textAlign: 'left',
@@ -358,10 +341,11 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         fontSize: 16,
         color: '#333',
-    },
-    charLimitText: {
-        fontSize: 12,
-        color: 'red', alignSelf: 'flex-end', marginBottom: 12
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
     input: {
         width: '100%',
@@ -374,17 +358,29 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         fontSize: 16,
         color: '#333',
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
     genderButton: {
         width: '100%',
         minHeight: 48,
         justifyContent: 'center',
         borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 8,
-        backgroundColor: '#f9f9f9',
         paddingHorizontal: 16,
         marginBottom: 12,
+        backgroundColor: '#f9f9f9',
+        borderColor: '#ddd',
+        fontSize: 16,
+        color: '#333',
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
     genderButtonText: {
         fontSize: 16,
@@ -395,42 +391,37 @@ const styles = StyleSheet.create({
         minHeight: 48,
         justifyContent: 'center',
         borderWidth: 1,
-        borderColor: '#ddd',
         borderRadius: 8,
-        backgroundColor: '#f9f9f9',
         paddingHorizontal: 16,
         marginBottom: 12,
+        backgroundColor: '#f9f9f9',
+        borderColor: '#ddd',
+        fontSize: 16,
+        color: '#333',
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
     datePickerButtonText: {
         fontSize: 16,
         color: '#333'
     },
-    footer: {
-        marginTop: 'auto', // Pushes the footer to the bottom of the container
-        width: '100%',
-        alignItems: 'flex-end', // Aligns children to the right
-        paddingVertical: 20,
-    },
-    nextButton: {
-        backgroundColor: '#0D2C66',
-        borderRadius: 8,
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-    },
     nextButtonText: {color: '#fff', fontSize: 16},
     avatarContainer: {
         alignItems: 'center',
-        marginBottom: 20
+        marginBottom: 30,
     },
     avatarPlaceholder: {
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: '#eee',
+        backgroundColor: '#e1e1e1',
         justifyContent: 'center',
         alignItems: 'center'
     },
-    avatarPlaceholderText: {color: '#aaa'},
+    avatarPlaceholderText: {color: '#9b9b9b'},
     avatar: {
         width: 100,
         height: 100, borderRadius: 50

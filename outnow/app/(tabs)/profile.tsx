@@ -9,7 +9,7 @@ export default function Profile() {
 
     const handleLogout = async () => {
         try {
-            // await auth().signOut(); // Sign out from Firebase
+            // await auth().signOut(); // Sign out from Firebase - this is commented so that you can log out without actually being logged in
             router.replace('/(auth)/login'); // Redirect to login screen
         } catch (error) {
             console.error("Logout failed:", error);

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
+import {View, TextInput, Button, Alert, StyleSheet, Text, SafeAreaView} from 'react-native';
 import auth from '@react-native-firebase/auth';
 import { router } from 'expo-router';
 import CustomBackButton from "@/components/customBackButton";
+import globalStyles from "@/styles/globalStyles";
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
@@ -18,7 +19,7 @@ export default function ForgotPassword() {
         try {
             await auth().sendPasswordResetEmail(email);
             Alert.alert("Success", "Check your email for reset instructions.");
-            router.replace('/(auth)/login'); // Redirect to login after sending email
+            router.replace('/(auth)/login');
         } catch (error: any) {
             Alert.alert("Error", error.message);
         } finally {
@@ -27,21 +28,26 @@ export default function ForgotPassword() {
     };
 
     return (
-        <View style={styles.container}>
-            <CustomBackButton text="Login"/>
-            <Text style={styles.title}>Reset Password</Text>
+        <SafeAreaView style={globalStyles.container}>
+            <View style={globalStyles.headerRow}>
+                <CustomBackButton text="Login" style={globalStyles.backButton}/>
+            </View>
+            <View style={styles.container}>
+                <Text style={styles.title}>Reset Password</Text>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-            />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter your email"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                />
 
-            <Button title="Send Reset Link" onPress={resetPassword} disabled={loading} />
-        </View>
+                <Button title="Send Reset Link" onPress={resetPassword} disabled={loading} />
+            </View>
+        </SafeAreaView>
+
     );
 }
 
@@ -75,5 +81,3 @@ const styles = StyleSheet.create({
         color: '#333',
     },
 });
-
-export default ForgotPassword;

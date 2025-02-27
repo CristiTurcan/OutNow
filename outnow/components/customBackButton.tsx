@@ -20,7 +20,6 @@ export default function CustomBackButton({ text = '← Back', style }: CustomBac
 
 const styles = StyleSheet.create({
     button: {
-        // default styling if you want
         position: 'absolute',
         top: 70,
         left: 5,

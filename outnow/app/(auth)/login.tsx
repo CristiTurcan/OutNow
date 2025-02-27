@@ -8,8 +8,6 @@ import useAuth from '@/hooks/useAuth';
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
-    // Destructure signIn and loading from our custom hook
     const { signIn, loading } = useAuth();
 
     const handleSignIn = async () => {
@@ -94,5 +92,3 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
     },
 });
-
-export default Login;

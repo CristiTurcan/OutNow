@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Dimensions, Platform, StyleSheet } from 'react-native';
 
 const screenHeight = Dimensions.get('window').height;
-const headerHeight = screenHeight > 800 ? 70 : 50; // Larger header for larger screens
+const headerHeight = screenHeight > 800 ? 70 : 50;
 
 
 export default function TabLayout() {
@@ -11,21 +11,21 @@ export default function TabLayout() {
         <Tabs
             screenOptions={{
                 tabBarStyle: {
-                    backgroundColor: '#1E3A8A', // Navy blue background
+                    backgroundColor: '#1E3A8A',
                     borderTopWidth: 0,
                     height: 60,
                 },
-                tabBarActiveTintColor: '#FFFFFF', // Active tab color
-                tabBarInactiveTintColor: '#A0AEC0', // Inactive tab color
+                tabBarActiveTintColor: '#FFFFFF',
+                tabBarInactiveTintColor: '#A0AEC0',
                 headerShown: true,
                 headerTitle: '',
                 headerStyle: {
-                    backgroundColor: '#1E3A8A', // Custom color for the header background
+                    backgroundColor: '#1E3A8A',
                     height: headerHeight,
                 },
-                headerTintColor: '#fff', // Color of the header text (if any) and back button
+                headerTintColor: '#fff',
                 headerTitleStyle: {
-                    fontWeight: 'bold', // Optional: customize the font style
+                    fontWeight: 'bold',
                 },
             }}
         >

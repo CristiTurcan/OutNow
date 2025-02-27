@@ -14,13 +14,11 @@ const useAuth = (): AuthHook => {
     const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
-    // Monitor auth state changes
     useEffect(() => {
         const subscriber = auth().onAuthStateChanged(setUser);
         return subscriber;
     }, []);
 
-    // Sign in function
     const signIn = async (email: string, password: string) => {
         setLoading(true);
         try {
@@ -34,7 +32,6 @@ const useAuth = (): AuthHook => {
         }
     };
 
-    // Sign up function
     const signUp = async (email: string, password: string, username: string) => {
         setLoading(true);
         try {

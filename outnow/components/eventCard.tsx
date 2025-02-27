@@ -20,17 +20,17 @@ const EventCard = ({ event, cardWidth, onToggleFavorite }) => {
 
         try {
             if (isFavorited) {
-                await removeFavoriteEvent(userId, event.event_id); // Call unfavorite logic
+                await removeFavoriteEvent(userId, event.event_id);
                 console.log(`Event ${event.event_id} unfavorited by user ${userId}`);
             } else {
-                await favoriteEvent(userId, event.event_id); // Call favorite logic
+                await favoriteEvent(userId, event.event_id);
                 console.log(`Event ${event.event_id} favorited by user ${userId}`);
             }
 
-            const newFavoriteState = !isFavorited; // Determine the new favorite state
-            setIsFavorited(newFavoriteState); // Update the local state
+            const newFavoriteState = !isFavorited;
+            setIsFavorited(newFavoriteState);
             if (onToggleFavorite) {
-                onToggleFavorite(event.event_id, newFavoriteState); // Trigger the callback
+                onToggleFavorite(event.event_id, newFavoriteState);
             }
         } catch (error) {
             console.error('Error toggling favorite status:', error);

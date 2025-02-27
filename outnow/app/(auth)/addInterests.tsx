@@ -1,7 +1,9 @@
-// addInterests.tsx
 import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, SafeAreaView, Text, Button, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import CustomBackButton from "@/components/customBackButton";
+import CustomButton from "@/components/customButton";
+import globalStyles from "@/styles/globalStyles";
 
 export default function AddInterests() {
     const handleFinish = () => {
@@ -10,22 +12,26 @@ export default function AddInterests() {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Add Interests</Text>
-            {/* Add your UI for selecting interests here */}
-            <Button title="Finish" onPress={handleFinish} />
-        </View>
+        <SafeAreaView style={globalStyles.container}>
+            {/*Header*/}
+            <View style={globalStyles.headerRow}>
+                <CustomBackButton text="" style={globalStyles.backButton}/>
+                <Text style={globalStyles.title}>Add Interests</Text>
+            </View>
+
+            {/*Body*/}
+            <View style={globalStyles.bodyContainer}>
+                <View style={globalStyles.footer}>
+                    <CustomButton
+                        onPress={handleFinish}
+                        title="Finish"
+                        style={globalStyles.nextButton}
+                    />
+                </View>
+            </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 16,
-        justifyContent: 'center',
-    },
-    title: {
-        fontSize: 20,
-        marginBottom: 16,
-    },
 });

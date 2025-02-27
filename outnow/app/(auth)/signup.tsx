@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, TextInput, StyleSheet, KeyboardAvoidingView, Text} from 'react-native';
+import {View, TextInput, StyleSheet, KeyboardAvoidingView, Text, SafeAreaView} from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
 import * as yup from 'yup';
 import {yupResolver} from '@hookform/resolvers/yup';
@@ -8,6 +8,7 @@ import CustomBackButton from '@/components/customBackButton';
 import {router} from 'expo-router';
 import useAuth from '@/hooks/useAuth';
 import auth from '@react-native-firebase/auth';
+import globalStyles from "@/styles/globalStyles";
 
 interface FormData {
     email: string;
@@ -68,10 +69,8 @@ export default function SignUp() {
         }
     };
 
-    // Define the type for error objects returned by react-hook-form/yup
     type FieldError = { message?: string; types?: Record<string, string> };
 
-    // Helper to render all error messages for a field
     const renderErrors = (error: FieldError) => {
         if (error.types) {
             return Object.values(error.types).map((msg, index) => (
@@ -84,83 +83,90 @@ export default function SignUp() {
     };
 
     return (
-        <View style={styles.container}>
-            <CustomBackButton text="Login"/>
-            <KeyboardAvoidingView behavior="padding" style={styles.keyboardAvoidingView}>
-                <Controller<FormData>
-                    control={control}
-                    name="email"
-                    render={({field: {onChange, onBlur, value}}) => (
-                        <>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Email"
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                                autoCapitalize="none"
-                                keyboardType="email-address"
-                            />
-                            {errors.email && renderErrors(errors.email)}
-                        </>
-                    )}
-                />
-                <Controller<FormData>
-                    control={control}
-                    name="username"
-                    render={({field: {onChange, onBlur, value}}) => (
-                        <>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Username"
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                            />
-                            {errors.username && renderErrors(errors.username)}
-                        </>
-                    )}
-                />
-                <Controller<FormData>
-                    control={control}
-                    name="password"
-                    render={({field: {onChange, onBlur, value}}) => (
-                        <>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Password"
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                                secureTextEntry
-                            />
-                            {errors.password && renderErrors(errors.password)}
-                        </>
-                    )}
-                />
-                <Controller<FormData>
-                    control={control}
-                    name="confirmPassword"
-                    render={({field: {onChange, onBlur, value}}) => (
-                        <>
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Confirm Password"
-                                onBlur={onBlur}
-                                onChangeText={onChange}
-                                value={value}
-                                secureTextEntry
-                            />
-                            {errors.confirmPassword && renderErrors(errors.confirmPassword)}
-                        </>
-                    )}
-                />
-                <View style={styles.buttonContainer}>
-                    <CustomButton onPress={() => router.push('(auth)/createProfile')} title="Sign Up"
-                                  disabled={loading} style={styles.signupButton}/>
-                </View>
-            </KeyboardAvoidingView>
-        </View>
+        <SafeAreaView style={globalStyles.container}>
+            <View style={globalStyles.headerRow}>
+                <CustomBackButton text="Login" style={globalStyles.backButton}/>
+            </View>
+            <View style={styles.container}>
+                <KeyboardAvoidingView behavior="padding" style={styles.keyboardAvoidingView}>
+                    <Controller<FormData>
+                        control={control}
+                        name="email"
+                        render={({field: {onChange, onBlur, value}}) => (
+                            <>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Email"
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    value={value}
+                                    autoCapitalize="none"
+                                    keyboardType="email-address"
+                                />
+                                {errors.email && renderErrors(errors.email)}
+                            </>
+                        )}
+                    />
+                    <Controller<FormData>
+                        control={control}
+                        name="username"
+                        render={({field: {onChange, onBlur, value}}) => (
+                            <>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Username"
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    value={value}
+                                />
+                                {errors.username && renderErrors(errors.username)}
+                            </>
+                        )}
+                    />
+                    <Controller<FormData>
+                        control={control}
+                        name="password"
+                        render={({field: {onChange, onBlur, value}}) => (
+                            <>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Password"
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    value={value}
+                                    secureTextEntry
+                                />
+                                {errors.password && renderErrors(errors.password)}
+                            </>
+                        )}
+                    />
+                    <Controller<FormData>
+                        control={control}
+                        name="confirmPassword"
+                        render={({field: {onChange, onBlur, value}}) => (
+                            <>
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Confirm Password"
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    value={value}
+                                    secureTextEntry
+                                />
+                                {errors.confirmPassword && renderErrors(errors.confirmPassword)}
+                            </>
+                        )}
+                    />
+                    <View style={styles.buttonContainer}>
+                        {/* this button avoids signup validation */}
+                        <CustomButton onPress={() => router.push('(auth)/createProfile')} title="Sign Up"
+                                      disabled={loading} style={styles.signupButton}/>
+                        {/*<CustomButton onPress={handleSubmit(onSubmit)} title="Sign Up"*/}
+                        {/*              disabled={loading} style={styles.signupButton}/>*/}
+                    </View>
+                </KeyboardAvoidingView>
+            </View>
+        </SafeAreaView>
     );
 }
 

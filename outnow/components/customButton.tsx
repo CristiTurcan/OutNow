@@ -11,7 +11,7 @@ import {
 interface CustomButtonProps {
     onPress: (event: GestureResponderEvent) => void;
     title: string;
-    style?: ViewStyle; // Accept external styles
+    style?: ViewStyle;
 }
 
 const CustomButton: React.FC<CustomButtonProps> = ({ onPress, title, style }) => {
@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
     buttonBase: {
         justifyContent: 'center',
         alignItems: 'center',
-        // Removed fixed height/width/backgroundColor
     },
     buttonPressed: {
         opacity: 0.8,

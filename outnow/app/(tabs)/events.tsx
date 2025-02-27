@@ -1,4 +1,3 @@
-// src/screens/Favorites.tsx
 import React, { useEffect, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
 import EventCard from '../../components/eventCard';
