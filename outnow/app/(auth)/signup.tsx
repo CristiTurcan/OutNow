@@ -85,7 +85,8 @@ export default function SignUp() {
     return (
         <SafeAreaView style={globalStyles.container}>
             <View style={globalStyles.headerRow}>
-                <CustomBackButton text="Login" style={globalStyles.backButton}/>
+                    <CustomBackButton text="" style={globalStyles.backButton}/>
+                    <Text style={globalStyles.title}>Sign Up</Text>
             </View>
             <View style={styles.container}>
                 <KeyboardAvoidingView behavior="padding" style={styles.keyboardAvoidingView}>

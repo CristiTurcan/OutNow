@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {View, TextInput, Button, Alert, StyleSheet, Text, SafeAreaView} from 'react-native';
 import auth from '@react-native-firebase/auth';
 import { router } from 'expo-router';
@@ -30,11 +30,10 @@ export default function ForgotPassword() {
     return (
         <SafeAreaView style={globalStyles.container}>
             <View style={globalStyles.headerRow}>
-                <CustomBackButton text="Login" style={globalStyles.backButton}/>
+                <CustomBackButton text="" style={globalStyles.backButton}/>
+                <Text style={globalStyles.title}>Reset Password</Text>
             </View>
             <View style={styles.container}>
-                <Text style={styles.title}>Reset Password</Text>
-
                 <TextInput
                     style={styles.input}
                     placeholder="Enter your email"
@@ -54,8 +53,9 @@ export default function ForgotPassword() {
 const styles = StyleSheet.create({
     container: {
         marginHorizontal: 20,
+        marginTop: 30,
         flex: 1,
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
     },
     title: {
         fontSize: 22,
