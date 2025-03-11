@@ -6,15 +6,25 @@ import CustomButton from "@/components/customButton";
 import globalStyles from "@/styles/globalStyles";
 import interestsData from '../../assets/interests.json';
 import AnimatedInterestCell from "@/components/AnimatedInterestCell";
-
+import useProfile from '@/hooks/useProfile';
+import useAuth from "@/hooks/useAuth";
 export default function AddInterests() {
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-    const handleFinish = () => {
-        console.log("selected interests:\n", selectedInterests);
-        router.replace('(tabs)/home');
+    const {updateProfile, loading: profileLoading, error: profileError} = useProfile();
+    const {user} = useAuth();
+    const handleFinish = async () => {
+        try {
+            await updateProfile({
+                email: user?.email || '',
+                interestList: selectedInterests,
+            });
+            console.log("selected interests:", selectedInterests);
+            router.replace('(tabs)/home');
+        } catch (error) {
+            console.error('Failed to update interests', error);
+        }
     };
 
-    // Toggle interest in the selectedInterests array
     const toggleInterest = (interest: string) => {
         if (selectedInterests.includes(interest)) {
             setSelectedInterests(prev => prev.filter(item => item !== interest));
@@ -23,7 +33,6 @@ export default function AddInterests() {
         }
     };
 
-    // Render each interest cell with an animated press
     const renderInterestItem = ({item}: { item: string }) => {
         return (
             <AnimatedInterestCell

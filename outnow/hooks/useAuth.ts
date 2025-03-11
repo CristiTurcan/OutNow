@@ -23,7 +23,6 @@ const useAuth = (): AuthHook => {
         setLoading(true);
         try {
             const userCredential = await auth().signInWithEmailAndPassword(email, password);
-            // Optional: update your backend with the signed in user's email
             await axios.post('http://localhost:8080/users/upsert', { email: userCredential.user?.email });
         } catch (error: any) {
             throw new Error((error as FirebaseError).message);

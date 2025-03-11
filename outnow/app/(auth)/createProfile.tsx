@@ -22,6 +22,9 @@ import CustomButton from "@/components/customButton";
 import CustomBackButton from "@/components/customBackButton";
 import Constants from 'expo-constants';
 import globalStyles from "@/styles/globalStyles";
+import useProfile from '@/hooks/useProfile';
+import useAuth from '@/hooks/useAuth';
+import { useImagePicker } from '@/hooks/useImagePicker';
 
 
 export default function CreateProfile() {
@@ -31,10 +34,13 @@ export default function CreateProfile() {
     const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [location, setLocation] = useState('');
-    const [photoUri, setPhotoUri] = useState<string | null>(null);
     const [showPhotoOptions, setShowPhotoOptions] = useState(false);
     const [ageError, setAgeError] = useState('');
     const googleApiKey = Constants.expoConfig?.extra?.googleApiKey;
+    const {user} = useAuth();
+    const {updateProfile, loading: profileLoading, error: profileError} = useProfile();
+    const { photoUri, photoBase64, openCamera, openLibrary } = useImagePicker();
+
 
     const handleAddPhoto = () => {
         if (Platform.OS === 'ios') {
@@ -80,54 +86,33 @@ export default function CreateProfile() {
         return age;
     };
 
-
     const handleConfirm = (selectedDate: Date) => {
         const age = calculateAndSetAge(selectedDate, setAgeError);
         setDateOfBirth(selectedDate);
         setShowDatePicker(false);
     };
 
-
-    const handleNext = () => {
+    const handleNext = async () => {
         const age = calculateAndSetAge(dateOfBirth, setAgeError);
         if (age < 18) return;    // this blocks next if age is not set properly
-        router.push('(auth)/addInterests');
-    };
 
+        const profileData = {
+            email: user?.email || '',
+            userPhoto: photoBase64 || '',
+            bio,
+            gender,
+            dateOfBirth: dateOfBirth ? dateOfBirth.toLocaleDateString('en-CA') : '',
+            location,
+            interestList: []
+        };
 
-    const openCamera = async () => {
-        const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-        if (!permissionResult.granted) {
-            alert('Permission to access camera is required!');
-            return;
-        }
-        const result = await ImagePicker.launchCameraAsync({
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
-        if (!result.canceled) {
-            setPhotoUri(result.assets[0].uri);
-        }
-    };
-
-
-    const openLibrary = async () => {
-        const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (!permissionResult.granted) {
-            alert('Permission to access media library is required!');
-            return;
-        }
-        const result = await ImagePicker.launchImageLibraryAsync({
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 1,
-        });
-        if (!result.canceled) {
-            setPhotoUri(result.assets[0].uri);
+        try {
+            await updateProfile(profileData);
+            router.push('(auth)/addInterests');
+        } catch (error) {
+            console.error('Failed to update profile', error);
         }
     };
-
 
     return (
         <SafeAreaView style={globalStyles.container}>
@@ -144,12 +129,16 @@ export default function CreateProfile() {
                     <TouchableOpacity onPress={handleAddPhoto}>
                         <View style={styles.avatarWrapper}>
                             {photoUri ? (
-                                <Image source={{uri: photoUri}} style={styles.avatar}/>
+                                <Image
+                                    source={{uri: photoBase64 ? `data:image/jpeg;base64,${photoBase64}` : photoUri}}
+                                    style={styles.avatar}
+                                />
                             ) : (
                                 <View style={styles.avatarPlaceholder}>
                                     <Text style={styles.avatarPlaceholderText}>No photo</Text>
                                 </View>
                             )}
+
                             <View style={styles.addIconContainer}>
                                 <Text style={styles.addIconText}>+</Text>
                             </View>
@@ -244,7 +233,7 @@ export default function CreateProfile() {
                 <DateTimePickerModal
                     isVisible={showDatePicker}
                     mode="date"
-                    maximumDate={new Date()}
+                    maximumDate={dateOfBirth || new Date()}
                     onConfirm={handleConfirm}
                     onCancel={() => setShowDatePicker(false)}
                 />
@@ -278,7 +267,7 @@ export default function CreateProfile() {
                 <View style={globalStyles.footer}>
                     <CustomButton
                         onPress={handleNext}
-                        title="Next"
+                        title={profileLoading ? "Updating..." : "Next"}
                         style={globalStyles.nextButton}
                     />
                 </View>

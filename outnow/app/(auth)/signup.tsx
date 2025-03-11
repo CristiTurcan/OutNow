@@ -160,10 +160,10 @@ export default function SignUp() {
                     />
                     <View style={styles.buttonContainer}>
                         {/* this button avoids signup validation */}
-                        <CustomButton onPress={() => router.push('(auth)/createProfile')} title="Sign Up"
+                        {/*<CustomButton onPress={() => router.push('(auth)/createProfile')} title="Sign Up"*/}
+                        {/*              disabled={loading} style={styles.signupButton}/>  */}
+                        <CustomButton onPress={handleSubmit(onSubmit)} title="Sign Up"
                                       disabled={loading} style={styles.signupButton}/>
-                        {/*<CustomButton onPress={handleSubmit(onSubmit)} title="Sign Up"*/}
-                        {/*              disabled={loading} style={styles.signupButton}/>*/}
                     </View>
                 </KeyboardAvoidingView>
             </View>
