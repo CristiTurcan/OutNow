@@ -60,6 +60,24 @@ const globalStyles = StyleSheet.create({
     placeholderText: {
         color: '#aaa',
     },
+    addIconContainer: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: '#0D2C66',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    addIconText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 16,
+        lineHeight: 16,
+        textAlign: 'center',
+    },
 });
 
 export default globalStyles;

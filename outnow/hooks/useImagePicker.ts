@@ -30,7 +30,12 @@ export function useImagePicker(): ImagePickerResult {
         if (!result.canceled) {
             const asset = result.assets[0];
             setPhotoUri(asset.uri);
-            setPhotoBase64(asset.base64 ?? null);
+            if (asset.base64) {
+                // Prepend the "data:image/jpeg;base64," string to your base64 data
+                setPhotoBase64(`data:image/jpeg;base64,${asset.base64}`);
+            } else {
+                setPhotoBase64(null);
+            }
         }
     };
 

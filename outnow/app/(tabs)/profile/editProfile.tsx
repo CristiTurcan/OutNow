@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     View,
     Text,
@@ -11,58 +11,51 @@ import {
     TouchableWithoutFeedback,
     Platform,
     ActionSheetIOS,
+    ActivityIndicator,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import {router} from 'expo-router';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
-import 'react-native-get-random-values';
-import * as ImagePicker from 'expo-image-picker';
-import CustomButton from "@/components/customButton";
-import CustomBackButton from "@/components/customBackButton";
 import Constants from 'expo-constants';
-import globalStyles from "@/styles/globalStyles";
+import globalStyles from '@/styles/globalStyles';
+import CustomButton from '@/components/customButton';
+import CustomBackButton from '@/components/customBackButton';
 import useProfile from '@/hooks/useProfile';
 import useAuth from '@/hooks/useAuth';
-import { useImagePicker } from '@/hooks/useImagePicker';
-import AvatarPicker from "@/components/AvatarPicker";
+import {useImagePicker} from '@/hooks/useImagePicker';
+import useUserProfile from "@/hooks/useUserProfile";
 
-
-export default function CreateProfile() {
+export default function EditProfile() {
+    const {user} = useAuth();
+    const {getProfile, loading, error} = useUserProfile(user?.email);
+    const {profile, updateProfile, loading: profileLoading, error: profileError} = useProfile();
+    const {photoUri, photoBase64, openCamera, openLibrary} = useImagePicker();
     const [bio, setBio] = useState('');
     const [gender, setGender] = useState('');
-    const [showGenderPicker, setShowGenderPicker] = useState(false);
     const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
-    const [showDatePicker, setShowDatePicker] = useState(false);
     const [location, setLocation] = useState('');
+    const [showGenderPicker, setShowGenderPicker] = useState(false);
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [showPhotoOptions, setShowPhotoOptions] = useState(false);
     const [ageError, setAgeError] = useState('');
     const googleApiKey = Constants.expoConfig?.extra?.googleApiKey;
-    const {user} = useAuth();
-    const {updateProfile, loading: profileLoading, error: profileError} = useProfile();
-    const { photoUri, photoBase64, openCamera, openLibrary } = useImagePicker();
+    const [isLocationEditable, setIsLocationEditable] = useState(false);
+    const [locationError, setLocationError] = useState('');
 
-
-    const handleAddPhoto = () => {
-        if (Platform.OS === 'ios') {
-            ActionSheetIOS.showActionSheetWithOptions(
-                {
-                    options: ['Cancel', 'Take Photo', 'Choose from Library'],
-                    cancelButtonIndex: 0,
-                },
-                (buttonIndex) => {
-                    if (buttonIndex === 1) {
-                        openCamera();
-                    } else if (buttonIndex === 2) {
-                        openLibrary();
-                    }
-                }
-            );
-        } else {
-            // For Android, use custom modal
-            setShowPhotoOptions(true);
+    useEffect(() => {
+        if (getProfile) {
+            setBio(getProfile.bio || '');
+            setGender(getProfile.gender || '');
+            setLocation(getProfile.location || '');
+            if (getProfile.dateOfBirth) {
+                setDateOfBirth(new Date(getProfile.dateOfBirth));
+            } else {
+                setDateOfBirth(null);
+            }
+            // Add other fields as needed...
         }
-    };
+    }, [getProfile]);
 
     const calculateAndSetAge = (birthDate: Date | null, setAgeError: (error: string) => void): number => {
         if (!birthDate) {
@@ -88,51 +81,55 @@ export default function CreateProfile() {
     };
 
     const handleConfirm = (selectedDate: Date) => {
-        const age = calculateAndSetAge(selectedDate, setAgeError);
+        calculateAndSetAge(selectedDate, setAgeError);
         setDateOfBirth(selectedDate);
         setShowDatePicker(false);
     };
 
-    const handleNext = async () => {
+    const handleSave = async () => {
         const age = calculateAndSetAge(dateOfBirth, setAgeError);
-        if (age < 18) return;    // this blocks next if age is not set properly
+        if (age < 18) return;
+
+        if (!location.trim()) {
+            setLocationError("No location provided");
+            // return; // Prevent saving if location is empty.
+        }
+
 
         const profileData = {
             email: user?.email || '',
-            userPhoto: photoBase64 || '',
             bio,
             gender,
             dateOfBirth: dateOfBirth ? dateOfBirth.toLocaleDateString('en-CA') : '',
             location,
-            interestList: []
         };
 
         try {
             await updateProfile(profileData);
-            router.push('(auth)/addInterests');
+            router.push('/(tabs)/profile'); // Navigate back to the main profile page.
         } catch (error) {
             console.error('Failed to update profile', error);
         }
     };
 
+    if (profileLoading) {
+        return (
+            <SafeAreaView style={globalStyles.container}>
+                <ActivityIndicator size="large" color="#0D2C66"/>
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={globalStyles.container}>
-            {/*Header*/}
+            {/* Header */}
             <View style={globalStyles.headerRow}>
                 <CustomBackButton text="" style={globalStyles.backButton}/>
-                <Text style={globalStyles.title}>Create Profile</Text>
+                <Text style={globalStyles.title}>Edit Profile</Text>
             </View>
 
             {/* Body */}
             <View style={globalStyles.bodyContainer}>
-                {/* Avatar Section */}
-                <AvatarPicker
-                    photoUri={photoUri ?? null}
-                    photoBase64={photoBase64}
-                    onPress={handleAddPhoto}
-                />
-
-
                 {/* Bio */}
                 <Text style={styles.fieldLabel}>Bio</Text>
                 <TextInput
@@ -142,9 +139,6 @@ export default function CreateProfile() {
                     onChangeText={setBio}
                     multiline
                     maxLength={150}
-                    onPress={() => {
-                        setShowDatePicker(false);
-                    }}
                 />
                 {bio.length === 150 && (
                     <Text style={globalStyles.errorText}>Character limit reached: 150/150</Text>
@@ -160,9 +154,8 @@ export default function CreateProfile() {
                     }}
                 >
                     <Text style={[styles.genderButtonText, !gender && globalStyles.placeholderText]}>
-                        {gender ? gender : "Select your gender"}
+                        {gender ? gender : 'Select your gender'}
                     </Text>
-
                 </TouchableOpacity>
 
                 {/* Gender Picker Modal */}
@@ -203,36 +196,28 @@ export default function CreateProfile() {
                         setShowDatePicker(true);
                     }}
                 >
-                    <Text
-                        style={[
-                            styles.datePickerButtonText,
-                            !dateOfBirth && globalStyles.placeholderText
-                        ]}
-                    >
-                        {dateOfBirth ? dateOfBirth.toDateString() : "Select your date of birth"}
+                    <Text style={[styles.datePickerButtonText, !dateOfBirth && globalStyles.placeholderText]}>
+                        {dateOfBirth ? dateOfBirth.toDateString() : 'Select your date of birth'}
                     </Text>
-
-
                 </TouchableOpacity>
-                {ageError !== '' && (
-                    <Text style={globalStyles.errorText}>{ageError}</Text>
-                )}
+                {ageError !== '' && <Text style={globalStyles.errorText}>{ageError}</Text>}
                 <DateTimePickerModal
                     isVisible={showDatePicker}
                     mode="date"
-                    maximumDate={dateOfBirth || new Date()}
+                    date={dateOfBirth || new Date()}
+                    maximumDate={new Date()}
                     onConfirm={handleConfirm}
                     onCancel={() => setShowDatePicker(false)}
                 />
 
-                {/* Location with Google Places Autocomplete */}
+                {/* Location */}
                 <Text style={styles.fieldLabel}>Location</Text>
                 <GooglePlacesAutocomplete
                     placeholder="Where do you live?"
                     fetchDetails={true}
                     onPress={(data, details = null) => {
-                        // here i can extract detailed address info from details.address_components
                         setLocation(data.description);
+                        setIsLocationEditable(false); // reset editing mode after selection
                     }}
                     query={{
                         key: googleApiKey,
@@ -240,25 +225,46 @@ export default function CreateProfile() {
                         types: '(regions)',
                     }}
                     styles={{
-                        container: {flex: 0, width: '100%', marginBottom: 12},
+                        container: { flex: 0, width: '100%' },
                         textInput: styles.input,
                     }}
                     textInputProps={{
                         onTouchStart: () => {
                             setShowDatePicker(false);
+                            setIsLocationEditable(true); // enable editing when touched
+                        },
+                        value: location,
+                        onChangeText: (text) => {
+                            if (isLocationEditable) {
+                                setLocation(text);
+                            }
+                        },
+                        onBlur: () => {
+                            if (!location.trim()) {
+                                setLocationError("No location provided");
+                            } else {
+                                setLocationError("");
+                            }
+                            setIsLocationEditable(false);
                         },
                     }}
                 />
+                {locationError !== '' && (
+                    <Text style={globalStyles.errorText}>{locationError}</Text>
+                )}
 
-                {/* Next Button */}
+
+                {/* Save Button */}
                 <View style={globalStyles.footer}>
                     <CustomButton
-                        onPress={handleNext}
-                        title={profileLoading ? "Updating..." : "Next"}
+                        onPress={handleSave}
+                        title={profileLoading ? 'Saving...' : 'Save'}
                         style={globalStyles.nextButton}
                     />
                 </View>
             </View>
+
+            {/* Android Photo Options Modal */}
             {Platform.OS !== 'ios' && (
                 <Modal
                     visible={showPhotoOptions}
@@ -304,7 +310,7 @@ const styles = StyleSheet.create({
         textAlign: 'left',
         marginBottom: 4,
         fontWeight: '500',
-        fontSize: 14
+        fontSize: 14,
     },
     bioInput: {
         width: '100%',
@@ -360,7 +366,7 @@ const styles = StyleSheet.create({
     },
     genderButtonText: {
         fontSize: 16,
-        color: '#333'
+        color: '#333',
     },
     datePickerButton: {
         width: '100%',
@@ -382,9 +388,8 @@ const styles = StyleSheet.create({
     },
     datePickerButtonText: {
         fontSize: 16,
-        color: '#333'
+        color: '#333',
     },
-    nextButtonText: {color: '#fff', fontSize: 16},
     avatarContainer: {
         alignItems: 'center',
         marginBottom: 30,
@@ -395,12 +400,13 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         backgroundColor: '#e1e1e1',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     avatarPlaceholderText: {color: '#9b9b9b'},
     avatar: {
         width: 100,
-        height: 100, borderRadius: 50
+        height: 100,
+        borderRadius: 50,
     },
     avatarWrapper: {
         position: 'relative',
@@ -431,11 +437,11 @@ const styles = StyleSheet.create({
     modalContent: {
         backgroundColor: '#fff',
         borderTopLeftRadius: 12,
-        borderTopRightRadius: 12
+        borderTopRightRadius: 12,
     },
     genderPicker: {
-        height: "auto",
-        width: '100%'
+        height: 'auto',
+        width: '100%',
     },
     photoOptionsOverlay: {
         flex: 1,
