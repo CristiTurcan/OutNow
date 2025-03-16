@@ -11,7 +11,7 @@ const globalStyles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 20,
         marginHorizontal: 16,
-        marginBottom: -10,
+        marginBottom: 20,
     },
     backButton: {
         position: "relative",
@@ -33,7 +33,7 @@ const globalStyles = StyleSheet.create({
         width: '100%',
         alignItems: 'flex-end',
         backgroundColor: '#f2f2f2',
-        paddingTop: 12,
+        paddingTop: 2,
     },
     nextButton: {
         backgroundColor: '#0D2C66',
@@ -43,6 +43,7 @@ const globalStyles = StyleSheet.create({
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowRadius: 3,
+        margin: 10,
     },
     bodyContainer: {
         flex: 1,
