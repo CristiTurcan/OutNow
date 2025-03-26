@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, TextInput, StyleSheet, KeyboardAvoidingView, Text, SafeAreaView} from 'react-native';
+import {View, TextInput, StyleSheet, KeyboardAvoidingView, Text, SafeAreaView, Switch} from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
 import * as yup from 'yup';
 import {yupResolver} from '@hookform/resolvers/yup';
@@ -9,12 +9,14 @@ import {router} from 'expo-router';
 import useAuth from '@/hooks/useAuth';
 import auth from '@react-native-firebase/auth';
 import globalStyles from "@/styles/globalStyles";
+import useBusinessProfile from '@/hooks/useBusinessProfile';
 
 interface FormData {
     email: string;
     username: string;
     password: string;
     confirmPassword: string;
+    isBusiness: boolean;
 }
 
 const schema = yup.object().shape({
@@ -46,10 +48,13 @@ const schema = yup.object().shape({
         .string()
         .oneOf([yup.ref('password')], 'Passwords must match')
         .required('Confirm password is required'),
+    isBusiness: yup.boolean(),
 });
 
 export default function SignUp() {
     const {signUp, loading} = useAuth();
+    const { updateBusinessProfile, loading: businessProfileLoading, error: businessProfileError } = useBusinessProfile();
+
     const {
         control,
         handleSubmit,
@@ -60,14 +65,13 @@ export default function SignUp() {
         criteriaMode: 'all',
     });
 
-    const onSubmit = async (data: FormData) => {
-        try {
-            await signUp(data.email, data.password, data.username);
-            router.replace('(auth)/createProfile');
-        } catch (error: any) {
-            alert('Registration failed: ' + error.message);
-        }
+    const onSubmit = (data: FormData) => {
+        router.push(
+            `(auth)/createProfile?isBusiness=${data.isBusiness}&email=${data.email}&username=${data.username}&password=${data.password}`
+        );
     };
+
+
 
     type FieldError = { message?: string; types?: Record<string, string> };
 
@@ -158,6 +162,16 @@ export default function SignUp() {
                             </>
                         )}
                     />
+                    <Controller
+                        control={control}
+                        name="isBusiness"
+                        render={({ field: { onChange, value } }) => (
+                            <View style={styles.checkboxContainer}>
+                                <Switch value={value} onValueChange={onChange} />
+                                <Text style={styles.label}>Business Account</Text>
+                            </View>
+                        )}
+                    />
                     <View style={styles.buttonContainer}>
                         {/* this button avoids signup validation */}
                         {/*<CustomButton onPress={() => router.push('(auth)/createProfile')} title="Sign Up"*/}
@@ -214,5 +228,17 @@ const styles = StyleSheet.create({
         color: 'red',
         fontSize: 12,
         marginBottom: 4,
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        justifyContent: "flex-start",
+        alignItems: 'flex-start',
+        alignSelf: "flex-start",
+        marginVertical: 8,
+    },
+    label: {
+        fontSize: 16,
+        marginHorizontal: 8,
+        color: '#333',
     },
 });

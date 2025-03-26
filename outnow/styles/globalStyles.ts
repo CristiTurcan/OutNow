@@ -1,10 +1,11 @@
-import { StyleSheet } from "react-native";
+import {StyleSheet} from "react-native";
 
 const globalStyles = StyleSheet.create({
     container: {
         flex: 1,
         paddingHorizontal: 16,
         paddingTop: 16,
+        position: "relative",
     },
     headerRow: {
         flexDirection: 'row',
@@ -34,6 +35,12 @@ const globalStyles = StyleSheet.create({
         alignItems: 'flex-end',
         backgroundColor: '#f2f2f2',
         paddingTop: 2,
+    },
+    centeredFooter: {
+        position: 'absolute',
+        bottom: 20,
+        alignSelf: 'center',
+        alignItems: 'center',
     },
     nextButton: {
         backgroundColor: '#0D2C66',

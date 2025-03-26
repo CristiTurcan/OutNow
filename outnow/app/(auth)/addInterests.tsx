@@ -8,22 +8,69 @@ import interestsData from '../../assets/interests.json';
 import AnimatedInterestCell from "@/components/AnimatedInterestCell";
 import useProfile from '@/hooks/useProfile';
 import useAuth from "@/hooks/useAuth";
+import { useLocalSearchParams } from 'expo-router';
+import useBusinessProfile from '@/hooks/useBusinessProfile';
+import tempStore from "@/services/tempStore";
 export default function AddInterests() {
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
     const {updateProfile, loading: profileLoading, error: profileError} = useProfile();
-    const {user} = useAuth();
+    const {user, signUp} = useAuth();
+    const { updateBusinessProfile } = useBusinessProfile();
+    const {
+        isBusiness,
+        email,
+        username,
+        password,
+        bio,
+        gender,
+        dateOfBirth,
+        location,
+    } = useLocalSearchParams();
+    const isBusinessAccount = isBusiness === 'true';
+
+    const emailStr = Array.isArray(email) ? email[0] : email;
+    const usernameStr = Array.isArray(username) ? username[0] : username;
+    const passwordStr = Array.isArray(password) ? password[0] : password;
+    const bioStr = Array.isArray(bio) ? bio[0] : bio;
+    const genderStr = Array.isArray(gender) ? gender[0] : gender;
+    const dateOfBirthStr = Array.isArray(dateOfBirth) ? dateOfBirth[0] : dateOfBirth;
+    const locationStr = Array.isArray(location) ? location[0] : location;
+    const photoStr = tempStore.photoBase64 || '';
+
     const handleFinish = async () => {
         try {
-            await updateProfile({
-                email: user?.email || '',
-                interestList: selectedInterests,
-            });
-            console.log("selected interests:", selectedInterests);
+            await signUp(emailStr, passwordStr, usernameStr, isBusinessAccount);
+
+            if (isBusinessAccount) {
+                const businessData = {
+                    email: emailStr,
+                    username: usernameStr,
+                    userPhoto: photoStr || '',
+                    bio: bioStr,
+                    location: locationStr,
+                    interestList: selectedInterests,
+                };
+                await updateBusinessProfile(businessData);
+
+            } else {
+                const profileData = {
+                    email: emailStr,
+                    userPhoto: photoStr || '',
+                    bio: bioStr,
+                    gender: genderStr,
+                    dateOfBirth: dateOfBirthStr,
+                    location: locationStr,
+                    interestList: selectedInterests,
+                };
+                await updateProfile(profileData);
+            }
+
             router.replace('(tabs)/home');
         } catch (error) {
-            console.error('Failed to update interests', error);
+            console.error('Failed in final sign-up or profile update:', error);
         }
     };
+
 
     const toggleInterest = (interest: string) => {
         if (selectedInterests.includes(interest)) {

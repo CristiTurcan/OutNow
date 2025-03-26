@@ -2,18 +2,13 @@ import { RelativePathString, Stack, useRouter, useSegments } from 'expo-router';
 import { useEffect, useState } from 'react';
 import auth, { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import { View, ActivityIndicator } from 'react-native';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export default function RootLayout() {
 	const [initializing, setInitializing] = useState(true);
 	const [user, setUser] = useState<FirebaseAuthTypes.User | null>();
 	const router = useRouter();
 	const segments = useSegments();
-
-	const onAuthStateChanged = (user: FirebaseAuthTypes.User | null) => {
-		console.log('onAuthStateChanged', user);
-		setUser(user);
-		if (initializing) setInitializing(false);
-	};
 
 	useEffect(() => {
 		const unsubscribe = auth().onAuthStateChanged((user) => {
@@ -54,10 +49,13 @@ export default function RootLayout() {
 		);
 
 	return (
-		<Stack>
-			<Stack.Screen name="index" options={{ headerShown: false }} />
-			<Stack.Screen name="(auth)" options={{headerShown: false}}/>
-			<Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-		</Stack>
+		<AuthProvider>
+			<Stack>
+				<Stack.Screen name="index" options={{ headerShown: false }} />
+				<Stack.Screen name="(auth)" options={{headerShown: false}}/>
+				<Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+				<Stack.Screen name="createEvent" options={{headerShown: false}}/>
+			</Stack>
+		</AuthProvider>
 	);
 }

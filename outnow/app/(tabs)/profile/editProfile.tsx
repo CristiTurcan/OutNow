@@ -25,9 +25,10 @@ import useProfile from '@/hooks/useProfile';
 import useAuth from '@/hooks/useAuth';
 import {useImagePicker} from '@/hooks/useImagePicker';
 import useUserProfile from "@/hooks/useUserProfile";
+import useBusinessProfile from '@/hooks/useBusinessProfile';
 
 export default function EditProfile() {
-    const {user} = useAuth();
+    const {user, isBusiness} = useAuth();
     const {getProfile, loading, error} = useUserProfile(user?.email);
     const {profile, updateProfile, loading: profileLoading, error: profileError} = useProfile();
     const {photoUri, photoBase64, openCamera, openLibrary} = useImagePicker();
@@ -42,20 +43,32 @@ export default function EditProfile() {
     const googleApiKey = Constants.expoConfig?.extra?.googleApiKey;
     const [isLocationEditable, setIsLocationEditable] = useState(false);
     const [locationError, setLocationError] = useState('');
+    const {updateExistingBusinessProfile, getBusinessProfile} = useBusinessProfile();
+    const [businessProfile, setBusinessProfile] = useState(null);
 
     useEffect(() => {
-        if (getProfile) {
-            setBio(getProfile.bio || '');
-            setGender(getProfile.gender || '');
-            setLocation(getProfile.location || '');
-            if (getProfile.dateOfBirth) {
-                setDateOfBirth(new Date(getProfile.dateOfBirth));
+        if (isBusiness && user?.email) {
+            getBusinessProfile(user.email)
+                .then(data => setBusinessProfile(data))
+                .catch(err => console.error("Error fetching business profile:", err));
+        }
+    }, [isBusiness, user?.email]);
+
+
+    useEffect(() => {
+        const profileData = isBusiness ? businessProfile : getProfile;
+        if (profileData) {
+            setBio(profileData.bio || '');
+            setGender(profileData.gender || '');
+            setLocation(profileData.location || '');
+            if (profileData.dateOfBirth) {
+                setDateOfBirth(new Date(profileData.dateOfBirth));
             } else {
                 setDateOfBirth(null);
             }
-            // Add other fields as needed...
         }
-    }, [getProfile]);
+    }, [isBusiness, businessProfile, getProfile]);
+
 
     const calculateAndSetAge = (birthDate: Date | null, setAgeError: (error: string) => void): number => {
         if (!birthDate) {
@@ -88,25 +101,36 @@ export default function EditProfile() {
 
     const handleSave = async () => {
         const age = calculateAndSetAge(dateOfBirth, setAgeError);
-        if (age < 18) return;
+        if (age < 18 && !isBusiness) return;
 
         if (!location.trim()) {
             setLocationError("No location provided");
             // return; // Prevent saving if location is empty.
         }
 
-
-        const profileData = {
+        const commonData = {
             email: user?.email || '',
             bio,
-            gender,
-            dateOfBirth: dateOfBirth ? dateOfBirth.toLocaleDateString('en-CA') : '',
             location,
         };
 
+        if (!user?.email) {
+            console.error("User email is missing.");
+            return;
+        }
+
         try {
-            await updateProfile(profileData);
-            router.push('/(tabs)/profile'); // Navigate back to the main profile page.
+            if (isBusiness) {
+                await updateExistingBusinessProfile(user.email, commonData);
+            } else {
+                const profileData = {
+                    ...commonData,
+                    gender,
+                    dateOfBirth: dateOfBirth ? dateOfBirth.toLocaleDateString('en-CA') : '',
+                };
+                await updateProfile(profileData);
+            }
+            router.push('/(tabs)/profile');
         } catch (error) {
             console.error('Failed to update profile', error);
         }
@@ -144,71 +168,80 @@ export default function EditProfile() {
                     <Text style={globalStyles.errorText}>Character limit reached: 150/150</Text>
                 )}
 
-                {/* Gender */}
-                <Text style={styles.fieldLabel}>Gender</Text>
-                <TouchableOpacity
-                    style={styles.genderButton}
-                    onPress={() => {
-                        setShowDatePicker(false);
-                        setShowGenderPicker(true);
-                    }}
-                >
-                    <Text style={[styles.genderButtonText, !gender && globalStyles.placeholderText]}>
-                        {gender ? gender : 'Select your gender'}
-                    </Text>
-                </TouchableOpacity>
+                {!isBusiness && (
+                    <>
+                        {/* Gender */}
+                        <Text style={styles.fieldLabel}>Gender</Text>
+                        <TouchableOpacity
+                            style={styles.genderButton}
+                            onPress={() => {
+                                setShowDatePicker(false);
+                                setShowGenderPicker(true);
+                            }}
+                        >
+                            <Text style={[styles.genderButtonText, !gender && globalStyles.placeholderText]}>
+                                {gender ? gender : 'Select your gender'}
+                            </Text>
+                        </TouchableOpacity>
 
-                {/* Gender Picker Modal */}
-                <Modal
-                    visible={showGenderPicker}
-                    transparent
-                    animationType="none"
-                    onRequestClose={() => setShowGenderPicker(false)}
-                >
-                    <TouchableWithoutFeedback onPress={() => setShowGenderPicker(false)}>
-                        <View style={styles.modalContainer}>
-                            <TouchableWithoutFeedback>
-                                <View style={styles.modalContent}>
-                                    <Picker
-                                        selectedValue={gender}
-                                        onValueChange={(itemValue) => {
-                                            setGender(itemValue);
-                                            setShowGenderPicker(false);
-                                        }}
-                                        style={styles.genderPicker}
-                                    >
-                                        <Picker.Item label="" value=""/>
-                                        <Picker.Item label="Male" value="Male"/>
-                                        <Picker.Item label="Female" value="Female"/>
-                                        <Picker.Item label="Prefer not to say" value="Prefer not to say"/>
-                                    </Picker>
+                        {/* Gender Picker Modal */}
+                        <Modal
+                            visible={showGenderPicker}
+                            transparent
+                            animationType="none"
+                            onRequestClose={() => setShowGenderPicker(false)}
+                        >
+                            <TouchableWithoutFeedback onPress={() => setShowGenderPicker(false)}>
+                                <View style={styles.modalContainer}>
+                                    <TouchableWithoutFeedback>
+                                        <View style={styles.modalContent}>
+                                            <Picker
+                                                selectedValue={gender}
+                                                onValueChange={(itemValue) => {
+                                                    setGender(itemValue);
+                                                    setShowGenderPicker(false);
+                                                }}
+                                                style={styles.genderPicker}
+                                            >
+                                                <Picker.Item label="" value=""/>
+                                                <Picker.Item label="Male" value="Male"/>
+                                                <Picker.Item label="Female" value="Female"/>
+                                                <Picker.Item label="Prefer not to say" value="Prefer not to say"/>
+                                            </Picker>
+                                        </View>
+                                    </TouchableWithoutFeedback>
                                 </View>
                             </TouchableWithoutFeedback>
-                        </View>
-                    </TouchableWithoutFeedback>
-                </Modal>
+                        </Modal>
+                    </>
+                )}
 
-                {/* Date of Birth */}
-                <Text style={styles.fieldLabel}>Date of birth</Text>
-                <TouchableOpacity
-                    style={styles.datePickerButton}
-                    onPress={() => {
-                        setShowDatePicker(true);
-                    }}
-                >
-                    <Text style={[styles.datePickerButtonText, !dateOfBirth && globalStyles.placeholderText]}>
-                        {dateOfBirth ? dateOfBirth.toDateString() : 'Select your date of birth'}
-                    </Text>
-                </TouchableOpacity>
-                {ageError !== '' && <Text style={globalStyles.errorText}>{ageError}</Text>}
-                <DateTimePickerModal
-                    isVisible={showDatePicker}
-                    mode="date"
-                    date={dateOfBirth || new Date()}
-                    maximumDate={new Date()}
-                    onConfirm={handleConfirm}
-                    onCancel={() => setShowDatePicker(false)}
-                />
+                {!isBusiness && (
+                    <>
+                        {/* Date of Birth */}
+                        <Text style={styles.fieldLabel}>Date of birth</Text>
+                        <TouchableOpacity
+                            style={styles.datePickerButton}
+                            onPress={() => {
+                                setShowDatePicker(true);
+                            }}
+                        >
+                            <Text style={[styles.datePickerButtonText, !dateOfBirth && globalStyles.placeholderText]}>
+                                {dateOfBirth ? dateOfBirth.toDateString() : 'Select your date of birth'}
+                            </Text>
+                        </TouchableOpacity>
+                        {ageError !== '' && <Text style={globalStyles.errorText}>{ageError}</Text>}
+                        <DateTimePickerModal
+                            isVisible={showDatePicker}
+                            mode="date"
+                            date={dateOfBirth || new Date()}
+                            maximumDate={new Date()}
+                            onConfirm={handleConfirm}
+                            onCancel={() => setShowDatePicker(false)}
+                        />
+                    </>
+                )}
+
 
                 {/* Location */}
                 <Text style={styles.fieldLabel}>Location</Text>
@@ -225,7 +258,7 @@ export default function EditProfile() {
                         types: '(regions)',
                     }}
                     styles={{
-                        container: { flex: 0, width: '100%' },
+                        container: {flex: 0, width: '100%'},
                         textInput: styles.input,
                     }}
                     textInputProps={{

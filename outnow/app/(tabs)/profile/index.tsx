@@ -1,31 +1,60 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, Image, TouchableOpacity, StyleSheet, Platform, ActionSheetIOS} from 'react-native';
 import { useRouter } from 'expo-router';
-import auth from '@react-native-firebase/auth';
 import Icon from 'react-native-vector-icons/Feather';
 import globalStyles from "@/styles/globalStyles";
 import CustomButton from "@/components/customButton";
 import useUserProfile from '@/hooks/useUserProfile';
+import useAuth from "@/hooks/useAuth";
+import useBusinessProfile from "@/hooks/useBusinessProfile";
 import AvatarPicker from "@/components/AvatarPicker";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import useProfile from "@/hooks/useProfile";
 
+
 export default function Index() {
     const router = useRouter();
-    const user = auth().currentUser;
-    const { getProfile, loading, error } = useUserProfile(user?.email);
+    const { user, signOut, isBusiness } = useAuth();
+    const { updateExistingBusinessProfile, getBusinessProfile } = useBusinessProfile();
+    const { getProfile: userProfile, loading: userProfileLoading, error: userProfileError } = useUserProfile(user?.email);
     const [showPhotoOptions, setShowPhotoOptions] = useState(false);
     const { photoUri, photoBase64, openCamera, openLibrary } = useImagePicker();
     const { updateProfile } = useProfile();
+    const [businessProfile, setBusinessProfile] = useState(null);
+    const [bpLoading, setBpLoading] = useState(false);
+    const [bpError, setBpError] = useState(null);
 
     useEffect(() => {
-        if (photoBase64) {
-            updateProfile({
-                email: user?.email || '',
-                userPhoto: photoBase64
-            });
+        if (isBusiness && user?.email) {
+            setBpLoading(true);
+            getBusinessProfile(user.email)
+                .then(data => {
+                    setBusinessProfile(data);
+                    setBpLoading(false);
+                })
+                .catch(err => {
+                    setBpError(err.message);
+                    setBpLoading(false);
+                });
         }
-    }, [photoBase64]);
+    }, [isBusiness, user?.email]);
+
+    const profileData = isBusiness ? businessProfile : userProfile;
+
+    useEffect(() => {
+        if (photoBase64 && user?.email) {
+            if (isBusiness) {
+                updateExistingBusinessProfile(user.email, { userPhoto: photoBase64 })
+                    .then(() => console.log("Business profile photo updated."))
+                    .catch((error) => console.error("Error updating business profile photo:", error));
+            } else {
+                updateProfile({ email: user.email, userPhoto: photoBase64 })
+                    .then(() => console.log("User profile photo updated."))
+                    .catch((error) => console.error("Error updating user profile photo:", error));
+            }
+        }
+    }, [photoBase64, isBusiness, user?.email]);
+
     const handleAddPhoto = () => {
         if (Platform.OS === 'ios') {
             ActionSheetIOS.showActionSheetWithOptions(
@@ -49,7 +78,7 @@ export default function Index() {
 
     const handleLogout = async () => {
         try {
-            // await auth().signOut();
+            await signOut();
             router.replace('/(auth)/login');
         } catch (error) {
             console.error("Logout failed:", error);
@@ -71,14 +100,14 @@ export default function Index() {
             <View style={styles.profileContainer}>
                 {/* Index Image */}
                 <AvatarPicker
-                    photoUri={photoUri ?? (getProfile?.userPhoto ?? null)}
+                    photoUri={photoUri ?? (profileData?.userPhoto ?? null)}
                     photoBase64={photoBase64}
                     onPress={handleAddPhoto}
                 />
 
 
                 <Text style={styles.profileName}>
-                    {getProfile?.username || 'User'}
+                    {profileData?.username || 'User'}
                 </Text>
             </View>
 
@@ -99,7 +128,7 @@ export default function Index() {
                 ))}
             </View>
 
-            <View style={styles.footer}>
+            <View style={globalStyles.centeredFooter}>
                 <CustomButton
                     onPress={handleLogout}
                     title="Log out"
@@ -115,12 +144,6 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: 20,
         paddingTop: 40,
-    },
-    footer: {
-        position: 'absolute',
-        bottom: 20,
-        alignSelf: 'center',
-        alignItems: 'center',
     },
     profileContainer: {
         alignItems: 'center',

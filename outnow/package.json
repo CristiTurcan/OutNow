@@ -17,6 +17,7 @@
   "dependencies": {
     "@expo/vector-icons": "^14.0.4",
     "@hookform/resolvers": "^4.1.0",
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-community/cli-platform-ios": "^15.1.2",
     "@react-native-community/datetimepicker": "^8.3.0",
     "@react-native-firebase/app": "^19.0.0",

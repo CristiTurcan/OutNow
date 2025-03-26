@@ -9,21 +9,43 @@ import interestsData from '../../../assets/interests.json';
 import useProfile from '@/hooks/useProfile';
 import useAuth from "@/hooks/useAuth";
 import useUserProfile from "@/hooks/useUserProfile";
+import useBusinessProfile from '@/hooks/useBusinessProfile';
 
 export default function EditInterests() {
     const {profile, updateProfile} = useProfile();
-    const {user} = useAuth();
+    const {user, isBusiness} = useAuth();
     const {getProfile, loading, error} = useUserProfile(user?.email);
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+    const { getBusinessProfile, updateExistingBusinessProfile } = useBusinessProfile();
+    const [businessProfile, setBusinessProfile] = useState(null);
 
-    // On mount, initialize selectedInterests from profile data
     useEffect(() => {
-        if (getProfile && getProfile.interestList) {
-            const interestsArray = getProfile.interestList.split(',').map(item => item.trim());
+        if (isBusiness && user?.email) {
+            getBusinessProfile(user.email)
+                .then(data => setBusinessProfile(data))
+                .catch(err => console.error("Error fetching business profile:", err));
+        }
+    }, [isBusiness, user?.email]);
+
+
+    useEffect(() => {
+        let interestStr = "";
+        if (isBusiness) {
+            if (businessProfile && businessProfile.interestList) {
+                interestStr = businessProfile.interestList;
+            }
+        } else {
+            if (getProfile && getProfile.interestList) {
+                interestStr = getProfile.interestList;
+            }
+        }
+        if (interestStr) {
+            const interestsArray = interestStr.split(',').map(item => item.trim());
             console.log("profile interests:", interestsArray);
             setSelectedInterests(interestsArray);
         }
-    }, [getProfile]);
+    }, [isBusiness, businessProfile, getProfile]);
+
 
 
     const toggleInterest = (interest: string) => {
@@ -37,17 +59,27 @@ export default function EditInterests() {
     };
 
     const handleSave = async () => {
+        if (!user?.email) {
+            console.error("User email is missing.");
+            return;
+        }
         try {
-            await updateProfile({
-                email: user?.email || '',
-                interestList: selectedInterests,
-            });
+            if (isBusiness) {
+                await updateExistingBusinessProfile(user.email, { interestList: selectedInterests });
+            } else {
+                await updateProfile({
+                    email: user.email,
+                    interestList: selectedInterests,
+                });
+            }
             console.log("Updated interests:", selectedInterests);
-            router.replace('(tabs)/home'); // Adjust navigation as needed
+            router.replace('(tabs)/profile');
         } catch (error) {
             console.error('Failed to update interests', error);
         }
     };
+
+
 
     // Compute other interests by filtering out the selected ones
     const otherInterests = interestsData.interests.filter(
