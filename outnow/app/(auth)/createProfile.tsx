@@ -97,8 +97,6 @@ export default function CreateProfile() {
         setShowDatePicker(false);
     };
 
-    // createProfile.tsx
-
     const handleNext = () => {
         tempStore.photoBase64 = photoBase64 || '';
 

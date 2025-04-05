@@ -1,7 +1,5 @@
-// app/createEvent.tsx
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Platform } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import Constants from 'expo-constants';
 import CustomButton from '@/components/customButton';
@@ -56,7 +54,6 @@ export default function CreateEvent() {
     }, [description]);
 
     const handlePriceChange = (text: string) => {
-        // Replace any character that is not a digit or decimal point
         const sanitized = text.replace(/[^0-9.]/g, '');
         setPrice(sanitized);
     };
@@ -82,8 +79,6 @@ export default function CreateEvent() {
             setDescriptionError('Description is required.');
             hasError = true;
         } else {
-            // useEffect will handle word count validation; if it's too long, descriptionError will be set.
-            // If there is no word count issue, clear any error.
             if (description.trim().split(/\s+/).filter(Boolean).length <= 150) {
                 setDescriptionError('');
             }
@@ -114,7 +109,6 @@ export default function CreateEvent() {
         };
 
         if (!user?.email) {
-            // Business account must exist for event creation.
             return;
         }
 

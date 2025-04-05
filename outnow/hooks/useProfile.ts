@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import {BASE_URL} from "@/config/api";
 import axios from 'axios';
 
 const useProfile = () => {
@@ -22,7 +23,7 @@ const useProfile = () => {
                 ...profileData,
                 interestList: profileData.interestList?.join(','),
             };
-            await axios.put('http://localhost:8080/users/update-profile', payload, {
+            await axios.put(`${BASE_URL}/users/update-profile`, payload, {
                 headers: { 'Content-Type': 'application/json' },
             });
         } catch (err: any) {

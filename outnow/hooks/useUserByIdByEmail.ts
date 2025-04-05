@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import {BASE_URL} from "@/config/api";
 
 const useUserIdByEmail = (email: string | null) => {
     const [userId, setUserId] = useState<number | null>(null);
@@ -13,7 +14,7 @@ const useUserIdByEmail = (email: string | null) => {
             setLoading(true);
             setError(null);
             try {
-                const response = await axios.get('http://localhost:8080/users/id-by-email', {
+                const response = await axios.get(`${BASE_URL}/users/id-by-email`, {
                     params: { email },
                 });
                 setUserId(response.data);

@@ -11,6 +11,7 @@ import useAuth from "@/hooks/useAuth";
 import { useLocalSearchParams } from 'expo-router';
 import useBusinessProfile from '@/hooks/useBusinessProfile';
 import tempStore from "@/services/tempStore";
+
 export default function AddInterests() {
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
     const {updateProfile, loading: profileLoading, error: profileError} = useProfile();
@@ -39,7 +40,6 @@ export default function AddInterests() {
 
     const handleFinish = async () => {
         try {
-            await signUp(emailStr, passwordStr, usernameStr, isBusinessAccount);
 
             if (isBusinessAccount) {
                 const businessData = {
@@ -51,6 +51,7 @@ export default function AddInterests() {
                     interestList: selectedInterests,
                 };
                 await updateBusinessProfile(businessData);
+                await signUp(emailStr, passwordStr, usernameStr, isBusinessAccount);
 
             } else {
                 const profileData = {
@@ -62,6 +63,7 @@ export default function AddInterests() {
                     location: locationStr,
                     interestList: selectedInterests,
                 };
+                await signUp(emailStr, passwordStr, usernameStr, isBusinessAccount);
                 await updateProfile(profileData);
             }
 

@@ -250,7 +250,7 @@ export default function EditProfile() {
                     fetchDetails={true}
                     onPress={(data, details = null) => {
                         setLocation(data.description);
-                        setIsLocationEditable(false); // reset editing mode after selection
+                        setIsLocationEditable(false);
                     }}
                     query={{
                         key: googleApiKey,
@@ -264,7 +264,7 @@ export default function EditProfile() {
                     textInputProps={{
                         onTouchStart: () => {
                             setShowDatePicker(false);
-                            setIsLocationEditable(true); // enable editing when touched
+                            setIsLocationEditable(true);
                         },
                         value: location,
                         onChangeText: (text) => {

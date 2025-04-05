@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import useBusinessProfile from '@/hooks/useBusinessProfile';
+import {BASE_URL} from "@/config/api";
 
 export default function useMyEvents(businessEmail: string | null) {
     const { getBusinessAccountId } = useBusinessProfile();
@@ -17,7 +18,7 @@ export default function useMyEvents(businessEmail: string | null) {
                 // Use the function from useBusinessProfile to get the account ID
                 const businessAccountId = await getBusinessAccountId(businessEmail);
                 const eventsResponse = await axios.get(
-                    `http://localhost:8080/api/events/business/${businessAccountId}`
+                    `${BASE_URL}/events/business/${businessAccountId}`
                 );
                 setEvents(eventsResponse.data);
             } catch (err: any) {

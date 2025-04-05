@@ -1,6 +1,7 @@
 // hooks/useUserProfile.ts
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import {BASE_URL} from "@/config/api";
 
 interface UserProfile {
     userid: number;
@@ -29,7 +30,7 @@ const useUserProfile = (email?: string | null) => {
             try {
                 setLoading(true);
                 const response = await axios.get(
-                    `http://localhost:8080/users/by-email?email=${encodeURIComponent(email)}`
+                    `${BASE_URL}/users/by-email?email=${encodeURIComponent(email)}`
                 );
                 setProfile(response.data);
             } catch (err: any) {

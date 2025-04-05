@@ -79,14 +79,11 @@ export default function EditInterests() {
         }
     };
 
-
-
     // Compute other interests by filtering out the selected ones
     const otherInterests = interestsData.interests.filter(
         (interest: string) => !selectedInterests.includes(interest)
     );
 
-    // Render function for interest cell
     const renderInterestItem = ({item}: { item: string }) => {
         return (
             <AnimatedInterestCell
@@ -115,7 +112,7 @@ export default function EditInterests() {
                     numColumns={2}
                     columnWrapperStyle={styles.columnWrapper}
                     contentContainerStyle={styles.listContent}
-                    scrollEnabled={false} // Disable individual scrolling for overall scroll
+                    scrollEnabled={false}
                 />
 
                 <Text style={styles.sectionTitle}>Other interests</Text>

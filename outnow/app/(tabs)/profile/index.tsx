@@ -5,8 +5,8 @@ import Icon from 'react-native-vector-icons/Feather';
 import globalStyles from "@/styles/globalStyles";
 import CustomButton from "@/components/customButton";
 import useUserProfile from '@/hooks/useUserProfile';
-import useAuth from "@/hooks/useAuth";
 import useBusinessProfile from "@/hooks/useBusinessProfile";
+import { useAuthContext } from '@/contexts/AuthContext';
 import AvatarPicker from "@/components/AvatarPicker";
 import { useImagePicker } from "@/hooks/useImagePicker";
 import useProfile from "@/hooks/useProfile";
@@ -14,7 +14,7 @@ import useProfile from "@/hooks/useProfile";
 
 export default function Index() {
     const router = useRouter();
-    const { user, signOut, isBusiness } = useAuth();
+    const { user, signOut, isBusiness } = useAuthContext();
     const { updateExistingBusinessProfile, getBusinessProfile } = useBusinessProfile();
     const { getProfile: userProfile, loading: userProfileLoading, error: userProfileError } = useUserProfile(user?.email);
     const [showPhotoOptions, setShowPhotoOptions] = useState(false);

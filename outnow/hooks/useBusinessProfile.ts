@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import axios from 'axios';
+import {BASE_URL} from "@/config/api";
 
 interface BusinessProfileData {
     email: string;
@@ -23,7 +24,7 @@ export default function useBusinessProfile() {
                 interestList: businessProfileData.interestList?.join(','),
             };
             const response = await axios.post(
-                'http://localhost:8080/api/business-accounts',
+                `${BASE_URL}/business-accounts`,
                 payload
             );
             return response.data;
@@ -45,7 +46,7 @@ export default function useBusinessProfile() {
                 interestList: updatedData.interestList?.join(','),
             };
             const response = await axios.put(
-                `http://localhost:8080/api/business-accounts/by-email?email=${encodeURIComponent(email)}`,
+                `${BASE_URL}/business-accounts/by-email?email=${encodeURIComponent(email)}`,
                 payload
             );
             return response.data;
@@ -60,7 +61,7 @@ export default function useBusinessProfile() {
 
     const getBusinessProfile = useCallback(async (email: string) => {
         try {
-            const response = await axios.get(`http://localhost:8080/api/business-accounts/by-email?email=${encodeURIComponent(email)}`);
+            const response = await axios.get(`${BASE_URL}/business-accounts/by-email?email=${encodeURIComponent(email)}`);
             return response.data;
         } catch (err: any) {
             setError(err.response?.data?.message || err.message);
@@ -71,7 +72,7 @@ export default function useBusinessProfile() {
     const getBusinessAccountId = useCallback(async (email: string) => {
         try {
             const response = await axios.get(
-                `http://localhost:8080/api/business-accounts/id?email=${encodeURIComponent(email)}`
+                `${BASE_URL}/business-accounts/id?email=${encodeURIComponent(email)}`
             );
             return response.data; // should return the id as an Integer
         } catch (err: any) {

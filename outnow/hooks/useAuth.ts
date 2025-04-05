@@ -1,11 +1,12 @@
 import {useEffect, useState} from 'react';
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import axios from 'axios';
-import {FirebaseError} from 'firebase/app';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import useBusinessProfile from "@/hooks/useBusinessProfile";
+import functions from '@react-native-firebase/functions';
+import {BASE_URL} from "@/config/api";
 
-interface AuthHook {
+
+export interface AuthHook {
     user: FirebaseAuthTypes.User | null;
     loading: boolean;
     signIn: (email: string, password: string) => Promise<void>;
@@ -21,75 +22,101 @@ const useAuth = (): AuthHook => {
     const { getBusinessProfile } = useBusinessProfile();
 
     useEffect(() => {
-        const loadIsBusiness = async () => {
-            try {
-                const value = await AsyncStorage.getItem('isBusiness');
-                if (value !== null) {
-                    setIsBusiness(JSON.parse(value));
+        const unsubscribe = auth().onIdTokenChanged(async (user) => {
+            setUser(user);
+            if (user) {
+                try {
+                    const idTokenResult = await user.getIdTokenResult();
+                    const businessStatus: boolean = idTokenResult.claims.isBusiness || false;
+                    setIsBusiness(businessStatus);
+                } catch (error) {
+                    console.error("Error fetching token claims:", error);
+                    setIsBusiness(false);
                 }
-            } catch (error) {
-                console.error("Error loading isBusiness flag", error);
+            } else {
+                setIsBusiness(false);
             }
-        };
-        loadIsBusiness();
+        });
+        return unsubscribe;
     }, []);
+
 
     useEffect(() => {
-        const subscriber = auth().onAuthStateChanged(setUser);
-        return subscriber;
-    }, []);
-
-    async function checkBusinessAccount(email: string): Promise<boolean> {
-        try {
-            const profile = await getBusinessProfile(email);
-            console.log("checkBusiness:" + profile);
-            return !!profile;
-        } catch (error) {
-            return false;
+        if (user) {
+            user.getIdTokenResult(true)
+                .then((idTokenResult) => {
+                    const businessStatus: boolean = idTokenResult.claims.isBusiness || false;
+                    setIsBusiness(businessStatus);
+                })
+                .catch((error) => {
+                    console.error("Error fetching token claims:", error);
+                    setIsBusiness(false);
+                });
+        } else {
+            setIsBusiness(false);
         }
-    }
+    }, [user]);
 
-    const signIn = async (email: string, password: string,) => {
+    const signIn = async (email: string, password: string): Promise<void> => {
         setLoading(true);
         try {
             const userCredential = await auth().signInWithEmailAndPassword(email, password);
-            const businessStatus = await checkBusinessAccount(email);
-            await AsyncStorage.setItem('isBusiness', JSON.stringify(businessStatus));
+            // Force token refresh
+            await userCredential.user.getIdToken(true);
+            // Option 1: Reload user to ensure latest custom claims
+            await userCredential.user.reload();
+            const idTokenResult = await userCredential.user.getIdTokenResult();
+            const businessStatus: boolean = idTokenResult.claims.isBusiness || false;
             setIsBusiness(businessStatus);
-            if(!businessStatus) {
-                await axios.post('http://localhost:8080/users/upsert', {email: userCredential.user?.email});
+            if (!businessStatus) {
+                await axios.post(`${BASE_URL}/users/upsert`, { email: userCredential.user?.email });
             }
         } catch (error: any) {
-            throw new Error((error as FirebaseError).message);
+            throw new Error(error.message);
         } finally {
             setLoading(false);
         }
     };
 
-    const signUp = async (email: string, password: string, username: string, isBusiness: boolean = false) => {
+
+
+    const signUp = async (
+        email: string,
+        password: string,
+        username: string,
+        isBusiness: boolean = false
+    ): Promise<void> => {
         setLoading(true);
         try {
             const userCredential = await auth().createUserWithEmailAndPassword(email, password);
-            if (!isBusiness) {
-                await axios.post('http://localhost:8080/users/upsert', {
+            const uid = userCredential.user.uid;
+
+            if (isBusiness) {
+                // set the custom claim
+                const setUserRole = functions().httpsCallable('setUserRole');
+                await setUserRole({ uid, isBusiness });
+            } else {
+                await axios.post(`${BASE_URL}/users/upsert`, {
                     email: userCredential.user?.email,
                     username
                 });
             }
-            await AsyncStorage.setItem('isBusiness', JSON.stringify(isBusiness));
-            setIsBusiness(isBusiness);
-            console.log("isBusiness is set to:" + isBusiness);
+            // Force token refresh to get updated custom claims
+            await userCredential.user.getIdToken(true);
+            const idTokenResult = await userCredential.user.getIdTokenResult();
+            const businessStatus: boolean = idTokenResult.claims.isBusiness || false;
+            setIsBusiness(businessStatus);
         } catch (error: any) {
-            throw new Error((error as FirebaseError).message);
+            throw new Error(error.message);
         } finally {
             setLoading(false);
         }
     };
 
+
     const signOut = async () => {
         try {
             await auth().signOut();
-            await AsyncStorage.removeItem('isBusiness');
             setIsBusiness(false);
         } catch (error) {
             console.error("Sign out failed", error);

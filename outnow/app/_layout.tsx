@@ -23,7 +23,7 @@ export default function RootLayout() {
 
 		const inAuthGroup = segments[0] === '(auth)';
 
-		console.log("Routing status:", { user, inAuthGroup });
+		// console.log("Routing status:", { user, inAuthGroup });
 
 		if (!user && !inAuthGroup) {
 			console.log("Redirecting to login...");

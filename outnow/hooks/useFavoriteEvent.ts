@@ -1,5 +1,6 @@
 import {useCallback, useState} from 'react';
 import axios from 'axios';
+import {BASE_URL} from "@/config/api";
 
 const useFavoriteEvent = () => {
     const [loading, setLoading] = useState(false);
@@ -11,7 +12,7 @@ const useFavoriteEvent = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.post(`http://localhost:8080/users/${userId}/favorites/${eventId}`);
+            const response = await axios.post(`${BASE_URL}/users/${userId}/favorites/${eventId}`);
             console.log('Event favorited successfully:', response.data);
         } catch (err: any) {
             console.error('Error favoriting event:', err);
@@ -25,7 +26,7 @@ const useFavoriteEvent = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.delete(`http://localhost:8080/users/${userId}/favorites/${eventId}`);
+            const response = await axios.delete(`${BASE_URL}/users/${userId}/favorites/${eventId}`);
             console.log('Event unfavorited successfully:', response.data);
         } catch (err: any) {
             console.error('Error unfavoriting event:', err);
@@ -39,7 +40,7 @@ const useFavoriteEvent = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.get(`http://localhost:8080/users/${userId}/favorites`);
+            const response = await axios.get(`${BASE_URL}/users/${userId}/favorites`);
             const eventIds = response.data.map((event: any) => event.event_id); // Extract event IDs
             setFavoritedEvents(eventIds); // Update hook state
             console.log('Favorited events fetched successfully:', eventIds);

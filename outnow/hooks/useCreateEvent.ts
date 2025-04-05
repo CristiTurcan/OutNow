@@ -1,6 +1,7 @@
 // hooks/useCreateEvent.ts
 import { useState } from 'react';
 import axios from 'axios';
+import {BASE_URL} from "@/config/api";
 
 interface EventData {
     imageUrl: string;
@@ -19,7 +20,7 @@ export default function useCreateEvent() {
         setError(null);
         try {
             const response = await axios.post(
-                `http://localhost:8080/api/events/${businessAccountId}`,
+                `${BASE_URL}/events/${businessAccountId}`,
                 eventData
             );
             return response.data;

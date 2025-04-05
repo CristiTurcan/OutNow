@@ -1,12 +1,12 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import EventCard from '../../components/eventCard';
-import { Dimensions } from 'react-native';
+import {Dimensions} from 'react-native';
 import useFavoriteEvent from "@/hooks/useFavoriteEvent";
-import useAuth from "@/hooks/useAuth";
+import {useAuthContext} from '@/contexts/AuthContext';
 import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
-import { useFocusEffect } from '@react-navigation/native';
-import { useAllEvents } from '@/hooks/useAllEvents';
+import {useFocusEffect} from '@react-navigation/native';
+import {useAllEvents} from '@/hooks/useAllEvents';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import CustomButton from "@/components/customButton";
 import globalStyles from "@/styles/globalStyles";
@@ -14,27 +14,27 @@ import {router} from "expo-router";
 import useMyEvents from "@/hooks/useMyEvents";
 import useBusinessProfile from "@/hooks/useBusinessProfile";
 import EventCardBusiness from "@/components/EventCardBusiness";
+import useAuth from "@/hooks/useAuth";
+import {BASE_URL} from "@/config/api";
 
 const windowWidth = Dimensions.get('window').width;
 const cardWidth = (windowWidth - 40) / 2;
 
 const Home = () => {
-    const {user, isBusiness} = useAuth();
-    const { userId } = useUserIdByEmail(user?.email || null); // Get userId from backend
-    const { fetchFavoritedEvents, favoritedEvents } = useFavoriteEvent();
-    const { events, loading, error, loadEvents } = useAllEvents();
-    const { getBusinessProfile } = useBusinessProfile();
+    const {user, isBusiness} = useAuthContext();
+    const {userId} = useUserIdByEmail(user?.email || null);
+    const {fetchFavoritedEvents, favoritedEvents} = useFavoriteEvent();
+    const {events, loading, error, loadEvents} = useAllEvents();
+    const {getBusinessProfile} = useBusinessProfile();
     const [businessProfile, setBusinessProfile] = useState(null);
     const [businessAccountId, setBusinessAccountId] = useState<String | null>(null);
-    const { events: myEvents, loading: myEventsLoading, error: myEventsError } = useMyEvents(businessAccountId);
-
+    const {events: myEvents, loading: myEventsLoading, error: myEventsError} = useMyEvents(businessAccountId);
 
     useEffect(() => {
         if (isBusiness && user?.email) {
             getBusinessProfile(user.email)
                 .then(data => {
                     setBusinessProfile(data);
-                    // Assuming your business profile has a property called "id"
                     setBusinessAccountId(data.email);
                 })
                 .catch(err => console.error("Error fetching business profile:", err));
@@ -63,7 +63,7 @@ const Home = () => {
     }
 
     if (loading) {
-        return <LoadingIndicator />;
+        return <LoadingIndicator/>;
     }
 
     if (error) {
@@ -76,9 +76,9 @@ const Home = () => {
                 <>
                     <FlatList
                         data={events}
-                        renderItem={({ item }) => (
+                        renderItem={({item}) => (
                             <EventCard
-                                event={{ ...item, isFavorited: favoritedEvents.includes(item.eventId) }}
+                                event={{...item, isFavorited: favoritedEvents.includes(item.eventId)}}
                                 cardWidth={cardWidth}
                                 userId={userId}
                             />
@@ -93,13 +93,13 @@ const Home = () => {
             {isBusiness && (
                 <>
                     {myEventsLoading ? (
-                        <LoadingIndicator />
+                        <LoadingIndicator/>
                     ) : myEventsError ? (
                         <Text>Error: {myEventsError}</Text>
                     ) : (
                         <FlatList
                             data={myEvents}
-                            renderItem={({ item }) => (
+                            renderItem={({item}) => (
                                 <EventCardBusiness
                                     event={item}
                                     cardWidth={cardWidth}
