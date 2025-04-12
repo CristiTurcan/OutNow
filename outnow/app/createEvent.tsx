@@ -1,19 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Platform } from 'react-native';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import React, {useState, useEffect} from 'react';
+import {
+    SafeAreaView,
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    Image,
+    Platform,
+    Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView
+} from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import Constants from 'expo-constants';
 import CustomButton from '@/components/customButton';
 import CustomBackButton from '@/components/customBackButton';
-import { useImagePicker } from '@/hooks/useImagePicker';
+import {useImagePicker} from '@/hooks/useImagePicker';
 import useAuth from '@/hooks/useAuth';
 import useBusinessProfile from '@/hooks/useBusinessProfile';
-import { router } from 'expo-router';
+import {router} from 'expo-router';
 import globalStyles from '@/styles/globalStyles';
-import useCreateEvent from '@/hooks/useCreateEvent';
+import useEvents from '@/hooks/useEvents';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+import tempStore from "@/services/tempStore";
 
 export default function CreateEvent() {
-    const { user, isBusiness } = useAuth();
-    const { photoUri, photoBase64, openCamera, openLibrary } = useImagePicker();
+    const {user, isBusiness} = useAuth();
+    const {photoUri, photoBase64, openCamera, openLibrary} = useImagePicker();
     const googleApiKey = Constants.expoConfig?.extra?.googleApiKey;
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -22,13 +35,16 @@ export default function CreateEvent() {
     const [isLocationEditable, setIsLocationEditable] = useState(false);
     const [locationError, setLocationError] = useState('');
     const [price, setPrice] = useState('');
-    const { getBusinessProfile } = useBusinessProfile();
+    const {getBusinessProfile} = useBusinessProfile();
     const [businessProfile, setBusinessProfile] = useState(null);
     const [titleError, setTitleError] = useState('');
     const [priceError, setPriceError] = useState('');
     const [imageError, setImageError] = useState('');
-    const { createEvent, loading: createLoading, error: createError } = useCreateEvent();
-
+    const {createEvent, loading: createLoading, error: createError} = useEvents();
+    const [eventDateTime, setEventDateTime] = useState<Date | null>(null);
+    const [showEventDatePicker, setShowEventDatePicker] = useState(false);
+    const [eventTime, setEventTime] = useState<Date | null>(null);
+    const [showTimePicker, setShowTimePicker] = useState(false);
 
 
     useEffect(() => {
@@ -68,12 +84,12 @@ export default function CreateEvent() {
             setTitleError('');
         }
 
-        if (!photoBase64) {
-            setImageError('Event image is required.');
-            hasError = true;
-        } else {
-            setImageError('');
-        }
+        // if (!photoBase64) {
+        //     setImageError('Event image is required.');
+        //     hasError = true;
+        // } else {
+        //     setImageError('');
+        // }
 
         if (!description.trim()) {
             setDescriptionError('Description is required.');
@@ -106,6 +122,14 @@ export default function CreateEvent() {
             description: description.trim(),
             location: location.trim(),
             price: Number(price),
+            eventDate: eventDateTime ? eventDateTime.toLocaleDateString('en-CA') : null,
+            eventTime: eventTime
+                ? eventTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+                : null,
+            interestList: tempStore.eventInterests && tempStore.eventInterests.length > 0
+                ? tempStore.eventInterests.join(',')
+                : null,
+
         };
 
         if (!user?.email) {
@@ -119,6 +143,7 @@ export default function CreateEvent() {
 
         try {
             await createEvent(businessProfile.id, eventData);
+            tempStore.eventInterests = [];
             router.push('/(tabs)/home');
         } catch (err) {
             console.error("Failed to create event", err);
@@ -127,107 +152,185 @@ export default function CreateEvent() {
     };
 
 
-
     return (
-        <SafeAreaView style={globalStyles.container}>
-            {/* Header */}
-            <View style={globalStyles.headerRow}>
-                <CustomBackButton text="" style={globalStyles.backButton} />
-                <Text style={globalStyles.title}>Create Event</Text>
-            </View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <SafeAreaView style={globalStyles.container}>
+                {/* Header */}
+                <View style={globalStyles.headerRow}>
+                    <CustomBackButton text="" style={globalStyles.backButton}/>
+                    <Text style={globalStyles.title}>Create Event</Text>
+                </View>
+                {/* Body */}
+                {/*<KeyboardAvoidingView*/}
+                {/*    style={{flex: 1}}*/}
+                {/*    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}*/}
+                {/*    keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}*/}
+                {/*>*/}
+                <KeyboardAwareScrollView
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+                >
+                    <ScrollView contentContainerStyle={styles.bodyContainer}>
+                        {/* Image Picker */}
+                        <TouchableOpacity onPress={openLibrary} style={styles.imagePicker}>
+                            {photoUri ? (
+                                <Image source={{uri: photoUri}} style={styles.image}/>
+                            ) : (
+                                <Text style={styles.placeholderText}>Select Event Image</Text>
+                            )}
+                        </TouchableOpacity>
+                        {imageError !== '' && <Text style={globalStyles.errorText}>{imageError}</Text>}
 
-            {/* Body */}
-            <View style={globalStyles.bodyContainer}>
-                {/* Image Picker */}
-                <TouchableOpacity onPress={openLibrary} style={styles.imagePicker}>
-                    {photoUri ? (
-                        <Image source={{ uri: photoUri }} style={styles.image} />
-                    ) : (
-                        <Text style={styles.placeholderText}>Select Event Image</Text>
-                    )}
-                </TouchableOpacity>
-                {imageError !== '' && <Text style={globalStyles.errorText}>{imageError}</Text>}
+                        {/* Title Field */}
+                        <Text style={styles.fieldLabel}>Title</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Title"
+                            value={title}
+                            onChangeText={setTitle}
+                            placeholderTextColor='#9b9b9b'
+                        />
+                        {titleError !== '' && <Text style={globalStyles.errorText}>{titleError}</Text>}
 
-                {/* Title Field */}
-                <Text style={styles.fieldLabel}>Title</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Title"
-                    value={title}
-                    onChangeText={setTitle}
-                />
-                {titleError !== '' && <Text style={globalStyles.errorText}>{titleError}</Text>}
+                        {/* Description Field */}
+                        <Text style={styles.fieldLabel}>Description</Text>
+                        <TextInput
+                            style={[styles.input, styles.textArea]}
+                            placeholder="Enter description"
+                            value={description}
+                            onChangeText={setDescription}
+                            multiline
+                            placeholderTextColor='#9b9b9b'
+                        />
+                        {descriptionError !== '' && <Text style={globalStyles.errorText}>{descriptionError}</Text>}
 
-                {/* Description Field */}
-                <Text style={styles.fieldLabel}>Description</Text>
-                <TextInput
-                    style={[styles.input, styles.textArea]}
-                    placeholder="Enter description"
-                    value={description}
-                    onChangeText={setDescription}
-                    multiline
-                />
-                {descriptionError !== '' && <Text style={globalStyles.errorText}>{descriptionError}</Text>}
+                        {/*Date Time Picker*/}
+                        <Text style={styles.fieldLabel}>Date</Text>
+                        <TouchableOpacity
+                            style={styles.datePickerButton}
+                            onPress={() => setShowEventDatePicker(true)}
+                        >
+                            <Text
+                                style={[styles.datePickerButtonText, !eventDateTime && globalStyles.placeholderText]}>
+                                {eventDateTime ? eventDateTime.toLocaleDateString() : "Select date"}
+                            </Text>
+                        </TouchableOpacity>
 
-                {/* Location Field with Google Autocomplete */}
-                <Text style={styles.fieldLabel}>Location</Text>
-                <GooglePlacesAutocomplete
-                    placeholder="Where is the event?"
-                    fetchDetails={true}
-                    onPress={(data, details = null) => {
-                        setLocation(data.description);
-                        setIsLocationEditable(false);
-                    }}
-                    query={{
-                        key: googleApiKey,
-                        language: 'en',
-                        types: '(cities)',
-                    }}
-                    styles={{
-                        container: { flex: 0, width: '100%' },
-                        textInput: styles.input,
-                    }}
-                    textInputProps={{
-                        onTouchStart: () => setIsLocationEditable(true),
-                        value: location,
-                        onChangeText: (text) => {
-                            if (isLocationEditable) {
-                                setLocation(text);
-                            }
-                        },
-                        onBlur: () => {
-                            if (!location.trim()) {
-                                setLocationError("No location provided");
-                            } else {
-                                setLocationError("");
-                            }
-                            setIsLocationEditable(false);
-                        },
-                    }}
-                />
-                {locationError !== '' && <Text style={globalStyles.errorText}>{locationError}</Text>}
+                        {/* Time Picker */}
+                        <Text style={styles.fieldLabel}>Time</Text>
+                        <TouchableOpacity
+                            style={styles.datePickerButton}
+                            onPress={() => setShowTimePicker(true)}
+                        >
+                            <Text style={[styles.datePickerButtonText, !eventTime && globalStyles.placeholderText]}>
+                                {eventTime
+                                    ? eventTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+                                    : "Select time"}
+                            </Text>
+                        </TouchableOpacity>
 
-                {/* Price and Currency */}
-                <Text style={styles.fieldLabel}>Price</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="$0.00"
-                    value={price}
-                    onChangeText={handlePriceChange}
-                    keyboardType="numeric"
-                />
-                {priceError !== '' && <Text style={globalStyles.errorText}>{priceError}</Text>}
+
+                        {/* Location Field with Google Autocomplete */}
+                        <Text style={styles.fieldLabel}>Location</Text>
+                        <GooglePlacesAutocomplete
+                            placeholder="Where is the event?"
+                            fetchDetails={true}
+                            onPress={(data, details = null) => {
+                                setLocation(data.description);
+                                setIsLocationEditable(false);
+                            }}
+                            query={{
+                                key: googleApiKey,
+                                language: 'en',
+                                types: '(cities)',
+                            }}
+                            styles={{
+                                container: {flex: 0, width: '100%'},
+                                textInput: styles.input,
+                            }}
+                            textInputProps={{
+                                onTouchStart: () => setIsLocationEditable(true),
+                                value: location,
+                                onChangeText: (text) => {
+                                    if (isLocationEditable) {
+                                        setLocation(text);
+                                    }
+                                },
+                                onBlur: () => {
+                                    if (!location.trim()) {
+                                        setLocationError("No location provided");
+                                    } else {
+                                        setLocationError("");
+                                    }
+                                    setIsLocationEditable(false);
+                                },
+                            }}
+                        />
+                        {locationError !== '' && <Text style={globalStyles.errorText}>{locationError}</Text>}
+
+                        {/* Price and Currency */}
+                        <Text style={styles.fieldLabel}>Price</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="$0.00"
+                            value={price}
+                            onChangeText={handlePriceChange}
+                            keyboardType="numeric"
+                            placeholderTextColor='#9b9b9b'
+                        />
+                        {priceError !== '' && <Text style={globalStyles.errorText}>{priceError}</Text>}
+
+                        {/*Select event type*/}
+                        <TouchableOpacity
+                            style={[styles.eventTypeButton, { alignSelf: 'center', width: '50%' }]}
+                            onPress={() => router.push('/eventInterests')}
+                        >
+                            <Text style={styles.eventTypeButtonText}>Select Event Type</Text>
+                        </TouchableOpacity>
+
+
+                    </ScrollView>
+                </KeyboardAwareScrollView>
+                {/*</KeyboardAvoidingView>*/}
 
                 {/* Footer Button */}
-                <View style={globalStyles.footer}>
-                    <CustomButton title="Create Event" onPress={handleCreateEvent} style={globalStyles.nextButton} />
+                <View style={[globalStyles.footer, {paddingBottom: 25}]}>
+                    <CustomButton
+                        title="Create Event"
+                        onPress={handleCreateEvent}
+                        style={globalStyles.nextButton}/>
                 </View>
-            </View>
-        </SafeAreaView>
+                <DateTimePickerModal
+                    isVisible={showEventDatePicker}
+                    mode="date"
+                    date={eventDateTime || new Date()}
+                    onConfirm={(selectedDate) => {
+                        setEventDateTime(selectedDate);
+                        setShowEventDatePicker(false);
+                    }}
+                    onCancel={() => setShowEventDatePicker(false)}
+                />
+                <DateTimePickerModal
+                    isVisible={showTimePicker}
+                    mode="time"
+                    date={eventTime || new Date()}
+                    onConfirm={(selectedTime) => {
+                        setEventTime(selectedTime);
+                        setShowTimePicker(false);
+                    }}
+                    onCancel={() => setShowTimePicker(false)}
+                />
+            </SafeAreaView>
+        </TouchableWithoutFeedback>
     );
 }
 
 const styles = StyleSheet.create({
+    bodyContainer: {
+        padding: 20,
+        paddingTop: 10,
+        paddingBottom: 50,
+    },
     imagePicker: {
         height: 150,
         width: '100%',
@@ -287,5 +390,43 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginRight: 8,
         alignSelf: 'center',
+    },
+    datePickerButton: {
+        width: '100%',
+        minHeight: 48,
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderRadius: 8,
+        paddingHorizontal: 16,
+        marginBottom: 12,
+        backgroundColor: '#f9f9f9',
+        borderColor: '#ddd',
+        fontSize: 16,
+        color: '#333',
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    datePickerButtonText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    eventTypeButton: {
+        backgroundColor: '#f9f9f9',
+        paddingVertical: 12,
+        paddingHorizontal: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+        // Remove any width if present or set a fixed width / percentage:
+        width: '60%', // or a fixed number like 200
+        alignSelf: 'center',
+        marginBottom: 12,
+    },
+    eventTypeButtonText: {
+        color: '#333',
+        fontSize: 16,
+        fontWeight: "500",
     },
 });

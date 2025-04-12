@@ -8,15 +8,16 @@ import interestsData from '../../assets/interests.json';
 import AnimatedInterestCell from "@/components/AnimatedInterestCell";
 import useProfile from '@/hooks/useProfile';
 import useAuth from "@/hooks/useAuth";
-import { useLocalSearchParams } from 'expo-router';
+import {useLocalSearchParams} from 'expo-router';
 import useBusinessProfile from '@/hooks/useBusinessProfile';
 import tempStore from "@/services/tempStore";
+import InterestPicker from "@/components/InterestPicker";
 
 export default function AddInterests() {
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
     const {updateProfile, loading: profileLoading, error: profileError} = useProfile();
     const {user, signUp} = useAuth();
-    const { updateBusinessProfile } = useBusinessProfile();
+    const {updateBusinessProfile} = useBusinessProfile();
     const {
         isBusiness,
         email,
@@ -99,28 +100,12 @@ export default function AddInterests() {
                 <CustomBackButton text="" style={globalStyles.backButton}/>
                 <Text style={globalStyles.title}>Add Interests</Text>
             </View>
-
-            {/*Body*/}
-            <View style={styles.bodyContainer}>
-                <FlatList
-                    style={styles.cellContainer}
-                    data={interestsData.interests}
-                    keyExtractor={(item, index) => `${item}-${index}`}
-                    renderItem={renderInterestItem}
-                    numColumns={2}
-                    columnWrapperStyle={styles.columnWrapper}
-                    contentContainerStyle={styles.listContent}
-                />
-
-                {/* Footer */}
-                <View style={globalStyles.footer}>
-                    <CustomButton
-                        onPress={handleFinish}
-                        title="Finish"
-                        style={globalStyles.nextButton}
-                    />
-                </View>
-            </View>
+            <InterestPicker
+                interests={interestsData.interests}
+                selectedInterests={selectedInterests}
+                onToggleInterest={toggleInterest}
+                onFinish={handleFinish}
+            />
         </SafeAreaView>
     );
 }

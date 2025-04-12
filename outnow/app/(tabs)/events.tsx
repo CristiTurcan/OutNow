@@ -6,7 +6,7 @@ import useAuth from '@/hooks/useAuth';
 import useUserIdByEmail from '@/hooks/useUserByIdByEmail';
 import { Dimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { useEvents } from '@/hooks/useEvents';
+import { useLoadEvents } from '@/hooks/useLoadEvents';
 
 const windowWidth = Dimensions.get('window').width;
 const cardWidth = (windowWidth - 40) / 2;
@@ -15,7 +15,7 @@ export default function Favorites() {
     const { user } = useAuth();
     const { userId } = useUserIdByEmail(user?.email || null);
     const { fetchFavoritedEvents, favoritedEvents, removeFavoriteEvent, favoriteEvent } = useFavoriteEvent();
-    const { events, loading, error, loadEvents } = useEvents(favoritedEvents);
+    const { events, loading, error, loadEvents } = useLoadEvents(favoritedEvents);
 
     // Fetch favorites when screen is focused
     useFocusEffect(

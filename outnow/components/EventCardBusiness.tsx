@@ -1,17 +1,35 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import {useAuthContext} from "@/contexts/AuthContext";
+import useBusinessProfile from "@/hooks/useBusinessProfile";
+import {router} from "expo-router";
 
-const EventCardBusiness = ({ event, cardWidth }) => {
+const EventCardBusiness = ({event, cardWidth}) => {
     return (
-        <View style={[styles.card, { width: cardWidth }]}>
-            <Image source={{ uri: event.imageUrl }} style={styles.image} />
-            <View style={styles.info}>
-                <Text style={styles.title}>{event.title}</Text>
-                <Text style={styles.details}>{event.location}</Text>
-                <Text style={styles.details}>{`$${event.price}`}</Text>
-                <Text style={styles.details}>{`${event.attendees} people are going`}</Text>
+        <TouchableOpacity
+            onPress={() => {
+                router.push(`seeEvent?eventId=${event.eventId}`);
+            }}
+        >
+            <View style={[styles.card, {width: cardWidth}]}>
+                <Image source={{uri: event.imageUrl}} style={styles.image}/>
+                <View style={styles.info}>
+                    <Text style={styles.title}>{event.title}</Text>
+                    <Text style={styles.details}>{event.location}</Text>
+                    <Text style={styles.details}>{`$${event.price}`}</Text>
+                    <Text style={styles.details}>
+                        {event.eventDate
+                            ? `${new Date(event.eventDate).toLocaleDateString('en-GB', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            })}${event.eventTime ? ' at ' + event.eventTime : ''}`
+                            : ''}
+                    </Text>
+                    <Text style={styles.details}>{`${event.attendees} people are going`}</Text>
+                </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 

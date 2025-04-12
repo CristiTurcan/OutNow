@@ -1,5 +1,15 @@
 import { useState } from 'react';
-import { View, TextInput, StyleSheet, ActivityIndicator, Button, TouchableOpacity, Text } from 'react-native';
+import {
+    View,
+    TextInput,
+    StyleSheet,
+    ActivityIndicator,
+    Button,
+    TouchableOpacity,
+    Text,
+    Keyboard,
+    TouchableWithoutFeedback
+} from 'react-native';
 import React from 'react';
 import CustomButton from "@/components/customButton";
 import { router } from "expo-router";
@@ -20,6 +30,7 @@ export default function Login() {
     };
 
     return (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
             <TextInput
                 style={styles.input}
@@ -51,6 +62,7 @@ export default function Login() {
                 </View>
             )}
         </View>
+        </TouchableWithoutFeedback>
     );
 }
 

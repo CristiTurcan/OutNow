@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import {View, TextInput, Button, Alert, StyleSheet, Text, SafeAreaView} from 'react-native';
+import React, {useState} from 'react';
+import {View, TextInput, Button, Alert, StyleSheet, Text, SafeAreaView, Keyboard} from 'react-native';
 import auth from '@react-native-firebase/auth';
-import { router } from 'expo-router';
+import {router} from 'expo-router';
 import CustomBackButton from "@/components/customBackButton";
 import globalStyles from "@/styles/globalStyles";
 
@@ -28,25 +28,26 @@ export default function ForgotPassword() {
     };
 
     return (
-        <SafeAreaView style={globalStyles.container}>
-            <View style={globalStyles.headerRow}>
-                <CustomBackButton text="" style={globalStyles.backButton}/>
-                <Text style={globalStyles.title}>Reset Password</Text>
-            </View>
-            <View style={styles.container}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Enter your email"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <SafeAreaView style={globalStyles.container}>
+                <View style={globalStyles.headerRow}>
+                    <CustomBackButton text="" style={globalStyles.backButton}/>
+                    <Text style={globalStyles.title}>Reset Password</Text>
+                </View>
+                <View style={styles.container}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Enter your email"
+                        value={email}
+                        onChangeText={setEmail}
+                        autoCapitalize="none"
+                        keyboardType="email-address"
+                    />
 
-                <Button title="Send Reset Link" onPress={resetPassword} disabled={loading} />
-            </View>
-        </SafeAreaView>
-
+                    <Button title="Send Reset Link" onPress={resetPassword} disabled={loading}/>
+                </View>
+            </SafeAreaView>
+        </TouchableWithoutFeedback>
     );
 }
 

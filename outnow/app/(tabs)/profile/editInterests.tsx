@@ -16,7 +16,7 @@ export default function EditInterests() {
     const {user, isBusiness} = useAuth();
     const {getProfile, loading, error} = useUserProfile(user?.email);
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-    const { getBusinessProfile, updateExistingBusinessProfile } = useBusinessProfile();
+    const {getBusinessProfile, updateExistingBusinessProfile} = useBusinessProfile();
     const [businessProfile, setBusinessProfile] = useState(null);
 
     useEffect(() => {
@@ -47,7 +47,6 @@ export default function EditInterests() {
     }, [isBusiness, businessProfile, getProfile]);
 
 
-
     const toggleInterest = (interest: string) => {
         if (selectedInterests.includes(interest)) {
             // Deselect: remove from selectedInterests
@@ -65,7 +64,7 @@ export default function EditInterests() {
         }
         try {
             if (isBusiness) {
-                await updateExistingBusinessProfile(user.email, { interestList: selectedInterests });
+                await updateExistingBusinessProfile(user.email, {interestList: selectedInterests});
             } else {
                 await updateProfile({
                     email: user.email,

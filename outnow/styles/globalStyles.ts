@@ -1,4 +1,5 @@
 import {StyleSheet} from "react-native";
+import {green} from "react-native-reanimated/lib/typescript/Colors";
 
 const globalStyles = StyleSheet.create({
     container: {
@@ -6,6 +7,7 @@ const globalStyles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 16,
         position: "relative",
+        // paddingBottom:0,
     },
     headerRow: {
         flexDirection: 'row',
@@ -56,7 +58,7 @@ const globalStyles = StyleSheet.create({
         flex: 1,
         padding: 20,
         paddingTop: 30,
-        alignItems: 'center'
+        alignItems: 'center',
     },
     errorText: {
         color: 'red',

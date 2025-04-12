@@ -11,7 +11,7 @@ import {
     TouchableWithoutFeedback,
     Platform,
     ActionSheetIOS,
-    ActivityIndicator,
+    ActivityIndicator, Keyboard,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import {router} from 'expo-router';
@@ -145,195 +145,198 @@ export default function EditProfile() {
     }
 
     return (
-        <SafeAreaView style={globalStyles.container}>
-            {/* Header */}
-            <View style={globalStyles.headerRow}>
-                <CustomBackButton text="" style={globalStyles.backButton}/>
-                <Text style={globalStyles.title}>Edit Profile</Text>
-            </View>
-
-            {/* Body */}
-            <View style={globalStyles.bodyContainer}>
-                {/* Bio */}
-                <Text style={styles.fieldLabel}>Bio</Text>
-                <TextInput
-                    style={styles.bioInput}
-                    placeholder="Tell us about yourself"
-                    value={bio}
-                    onChangeText={setBio}
-                    multiline
-                    maxLength={150}
-                />
-                {bio.length === 150 && (
-                    <Text style={globalStyles.errorText}>Character limit reached: 150/150</Text>
-                )}
-
-                {!isBusiness && (
-                    <>
-                        {/* Gender */}
-                        <Text style={styles.fieldLabel}>Gender</Text>
-                        <TouchableOpacity
-                            style={styles.genderButton}
-                            onPress={() => {
-                                setShowDatePicker(false);
-                                setShowGenderPicker(true);
-                            }}
-                        >
-                            <Text style={[styles.genderButtonText, !gender && globalStyles.placeholderText]}>
-                                {gender ? gender : 'Select your gender'}
-                            </Text>
-                        </TouchableOpacity>
-
-                        {/* Gender Picker Modal */}
-                        <Modal
-                            visible={showGenderPicker}
-                            transparent
-                            animationType="none"
-                            onRequestClose={() => setShowGenderPicker(false)}
-                        >
-                            <TouchableWithoutFeedback onPress={() => setShowGenderPicker(false)}>
-                                <View style={styles.modalContainer}>
-                                    <TouchableWithoutFeedback>
-                                        <View style={styles.modalContent}>
-                                            <Picker
-                                                selectedValue={gender}
-                                                onValueChange={(itemValue) => {
-                                                    setGender(itemValue);
-                                                    setShowGenderPicker(false);
-                                                }}
-                                                style={styles.genderPicker}
-                                            >
-                                                <Picker.Item label="" value=""/>
-                                                <Picker.Item label="Male" value="Male"/>
-                                                <Picker.Item label="Female" value="Female"/>
-                                                <Picker.Item label="Prefer not to say" value="Prefer not to say"/>
-                                            </Picker>
-                                        </View>
-                                    </TouchableWithoutFeedback>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        </Modal>
-                    </>
-                )}
-
-                {!isBusiness && (
-                    <>
-                        {/* Date of Birth */}
-                        <Text style={styles.fieldLabel}>Date of birth</Text>
-                        <TouchableOpacity
-                            style={styles.datePickerButton}
-                            onPress={() => {
-                                setShowDatePicker(true);
-                            }}
-                        >
-                            <Text style={[styles.datePickerButtonText, !dateOfBirth && globalStyles.placeholderText]}>
-                                {dateOfBirth ? dateOfBirth.toDateString() : 'Select your date of birth'}
-                            </Text>
-                        </TouchableOpacity>
-                        {ageError !== '' && <Text style={globalStyles.errorText}>{ageError}</Text>}
-                        <DateTimePickerModal
-                            isVisible={showDatePicker}
-                            mode="date"
-                            date={dateOfBirth || new Date()}
-                            maximumDate={new Date()}
-                            onConfirm={handleConfirm}
-                            onCancel={() => setShowDatePicker(false)}
-                        />
-                    </>
-                )}
-
-
-                {/* Location */}
-                <Text style={styles.fieldLabel}>Location</Text>
-                <GooglePlacesAutocomplete
-                    placeholder="Where do you live?"
-                    fetchDetails={true}
-                    onPress={(data, details = null) => {
-                        setLocation(data.description);
-                        setIsLocationEditable(false);
-                    }}
-                    query={{
-                        key: googleApiKey,
-                        language: 'en',
-                        types: '(regions)',
-                    }}
-                    styles={{
-                        container: {flex: 0, width: '100%'},
-                        textInput: styles.input,
-                    }}
-                    textInputProps={{
-                        onTouchStart: () => {
-                            setShowDatePicker(false);
-                            setIsLocationEditable(true);
-                        },
-                        value: location,
-                        onChangeText: (text) => {
-                            if (isLocationEditable) {
-                                setLocation(text);
-                            }
-                        },
-                        onBlur: () => {
-                            if (!location.trim()) {
-                                setLocationError("No location provided");
-                            } else {
-                                setLocationError("");
-                            }
-                            setIsLocationEditable(false);
-                        },
-                    }}
-                />
-                {locationError !== '' && (
-                    <Text style={globalStyles.errorText}>{locationError}</Text>
-                )}
-
-
-                {/* Save Button */}
-                <View style={globalStyles.footer}>
-                    <CustomButton
-                        onPress={handleSave}
-                        title={profileLoading ? 'Saving...' : 'Save'}
-                        style={globalStyles.nextButton}
-                    />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <SafeAreaView style={globalStyles.container}>
+                {/* Header */}
+                <View style={globalStyles.headerRow}>
+                    <CustomBackButton text="" style={globalStyles.backButton}/>
+                    <Text style={globalStyles.title}>Edit Profile</Text>
                 </View>
-            </View>
 
-            {/* Android Photo Options Modal */}
-            {Platform.OS !== 'ios' && (
-                <Modal
-                    visible={showPhotoOptions}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setShowPhotoOptions(false)}
-                >
-                    <TouchableWithoutFeedback onPress={() => setShowPhotoOptions(false)}>
-                        <View style={styles.photoOptionsOverlay}>
-                            <TouchableWithoutFeedback>
-                                <View style={styles.photoOptionsContainer}>
-                                    <TouchableOpacity
-                                        style={styles.photoOptionButton}
-                                        onPress={() => {
-                                            setShowPhotoOptions(false);
-                                            openCamera();
-                                        }}
-                                    >
-                                        <Text style={styles.photoOptionText}>Take Photo</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={styles.photoOptionButton}
-                                        onPress={() => {
-                                            setShowPhotoOptions(false);
-                                            openLibrary();
-                                        }}
-                                    >
-                                        <Text style={styles.photoOptionText}>Choose from Library</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </TouchableWithoutFeedback>
-                        </View>
-                    </TouchableWithoutFeedback>
-                </Modal>
-            )}
-        </SafeAreaView>
+                {/* Body */}
+                <View style={globalStyles.bodyContainer}>
+                    {/* Bio */}
+                    <Text style={styles.fieldLabel}>Bio</Text>
+                    <TextInput
+                        style={styles.bioInput}
+                        placeholder="Tell us about yourself"
+                        value={bio}
+                        onChangeText={setBio}
+                        multiline
+                        maxLength={150}
+                    />
+                    {bio.length === 150 && (
+                        <Text style={globalStyles.errorText}>Character limit reached: 150/150</Text>
+                    )}
+
+                    {!isBusiness && (
+                        <>
+                            {/* Gender */}
+                            <Text style={styles.fieldLabel}>Gender</Text>
+                            <TouchableOpacity
+                                style={styles.genderButton}
+                                onPress={() => {
+                                    setShowDatePicker(false);
+                                    setShowGenderPicker(true);
+                                }}
+                            >
+                                <Text style={[styles.genderButtonText, !gender && globalStyles.placeholderText]}>
+                                    {gender ? gender : 'Select your gender'}
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* Gender Picker Modal */}
+                            <Modal
+                                visible={showGenderPicker}
+                                transparent
+                                animationType="none"
+                                onRequestClose={() => setShowGenderPicker(false)}
+                            >
+                                <TouchableWithoutFeedback onPress={() => setShowGenderPicker(false)}>
+                                    <View style={styles.modalContainer}>
+                                        <TouchableWithoutFeedback>
+                                            <View style={styles.modalContent}>
+                                                <Picker
+                                                    selectedValue={gender}
+                                                    onValueChange={(itemValue) => {
+                                                        setGender(itemValue);
+                                                        setShowGenderPicker(false);
+                                                    }}
+                                                    style={styles.genderPicker}
+                                                >
+                                                    <Picker.Item label="" value=""/>
+                                                    <Picker.Item label="Male" value="Male"/>
+                                                    <Picker.Item label="Female" value="Female"/>
+                                                    <Picker.Item label="Prefer not to say" value="Prefer not to say"/>
+                                                </Picker>
+                                            </View>
+                                        </TouchableWithoutFeedback>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            </Modal>
+                        </>
+                    )}
+
+                    {!isBusiness && (
+                        <>
+                            {/* Date of Birth */}
+                            <Text style={styles.fieldLabel}>Date of birth</Text>
+                            <TouchableOpacity
+                                style={styles.datePickerButton}
+                                onPress={() => {
+                                    setShowDatePicker(true);
+                                }}
+                            >
+                                <Text
+                                    style={[styles.datePickerButtonText, !dateOfBirth && globalStyles.placeholderText]}>
+                                    {dateOfBirth ? dateOfBirth.toDateString() : 'Select your date of birth'}
+                                </Text>
+                            </TouchableOpacity>
+                            {ageError !== '' && <Text style={globalStyles.errorText}>{ageError}</Text>}
+                            <DateTimePickerModal
+                                isVisible={showDatePicker}
+                                mode="date"
+                                date={dateOfBirth || new Date()}
+                                maximumDate={new Date()}
+                                onConfirm={handleConfirm}
+                                onCancel={() => setShowDatePicker(false)}
+                            />
+                        </>
+                    )}
+
+
+                    {/* Location */}
+                    <Text style={styles.fieldLabel}>Location</Text>
+                    <GooglePlacesAutocomplete
+                        placeholder="Where do you live?"
+                        fetchDetails={true}
+                        onPress={(data, details = null) => {
+                            setLocation(data.description);
+                            setIsLocationEditable(false);
+                        }}
+                        query={{
+                            key: googleApiKey,
+                            language: 'en',
+                            types: '(regions)',
+                        }}
+                        styles={{
+                            container: {flex: 0, width: '100%'},
+                            textInput: styles.input,
+                        }}
+                        textInputProps={{
+                            onTouchStart: () => {
+                                setShowDatePicker(false);
+                                setIsLocationEditable(true);
+                            },
+                            value: location,
+                            onChangeText: (text) => {
+                                if (isLocationEditable) {
+                                    setLocation(text);
+                                }
+                            },
+                            onBlur: () => {
+                                if (!location.trim()) {
+                                    setLocationError("No location provided");
+                                } else {
+                                    setLocationError("");
+                                }
+                                setIsLocationEditable(false);
+                            },
+                        }}
+                    />
+                    {locationError !== '' && (
+                        <Text style={globalStyles.errorText}>{locationError}</Text>
+                    )}
+
+
+                    {/* Save Button */}
+                    <View style={globalStyles.footer}>
+                        <CustomButton
+                            onPress={handleSave}
+                            title={profileLoading ? 'Saving...' : 'Save'}
+                            style={globalStyles.nextButton}
+                        />
+                    </View>
+                </View>
+
+                {/* Android Photo Options Modal */}
+                {Platform.OS !== 'ios' && (
+                    <Modal
+                        visible={showPhotoOptions}
+                        transparent
+                        animationType="fade"
+                        onRequestClose={() => setShowPhotoOptions(false)}
+                    >
+                        <TouchableWithoutFeedback onPress={() => setShowPhotoOptions(false)}>
+                            <View style={styles.photoOptionsOverlay}>
+                                <TouchableWithoutFeedback>
+                                    <View style={styles.photoOptionsContainer}>
+                                        <TouchableOpacity
+                                            style={styles.photoOptionButton}
+                                            onPress={() => {
+                                                setShowPhotoOptions(false);
+                                                openCamera();
+                                            }}
+                                        >
+                                            <Text style={styles.photoOptionText}>Take Photo</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={styles.photoOptionButton}
+                                            onPress={() => {
+                                                setShowPhotoOptions(false);
+                                                openLibrary();
+                                            }}
+                                        >
+                                            <Text style={styles.photoOptionText}>Choose from Library</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </Modal>
+                )}
+            </SafeAreaView>
+        </TouchableWithoutFeedback>
     );
 }
 

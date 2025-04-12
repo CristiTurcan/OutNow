@@ -1,5 +1,15 @@
 import React from 'react';
-import {View, TextInput, StyleSheet, KeyboardAvoidingView, Text, SafeAreaView, Switch} from 'react-native';
+import {
+    View,
+    TextInput,
+    StyleSheet,
+    KeyboardAvoidingView,
+    Text,
+    SafeAreaView,
+    Switch,
+    Keyboard,
+    TouchableWithoutFeedback
+} from 'react-native';
 import {useForm, Controller} from 'react-hook-form';
 import * as yup from 'yup';
 import {yupResolver} from '@hookform/resolvers/yup';
@@ -53,7 +63,7 @@ const schema = yup.object().shape({
 
 export default function SignUp() {
     const {signUp, loading} = useAuth();
-    const { updateBusinessProfile, loading: businessProfileLoading, error: businessProfileError } = useBusinessProfile();
+    const {updateBusinessProfile, loading: businessProfileLoading, error: businessProfileError} = useBusinessProfile();
 
     const {
         control,
@@ -72,7 +82,6 @@ export default function SignUp() {
     };
 
 
-
     type FieldError = { message?: string; types?: Record<string, string> };
 
     const renderErrors = (error: FieldError) => {
@@ -87,101 +96,103 @@ export default function SignUp() {
     };
 
     return (
-        <SafeAreaView style={globalStyles.container}>
-            <View style={globalStyles.headerRow}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <SafeAreaView style={globalStyles.container}>
+                <View style={globalStyles.headerRow}>
                     <CustomBackButton text="" style={globalStyles.backButton}/>
                     <Text style={globalStyles.title}>Sign Up</Text>
-            </View>
-            <View style={styles.container}>
-                <KeyboardAvoidingView behavior="padding" style={styles.keyboardAvoidingView}>
-                    <Controller<FormData>
-                        control={control}
-                        name="email"
-                        render={({field: {onChange, onBlur, value}}) => (
-                            <>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Email"
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    autoCapitalize="none"
-                                    keyboardType="email-address"
-                                />
-                                {errors.email && renderErrors(errors.email)}
-                            </>
-                        )}
-                    />
-                    <Controller<FormData>
-                        control={control}
-                        name="username"
-                        render={({field: {onChange, onBlur, value}}) => (
-                            <>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Username"
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                />
-                                {errors.username && renderErrors(errors.username)}
-                            </>
-                        )}
-                    />
-                    <Controller<FormData>
-                        control={control}
-                        name="password"
-                        render={({field: {onChange, onBlur, value}}) => (
-                            <>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Password"
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    secureTextEntry
-                                />
-                                {errors.password && renderErrors(errors.password)}
-                            </>
-                        )}
-                    />
-                    <Controller<FormData>
-                        control={control}
-                        name="confirmPassword"
-                        render={({field: {onChange, onBlur, value}}) => (
-                            <>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Confirm Password"
-                                    onBlur={onBlur}
-                                    onChangeText={onChange}
-                                    value={value}
-                                    secureTextEntry
-                                />
-                                {errors.confirmPassword && renderErrors(errors.confirmPassword)}
-                            </>
-                        )}
-                    />
-                    <Controller
-                        control={control}
-                        name="isBusiness"
-                        render={({ field: { onChange, value } }) => (
-                            <View style={styles.checkboxContainer}>
-                                <Switch value={value} onValueChange={onChange} />
-                                <Text style={styles.label}>Business Account</Text>
-                            </View>
-                        )}
-                    />
-                    <View style={styles.buttonContainer}>
-                        {/* this button avoids signup validation */}
-                        {/*<CustomButton onPress={() => router.push('(auth)/createProfile')} title="Sign Up"*/}
-                        {/*              disabled={loading} style={styles.signupButton}/>  */}
-                        <CustomButton onPress={handleSubmit(onSubmit)} title="Sign Up"
-                                      disabled={loading} style={styles.signupButton}/>
-                    </View>
-                </KeyboardAvoidingView>
-            </View>
-        </SafeAreaView>
+                </View>
+                <View style={styles.container}>
+                    <KeyboardAvoidingView behavior="padding" style={styles.keyboardAvoidingView}>
+                        <Controller<FormData>
+                            control={control}
+                            name="email"
+                            render={({field: {onChange, onBlur, value}}) => (
+                                <>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Email"
+                                        onBlur={onBlur}
+                                        onChangeText={onChange}
+                                        value={value}
+                                        autoCapitalize="none"
+                                        keyboardType="email-address"
+                                    />
+                                    {errors.email && renderErrors(errors.email)}
+                                </>
+                            )}
+                        />
+                        <Controller<FormData>
+                            control={control}
+                            name="username"
+                            render={({field: {onChange, onBlur, value}}) => (
+                                <>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Username"
+                                        onBlur={onBlur}
+                                        onChangeText={onChange}
+                                        value={value}
+                                    />
+                                    {errors.username && renderErrors(errors.username)}
+                                </>
+                            )}
+                        />
+                        <Controller<FormData>
+                            control={control}
+                            name="password"
+                            render={({field: {onChange, onBlur, value}}) => (
+                                <>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Password"
+                                        onBlur={onBlur}
+                                        onChangeText={onChange}
+                                        value={value}
+                                        secureTextEntry
+                                    />
+                                    {errors.password && renderErrors(errors.password)}
+                                </>
+                            )}
+                        />
+                        <Controller<FormData>
+                            control={control}
+                            name="confirmPassword"
+                            render={({field: {onChange, onBlur, value}}) => (
+                                <>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Confirm Password"
+                                        onBlur={onBlur}
+                                        onChangeText={onChange}
+                                        value={value}
+                                        secureTextEntry
+                                    />
+                                    {errors.confirmPassword && renderErrors(errors.confirmPassword)}
+                                </>
+                            )}
+                        />
+                        <Controller
+                            control={control}
+                            name="isBusiness"
+                            render={({field: {onChange, value}}) => (
+                                <View style={styles.checkboxContainer}>
+                                    <Switch value={value} onValueChange={onChange}/>
+                                    <Text style={styles.label}>Business Account</Text>
+                                </View>
+                            )}
+                        />
+                        <View style={styles.buttonContainer}>
+                            {/* this button avoids signup validation */}
+                            {/*<CustomButton onPress={() => router.push('(auth)/createProfile')} title="Sign Up"*/}
+                            {/*              disabled={loading} style={styles.signupButton}/>  */}
+                            <CustomButton onPress={handleSubmit(onSubmit)} title="Sign Up"
+                                          disabled={loading} style={styles.signupButton}/>
+                        </View>
+                    </KeyboardAvoidingView>
+                </View>
+            </SafeAreaView>
+        </TouchableWithoutFeedback>
     );
 }
 

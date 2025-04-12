@@ -81,6 +81,15 @@ export default function useBusinessProfile() {
         }
     }, []);
 
+    const getBusinessProfileById = useCallback(async (id: number) => {
+        try {
+            const response = await axios.get(`${BASE_URL}/business-accounts/${id}`);
+            return response.data;
+        } catch (err: any) {
+            setError(err.response?.data?.message || err.message);
+            throw err;
+        }
+    }, []);
 
 
     return {
@@ -88,6 +97,7 @@ export default function useBusinessProfile() {
         updateExistingBusinessProfile,
         getBusinessProfile,
         getBusinessAccountId,
+        getBusinessProfileById,
         loading,
         error,
     };
