@@ -14,8 +14,8 @@ import {router} from "expo-router";
 import useMyEvents from "@/hooks/useMyEvents";
 import useBusinessProfile from "@/hooks/useBusinessProfile";
 import EventCardBusiness from "@/components/EventCardBusiness";
-import useAuth from "@/hooks/useAuth";
-import {BASE_URL} from "@/config/api";
+import useGoingEvent from "@/hooks/useGoingEvents";
+
 
 const windowWidth = Dimensions.get('window').width;
 const cardWidth = (windowWidth - 40) / 2;
@@ -29,6 +29,7 @@ const Home = () => {
     const [businessProfile, setBusinessProfile] = useState(null);
     const [businessAccountId, setBusinessAccountId] = useState<String | null>(null);
     const {events: myEvents, loading: myEventsLoading, error: myEventsError} = useMyEvents(businessAccountId);
+    const { goingEvents, fetchGoingEvents } = useGoingEvent();
 
     useEffect(() => {
         if (isBusiness && user?.email) {
@@ -57,6 +58,14 @@ const Home = () => {
         }, [isBusiness, userId, fetchFavoritedEvents, loadEvents])
     );
 
+    useFocusEffect(
+        useCallback(() => {
+            if (userId) {
+                fetchGoingEvents(userId);
+            }
+        }, [userId, fetchGoingEvents])
+    );
+
 
     const addEvent = () => {
         router.push('/createEvent');
@@ -78,7 +87,10 @@ const Home = () => {
                         data={events}
                         renderItem={({item}) => (
                             <EventCard
-                                event={{...item, isFavorited: favoritedEvents.includes(item.eventId)}}
+                                event={{...item,
+                                    isFavorited: favoritedEvents.includes(item.eventId),
+                                    isGoing: goingEvents.includes(item.eventId)
+                                }}
                                 cardWidth={cardWidth}
                                 userId={userId}
                             />

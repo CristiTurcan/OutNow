@@ -379,8 +379,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         borderRadius: 8,
         alignItems: 'center',
-        // Remove any width if present or set a fixed width / percentage:
-        width: '60%', // or a fixed number like 200
+        width: '60%',
         alignSelf: 'center',
         marginBottom: 12,
     },

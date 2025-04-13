@@ -11,10 +11,10 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import useEvents from "@/hooks/useEvents";
 import useFavoriteEvent from '@/hooks/useFavoriteEvent';
 import useUserIdByEmail from '../hooks/useUserByIdByEmail';
+import useGoingEvent from "@/hooks/useGoingEvents";
 
 
 export default function SeeEvent() {
-    // Get eventId from the route parameters; ensure it's converted to a number
     const { eventId: eventIdParam } = useLocalSearchParams() as { eventId: string };
     const eventId = parseInt(eventIdParam, 10);
     const router = useRouter();
@@ -26,6 +26,8 @@ export default function SeeEvent() {
     const { deleteEvent } = useEvents();
     const { userId } = useUserIdByEmail(user?.email || null);
     const { fetchFavoritedEvents, favoritedEvents, favoriteEvent, removeFavoriteEvent } = useFavoriteEvent();
+    const { fetchGoingEvents, goingEvents, addGoingEvent, removeGoingEvent } = useGoingEvent();
+    const isGoing = userId && goingEvents.includes(event.eventId);
 
     useEffect(() => {
         if (event && event.businessAccountId) {
@@ -40,6 +42,13 @@ export default function SeeEvent() {
             fetchFavoritedEvents(userId);
         }
     }, [userId, fetchFavoritedEvents]);
+
+    useEffect(() => {
+        if (userId) {
+            fetchGoingEvents(userId);
+        }
+    }, [userId, fetchGoingEvents]);
+
 
     if (loading) return <Text>Loading...</Text>;
     if (error) return <Text>Error: {error}</Text>;
@@ -63,6 +72,50 @@ export default function SeeEvent() {
             ]
         );
     };
+
+    const handleBuyOrRefund = () => {
+        if (!userId) {
+            console.error('User ID is missing.');
+            return;
+        }
+
+        if (!isGoing) {
+            Alert.alert(
+                "Buy Event",
+                "Are you sure you want to buy this event?",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Buy", onPress: async () => {
+                            try {
+                                await addGoingEvent(userId, event.eventId);
+                                fetchGoingEvents(userId);
+                            } catch (err) {
+                                console.error("Error buying event:", err);
+                            }
+                        }
+                    }
+                ]
+            );
+        } else {
+            Alert.alert(
+                "Refund Event",
+                "Are you sure you want to refund this event?",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Refund", onPress: async () => {
+                            try {
+                                await removeGoingEvent(userId, event.eventId);
+                                fetchGoingEvents(userId);
+                            } catch (err) {
+                                console.error("Error refunding event:", err);
+                            }
+                        }
+                    }
+                ]
+            );
+        }
+    };
+
 
     const handleToggleFavorite = async () => {
         if (!userId) {
@@ -127,8 +180,8 @@ export default function SeeEvent() {
                             />
                         </TouchableOpacity>
                         <CustomButton
-                            title="Buy"
-                            onPress={() => console.log('Buy pressed')}
+                            title={isGoing ? "Refund" : "Buy"}
+                            onPress={handleBuyOrRefund}
                             style={globalStyles.nextButton}
                         />
                     </>

@@ -9,8 +9,9 @@ import {router} from "expo-router";
 
 const EventCard = ({event, cardWidth, onToggleFavorite}) => {
     const [isFavorited, setIsFavorited] = useState(event.isFavorited);
+    const isGoing = event.isGoing || false;
     const {favoriteEvent, removeFavoriteEvent} = useFavoriteEvent();
-    const [isConfirmed, setIsConfirmed] = useState(false);
+    // const [isConfirmed, setIsConfirmed] = useState(false);
     const {user} = useAuthContext();
     const {userId} = useUserIdByEmail(user?.email || null);
     const {getBusinessProfileById} = useBusinessProfile();
@@ -56,9 +57,9 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
         }
     };
 
-    const toggleConfirm = () => {
-        setIsConfirmed(!isConfirmed);
-    };
+    // const toggleConfirm = () => {
+    //     setIsConfirmed(!isConfirmed);
+    // };
 
     return (
         <TouchableOpacity
@@ -88,14 +89,17 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
                             <Ionicons name={isFavorited ? "heart" : "heart-outline"} size={24}
                                       color={isFavorited ? "red" : "gray"}/>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={toggleConfirm}>
+
+                        <View>
                             <Ionicons
-                                name={isConfirmed ? "checkmark-circle" : "checkmark-circle-outline"}
+                                name={isGoing ? "checkmark-circle" : "checkmark-circle-outline"}
                                 size={24}
-                                color={isConfirmed ? "green" : "gray"}
+                                color={isGoing ? "green" : "gray"}
                                 style={styles.icon}
                             />
-                        </TouchableOpacity>
+                        </View>
+
+
                         <TouchableOpacity>
                             <Feather name="send" size={24} color="grey"/>
                         </TouchableOpacity>
