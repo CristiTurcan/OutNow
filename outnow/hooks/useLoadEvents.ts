@@ -16,7 +16,7 @@ export function useLoadEvents(favoritedEvents: number[]) {
         try {
             const allEvents = await fetchAllEvents();
             const filteredEvents = allEvents.filter((event: any) =>
-                favoritedEvents.includes(event.event_id)
+                favoritedEvents.includes(event.eventId)
             );
             setEvents(filteredEvents);
             setError(null);

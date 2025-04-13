@@ -9,6 +9,9 @@ import useEventDetails from '@/hooks/useEventDetails';
 import useBusinessProfile from "@/hooks/useBusinessProfile";
 import { useAuthContext } from '@/contexts/AuthContext';
 import useEvents from "@/hooks/useEvents";
+import useFavoriteEvent from '@/hooks/useFavoriteEvent';
+import useUserIdByEmail from '../hooks/useUserByIdByEmail';
+
 
 export default function SeeEvent() {
     // Get eventId from the route parameters; ensure it's converted to a number
@@ -19,8 +22,10 @@ export default function SeeEvent() {
     const { event, loading, error } = useEventDetails(eventId);
     const { getBusinessProfileById } = useBusinessProfile();
     const [businessUsername, setBusinessUsername] = useState<string>('');
-    const { isBusiness } = useAuthContext();
+    const { isBusiness, user } = useAuthContext();
     const { deleteEvent } = useEvents();
+    const { userId } = useUserIdByEmail(user?.email || null);
+    const { fetchFavoritedEvents, favoritedEvents, favoriteEvent, removeFavoriteEvent } = useFavoriteEvent();
 
     useEffect(() => {
         if (event && event.businessAccountId) {
@@ -29,6 +34,12 @@ export default function SeeEvent() {
                 .catch(err => console.error("Error fetching business profile by id", err));
         }
     }, [event?.businessAccountId]);
+
+    useEffect(() => {
+        if (userId) {
+            fetchFavoritedEvents(userId);
+        }
+    }, [userId, fetchFavoritedEvents]);
 
     if (loading) return <Text>Loading...</Text>;
     if (error) return <Text>Error: {error}</Text>;
@@ -52,6 +63,28 @@ export default function SeeEvent() {
             ]
         );
     };
+
+    const handleToggleFavorite = async () => {
+        if (!userId) {
+            console.error('User ID is missing.');
+            return;
+        }
+
+        const isFav = favoritedEvents.includes(event.eventId);
+        try {
+            if (isFav) {
+                await removeFavoriteEvent(userId, event.eventId);
+            } else {
+                await favoriteEvent(userId, event.eventId);
+            }
+            // Refresh favorites after toggling
+            fetchFavoritedEvents(userId);
+        } catch (err) {
+            console.error('Error toggling favorite status:', err);
+        }
+    };
+
+    const isFavorited = userId && favoritedEvents.includes(event.eventId);
 
     return (
         <SafeAreaView style={globalStyles.container}>
@@ -86,10 +119,12 @@ export default function SeeEvent() {
             <View style={styles.footer}>
                 {!isBusiness && (
                     <>
-                        <TouchableOpacity onPress={() => {
-                            // Your favorite toggle logic here
-                        }} style={styles.favoriteButton}>
-                            <Ionicons name="heart-outline" size={28} color="gray" />
+                        <TouchableOpacity onPress={handleToggleFavorite} style={styles.favoriteButton}>
+                            <Ionicons
+                                name={isFavorited ? "heart" : "heart-outline"}
+                                size={28}
+                                color={isFavorited ? "red" : "gray"}
+                            />
                         </TouchableOpacity>
                         <CustomButton
                             title="Buy"

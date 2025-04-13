@@ -11,6 +11,8 @@ const useFavoriteEvent = () => {
     const favoriteEvent = async (userId: number, eventId: number) => {
         setLoading(true);
         setError(null);
+        console.log("usedId:" + userId);
+        console.log("eventId:" + eventId);
         try {
             const response = await axios.post(`${BASE_URL}/users/${userId}/favorites/${eventId}`);
             console.log('Event favorited successfully:', response.data);
@@ -41,7 +43,7 @@ const useFavoriteEvent = () => {
         setError(null);
         try {
             const response = await axios.get(`${BASE_URL}/users/${userId}/favorites`);
-            const eventIds = response.data.map((event: any) => event.event_id); // Extract event IDs
+            const eventIds = response.data.map((event: any) => event.eventId); // Extract event IDs
             setFavoritedEvents(eventIds); // Update hook state
             console.log('Favorited events fetched successfully:', eventIds);
             return eventIds; // Explicitly return the event IDs

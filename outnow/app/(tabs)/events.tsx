@@ -80,12 +80,12 @@ export default function Favorites() {
             data={events}
             renderItem={({ item }) => (
                 <EventCard
-                    event={{ ...item, isFavorited: favoritedEvents.includes(item.event_id) }}
+                    event={{ ...item, isFavorited: favoritedEvents.includes(item.eventId) }}
                     cardWidth={cardWidth}
-                    onToggleFavorite={(isFavorited) => handleToggleFavorite(item.event_id, isFavorited)}
+                    onToggleFavorite={(isFavorited) => handleToggleFavorite(item.eventId, isFavorited)}
                 />
             )}
-            keyExtractor={(item) => item.event_id.toString()}
+            keyExtractor={(item) => item.eventId.toString()}
             numColumns={2}
             columnWrapperStyle={styles.column}
             contentContainerStyle={styles.listContainer}

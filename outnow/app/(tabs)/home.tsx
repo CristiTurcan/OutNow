@@ -48,14 +48,14 @@ const Home = () => {
     }, [isBusiness, loadEvents]);
 
 
-    // useFocusEffect(
-    //     useCallback(() => {
-    //         if (!isBusiness && userId) {
-    //             fetchFavoritedEvents(userId);
-    //             loadEvents();
-    //         }
-    //     }, [isBusiness, userId, fetchFavoritedEvents, loadEvents])
-    // );
+    useFocusEffect(
+        useCallback(() => {
+            if (!isBusiness && userId) {
+                fetchFavoritedEvents(userId);
+                loadEvents();
+            }
+        }, [isBusiness, userId, fetchFavoritedEvents, loadEvents])
+    );
 
 
     const addEvent = () => {
