@@ -1,13 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView, View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert} from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import {useLocalSearchParams, useRouter} from 'expo-router';
 import CustomBackButton from '@/components/customBackButton';
 import CustomButton from '@/components/customButton';
 import globalStyles from '@/styles/globalStyles';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import {Ionicons, Feather} from '@expo/vector-icons';
 import useEventDetails from '@/hooks/useEventDetails';
 import useBusinessProfile from "@/hooks/useBusinessProfile";
-import { useAuthContext } from '@/contexts/AuthContext';
+import {useAuthContext} from '@/contexts/AuthContext';
 import useEvents from "@/hooks/useEvents";
 import useFavoriteEvent from '@/hooks/useFavoriteEvent';
 import useUserIdByEmail from '../hooks/useUserByIdByEmail';
@@ -15,19 +15,23 @@ import useGoingEvent from "@/hooks/useGoingEvents";
 
 
 export default function SeeEvent() {
-    const { eventId: eventIdParam } = useLocalSearchParams() as { eventId: string };
+    const {eventId: eventIdParam} = useLocalSearchParams() as { eventId: string };
     const eventId = parseInt(eventIdParam, 10);
     const router = useRouter();
 
-    const { event, loading, error } = useEventDetails(eventId);
-    const { getBusinessProfileById } = useBusinessProfile();
+    const {event, loading, error} = useEventDetails(eventId);
+    const {getBusinessProfileById} = useBusinessProfile();
     const [businessUsername, setBusinessUsername] = useState<string>('');
-    const { isBusiness, user } = useAuthContext();
-    const { deleteEvent } = useEvents();
-    const { userId } = useUserIdByEmail(user?.email || null);
-    const { fetchFavoritedEvents, favoritedEvents, favoriteEvent, removeFavoriteEvent } = useFavoriteEvent();
-    const { fetchGoingEvents, goingEvents, addGoingEvent, removeGoingEvent } = useGoingEvent();
-    const isGoing = userId && goingEvents.includes(event.eventId);
+    const {isBusiness, user} = useAuthContext();
+    const {deleteEvent} = useEvents();
+    const {userId} = useUserIdByEmail(user?.email || null);
+    const {fetchFavoritedEvents, favoritedEvents, favoriteEvent, removeFavoriteEvent} = useFavoriteEvent();
+    const {fetchGoingEvents, goingEvents, addGoingEvent, removeGoingEvent} = useGoingEvent();
+    const isGoing = userId && goingEvents.includes(event?.eventId);
+    const eventDate = new Date(event?.eventDate);
+    const isPast = eventDate < new Date();
+    const showControls = !isBusiness && (isGoing || !isPast);
+
 
     useEffect(() => {
         if (event && event.businessAccountId) {
@@ -59,8 +63,9 @@ export default function SeeEvent() {
             "Delete Event",
             "Are you sure you want to delete this event?",
             [
-                { text: "Cancel", style: "cancel" },
-                { text: "Delete", style: "destructive", onPress: async () => {
+                {text: "Cancel", style: "cancel"},
+                {
+                    text: "Delete", style: "destructive", onPress: async () => {
                         try {
                             await deleteEvent(eventId);
                             // Navigate back to home or events list after deletion
@@ -68,7 +73,8 @@ export default function SeeEvent() {
                         } catch (err) {
                             console.error("Error deleting event", err);
                         }
-                    } }
+                    }
+                }
             ]
         );
     };
@@ -84,8 +90,9 @@ export default function SeeEvent() {
                 "Buy Event",
                 "Are you sure you want to buy this event?",
                 [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Buy", onPress: async () => {
+                    {text: "Cancel", style: "cancel"},
+                    {
+                        text: "Buy", onPress: async () => {
                             try {
                                 await addGoingEvent(userId, event.eventId);
                                 fetchGoingEvents(userId);
@@ -101,8 +108,9 @@ export default function SeeEvent() {
                 "Refund Event",
                 "Are you sure you want to refund this event?",
                 [
-                    { text: "Cancel", style: "cancel" },
-                    { text: "Refund", onPress: async () => {
+                    {text: "Cancel", style: "cancel"},
+                    {
+                        text: "Refund", onPress: async () => {
                             try {
                                 await removeGoingEvent(userId, event.eventId);
                                 fetchGoingEvents(userId);
@@ -143,13 +151,13 @@ export default function SeeEvent() {
         <SafeAreaView style={globalStyles.container}>
             {/* Header */}
             <View style={globalStyles.headerRow}>
-                <CustomBackButton text="" style={globalStyles.backButton} />
+                <CustomBackButton text="" style={globalStyles.backButton}/>
                 <Text style={globalStyles.title}>Event Details</Text>
             </View>
 
             {/* Content */}
             <ScrollView contentContainerStyle={styles.content}>
-                <Image source={{ uri: event.imageUrl }} style={styles.image} />
+                <Image source={{uri: event.imageUrl}} style={styles.image}/>
                 <Text style={styles.title}>{event.title}</Text>
                 <Text style={styles.details}>{event.description}</Text>
                 <Text style={styles.details}>{`Location: ${event.location}`}</Text>
@@ -170,7 +178,7 @@ export default function SeeEvent() {
 
             {/* Footer */}
             <View style={styles.footer}>
-                {!isBusiness && (
+                {!isBusiness && !(isPast && !isGoing) && (
                     <>
                         <TouchableOpacity onPress={handleToggleFavorite} style={styles.favoriteButton}>
                             <Ionicons
@@ -180,26 +188,32 @@ export default function SeeEvent() {
                             />
                         </TouchableOpacity>
                         <CustomButton
-                            title={isGoing ? "Refund" : "Buy"}
-                            onPress={handleBuyOrRefund}
+                            title={isPast ? "Feedback" : (isGoing ? "Refund" : "Buy")}
+                            onPress={isPast
+                                ? () => router.push(`/feedback?eventId=${event.eventId}`)
+                                : handleBuyOrRefund}
                             style={globalStyles.nextButton}
                         />
+
                     </>
                 )}
                 {isBusiness && (
                     <>
                         <TouchableOpacity onPress={handleDelete} style={styles.favoriteButton}>
-                            <Ionicons name="trash-outline" size={28} color="gray" />
+                            {!isPast && (
+                                <Ionicons name="trash-outline" size={28} color="gray"/>
+                            )}
                         </TouchableOpacity>
                         <CustomButton
-                            title="Edit"
-                            onPress={() => router.push(`/editEvent?eventId=${event.eventId}`)}
+                            title={isPast ? "Statistics" : "Edit"}
+                            onPress={() =>
+                                isPast
+                                    ? router.push(`/statistics?eventId=${event.eventId}`)
+                                    : router.push(`/editEvent?eventId=${event.eventId}`)
+                            }
                             style={globalStyles.nextButton}
                         />
-
                     </>
-
-
                 )}
             </View>
         </SafeAreaView>

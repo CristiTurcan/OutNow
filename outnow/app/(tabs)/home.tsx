@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {FlatList, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {FlatList, SafeAreaView, SectionList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import EventCard from '../../components/eventCard';
 import {Dimensions} from 'react-native';
 import useFavoriteEvent from "@/hooks/useFavoriteEvent";
@@ -30,6 +30,27 @@ const Home = () => {
     const [businessAccountId, setBusinessAccountId] = useState<String | null>(null);
     const {events: myEvents, loading: myEventsLoading, error: myEventsError} = useMyEvents(businessAccountId);
     const { goingEvents, fetchGoingEvents } = useGoingEvent();
+    const currentDate = new Date();
+    const futureEvents = events.filter(e => new Date(e.eventDate) >= currentDate);
+    const pastEvents = events.filter(e => new Date(e.eventDate) < currentDate);
+    const futureBusinessEvents = myEvents.filter(evt => new Date(evt.eventDate) >= currentDate);
+    const pastBusinessEvents = myEvents.filter(evt => new Date(evt.eventDate) < currentDate);
+    const groupIntoRows = (data: any[], columns: number) => {
+        const rows = [];
+        for (let i = 0; i < data.length; i += columns) {
+            rows.push(data.slice(i, i + columns));
+        }
+        return rows;
+    };
+
+    const futureRows = groupIntoRows(futureEvents, 2);
+    const pastRows = groupIntoRows(pastEvents, 2);
+
+    const businessSections = [
+        { title: 'Trending', data: groupIntoRows(futureBusinessEvents, 2) },
+        { title: 'Past',     data: groupIntoRows(pastBusinessEvents,   2) },
+    ];
+
 
     useEffect(() => {
         if (isBusiness && user?.email) {
@@ -83,21 +104,37 @@ const Home = () => {
         <SafeAreaView style={{flex: 1}}>
             {!isBusiness && (
                 <>
-                    <FlatList
-                        data={events}
-                        renderItem={({item}) => (
-                            <EventCard
-                                event={{...item,
-                                    isFavorited: favoritedEvents.includes(item.eventId),
-                                    isGoing: goingEvents.includes(item.eventId)
-                                }}
-                                cardWidth={cardWidth}
-                                userId={userId}
-                            />
+                    <SectionList
+                        sections={[
+                            { title: 'Trending', data: futureRows },
+                            { title: 'Past events', data: pastRows },
+                        ]}
+                        keyExtractor={(_, index) => index.toString()}
+                        renderItem={({ item: row }) => (
+                            <View style={styles.rowContainer}>
+                                {row.map((eventItem: any) => (
+                                    <EventCard
+                                        key={eventItem.eventId}
+                                        event={{
+                                            ...eventItem,
+                                            isFavorited: favoritedEvents.includes(eventItem.eventId),
+                                            isGoing: goingEvents.includes(eventItem.eventId)
+                                        }}
+                                        cardWidth={cardWidth}
+                                        userId={userId}
+                                    />
+                                ))}
+                            </View>
                         )}
-                        keyExtractor={(item) => item.eventId.toString()}
-                        numColumns={2}
-                        columnWrapperStyle={styles.column}
+                        renderSectionHeader={({
+                                                  section,
+                                              }: { section: { title: string; data: any[] } }) => (
+                            <View style={styles.headerContainer}>
+                                <Text style={globalStyles.title}>{section.title}</Text>
+                            </View>
+                        )}
+
+                        stickySectionHeadersEnabled={true}
                         contentContainerStyle={styles.container}
                     />
                 </>
@@ -109,17 +146,28 @@ const Home = () => {
                     ) : myEventsError ? (
                         <Text>Error: {myEventsError}</Text>
                     ) : (
-                        <FlatList
-                            data={myEvents}
-                            renderItem={({item}) => (
-                                <EventCardBusiness
-                                    event={item}
-                                    cardWidth={cardWidth}
-                                />
+                        <SectionList
+                            sections={businessSections}
+                            keyExtractor={(row, idx) =>
+                                row.map(evt => evt.eventId).join('-') + '-' + idx
+                            }
+                            renderItem={({ item: row }) => (
+                                <View style={styles.rowContainer}>
+                                    {row.map(evt => (
+                                        <EventCard
+                                            key={evt.eventId}
+                                            event={evt}
+                                            cardWidth={cardWidth}
+                                        />
+                                    ))}
+                                </View>
                             )}
-                            keyExtractor={(item) => item.eventId.toString()}
-                            numColumns={2}
-                            columnWrapperStyle={styles.column}
+                            renderSectionHeader={({ section }) => (
+                                <View style={styles.headerContainer}>
+                                    <Text style={globalStyles.title}>{section.title}</Text>
+                                </View>
+                            )}
+                            stickySectionHeadersEnabled
                             contentContainerStyle={styles.container}
                         />
                     )}
@@ -142,6 +190,16 @@ const styles = StyleSheet.create({
         paddingTop: 10,
     },
     column: {
+        justifyContent: 'space-between',
+        marginBottom: 10,
+    },
+    headerContainer: {
+        backgroundColor: '#f2f2f2',
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+    },
+    rowContainer: {
+        flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 10,
     },

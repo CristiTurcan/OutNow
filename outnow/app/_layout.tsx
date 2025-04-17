@@ -58,6 +58,8 @@ export default function RootLayout() {
 				<Stack.Screen name="eventInterests" options={{headerShown: false}}/>
 				<Stack.Screen name="seeEvent" options={{headerShown: false}}/>
 				<Stack.Screen name="editEvent" options={{headerShown: false}}/>
+				<Stack.Screen name="feedback" options={{headerShown: false}}/>
+				<Stack.Screen name="statistics" options={{headerShown: false}}/>
 			</Stack>
 		</AuthProvider>
 	);

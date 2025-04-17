@@ -1,12 +1,12 @@
-import React, { useEffect, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, SectionList } from 'react-native';
+import React, {useEffect, useCallback} from 'react';
+import {View, Text, FlatList, StyleSheet, ActivityIndicator, SectionList} from 'react-native';
 import EventCard from '../../components/eventCard';
 import useFavoriteEvent from '@/hooks/useFavoriteEvent';
 import useAuth from '@/hooks/useAuth';
 import useUserIdByEmail from '@/hooks/useUserByIdByEmail';
-import { Dimensions } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { useLoadEvents } from '@/hooks/useLoadEvents';
+import {Dimensions} from 'react-native';
+import {useFocusEffect} from '@react-navigation/native';
+import {useLoadEvents} from '@/hooks/useLoadEvents';
 import useGoingEvent from "@/hooks/useGoingEvents";
 import globalStyles from "@/styles/globalStyles";
 
@@ -14,13 +14,23 @@ const windowWidth = Dimensions.get('window').width;
 const cardWidth = (windowWidth - 40) / 2;
 
 export default function Favorites() {
-    const { user } = useAuth();
-    const { userId } = useUserIdByEmail(user?.email || null);
-    const { fetchFavoritedEvents, favoritedEvents, removeFavoriteEvent, favoriteEvent } = useFavoriteEvent();
-    const { events, loading, error, loadEvents } = useLoadEvents(favoritedEvents);
-    const { goingEvents: goingEventIds, fetchGoingEvents } = useGoingEvent();
-    const { events: favEvents, loading: favLoading, error: favError, loadEvents: loadFavEvents } = useLoadEvents(favoritedEvents);
-    const { events: goEvents, loading: goLoading, error: goError, loadEvents: loadGoEvents } = useLoadEvents(goingEventIds);
+    const {user} = useAuth();
+    const {userId} = useUserIdByEmail(user?.email || null);
+    const {fetchFavoritedEvents, favoritedEvents, removeFavoriteEvent, favoriteEvent} = useFavoriteEvent();
+    const {events, loading, error, loadEvents} = useLoadEvents(favoritedEvents);
+    const {goingEvents: goingEventIds, fetchGoingEvents} = useGoingEvent();
+    const {
+        events: favEvents,
+        loading: favLoading,
+        error: favError,
+        loadEvents: loadFavEvents
+    } = useLoadEvents(favoritedEvents);
+    const {
+        events: goEvents,
+        loading: goLoading,
+        error: goError,
+        loadEvents: loadGoEvents
+    } = useLoadEvents(goingEventIds);
 
     type EventSection = {
         title: string;
@@ -46,26 +56,6 @@ export default function Favorites() {
         loadGoEvents();
     }, [goingEventIds, loadGoEvents]);
 
-    // Callback to handle favorite/unfavorite toggle
-    const handleToggleFavorite = async (eventId: number, isFavorited: boolean) => {
-        if (!userId) {
-            console.error('User ID is missing.');
-            return;
-        }
-
-        try {
-            if (isFavorited) {
-                await removeFavoriteEvent(userId, eventId);
-            } else {
-                await favoriteEvent(userId, eventId);
-            }
-            // Refresh favorites list to update UI
-            fetchFavoritedEvents(userId);
-        } catch (err) {
-            console.error('Error toggling favorite status:', err);
-        }
-    };
-
     const groupIntoRows = (data: any[], columns: number) => {
         const rows = [];
         for (let i = 0; i < data.length; i += columns) {
@@ -79,7 +69,7 @@ export default function Favorites() {
     if (favLoading || goLoading) {
         return (
             <View style={styles.loaderContainer}>
-                <ActivityIndicator size="large" color="#0000ff" />
+                <ActivityIndicator size="large" color="#0000ff"/>
             </View>
         );
     }
@@ -102,15 +92,19 @@ export default function Favorites() {
         );
     }
 
+    const sections: { title: string; data: any[] }[] = [];
+    if (favEvents.length > 0) {
+        sections.push({ title: 'Favorited', data: groupIntoRows(favEvents, 2) });
+    }
+    if (goEvents.length > 0) {
+        sections.push({ title: 'Going', data: groupIntoRows(goEvents, 2) });
+    }
 
     return (
         <SectionList
-            sections={[
-                { title: 'Favorited', data: groupIntoRows(favEvents, 2) },
-                { title: 'Going', data: groupIntoRows(goEvents, 2) },
-            ]}
+            sections={sections}
             keyExtractor={(_, index) => index.toString()}
-            renderItem={({ item: row }) => (
+            renderItem={({item: row}) => (
                 <View style={styles.rowContainer}>
                     {row.map((eventItem: any) => (
                         <EventCard
@@ -121,7 +115,12 @@ export default function Favorites() {
                                 isGoing: goingEventIds.includes(eventItem.eventId),
                             }}
                             cardWidth={cardWidth}
-                            onToggleFavorite={(isFavorited) => handleToggleFavorite(eventItem.eventId, isFavorited)}
+                            onToggleFavorite={() => {
+                                if (userId) {
+                                    fetchFavoritedEvents(userId);
+                                    fetchGoingEvents(userId);
+                                }
+                            }}
                         />
                     ))}
                 </View>
@@ -139,7 +138,6 @@ export default function Favorites() {
             stickySectionHeadersEnabled={true}
             contentContainerStyle={styles.listContainer}
         />
-
     );
 }
 
