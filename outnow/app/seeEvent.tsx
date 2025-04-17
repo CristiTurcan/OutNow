@@ -205,12 +205,13 @@ export default function SeeEvent() {
                             )}
                         </TouchableOpacity>
                         <CustomButton
-                            title={isPast ? "Statistics" : "Edit"}
-                            onPress={() =>
-                                isPast
-                                    ? router.push(`/statistics?eventId=${event.eventId}`)
-                                    : router.push(`/editEvent?eventId=${event.eventId}`)
-                            }
+                            title={"Statistics"}
+                            onPress={() => router.push(`/statistics?eventId=${event.eventId}`)}
+                            style={globalStyles.nextButton}
+                        />
+                        <CustomButton
+                            title={"Edit"}
+                            onPress={() => router.push(`/editEvent?eventId=${event.eventId}`)}
                             style={globalStyles.nextButton}
                         />
                     </>
