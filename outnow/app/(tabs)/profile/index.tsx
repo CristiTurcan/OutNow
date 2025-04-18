@@ -1,25 +1,25 @@
 import React, {useEffect, useState} from 'react';
 import {View, Text, Image, TouchableOpacity, StyleSheet, Platform, ActionSheetIOS} from 'react-native';
-import { useRouter } from 'expo-router';
+import {useRouter} from 'expo-router';
 import Icon from 'react-native-vector-icons/Feather';
 import globalStyles from "@/styles/globalStyles";
 import CustomButton from "@/components/customButton";
 import useUserProfile from '@/hooks/useUserProfile';
 import useBusinessProfile from "@/hooks/useBusinessProfile";
-import { useAuthContext } from '@/contexts/AuthContext';
+import {useAuthContext} from '@/contexts/AuthContext';
 import AvatarPicker from "@/components/AvatarPicker";
-import { useImagePicker } from "@/hooks/useImagePicker";
+import {useImagePicker} from "@/hooks/useImagePicker";
 import useProfile from "@/hooks/useProfile";
 
 
 export default function Index() {
     const router = useRouter();
-    const { user, signOut, isBusiness } = useAuthContext();
-    const { updateExistingBusinessProfile, getBusinessProfile } = useBusinessProfile();
-    const { getProfile: userProfile, loading: userProfileLoading, error: userProfileError } = useUserProfile(user?.email);
+    const {user, signOut, isBusiness} = useAuthContext();
+    const {updateExistingBusinessProfile, getBusinessProfile} = useBusinessProfile();
+    const {getProfile: userProfile, loading: userProfileLoading, error: userProfileError} = useUserProfile(user?.email);
     const [showPhotoOptions, setShowPhotoOptions] = useState(false);
-    const { photoUri, photoBase64, openCamera, openLibrary } = useImagePicker();
-    const { updateProfile } = useProfile();
+    const {photoUri, photoBase64, openCamera, openLibrary} = useImagePicker();
+    const {updateProfile} = useProfile();
     const [businessProfile, setBusinessProfile] = useState(null);
     const [bpLoading, setBpLoading] = useState(false);
     const [bpError, setBpError] = useState(null);
@@ -44,11 +44,11 @@ export default function Index() {
     useEffect(() => {
         if (photoBase64 && user?.email) {
             if (isBusiness) {
-                updateExistingBusinessProfile(user.email, { userPhoto: photoBase64 })
+                updateExistingBusinessProfile(user.email, {userPhoto: photoBase64})
                     .then(() => console.log("Business profile photo updated."))
                     .catch((error) => console.error("Error updating business profile photo:", error));
             } else {
-                updateProfile({ email: user.email, userPhoto: photoBase64 })
+                updateProfile({email: user.email, userPhoto: photoBase64})
                     .then(() => console.log("User profile photo updated."))
                     .catch((error) => console.error("Error updating user profile photo:", error));
             }
@@ -88,10 +88,11 @@ export default function Index() {
 
     // Menu items for the list
     const menuItems = [
-        { label: 'Edit Profile', icon: 'user', onPress: () => router.push('/(tabs)/profile/editProfile') },
-        { label: 'Edit Interests', icon: 'tag', onPress: () => router.push('/(tabs)/profile/editInterests') },
-        { label: 'Notification', icon: 'bell', onPress: () => router.push('/(tabs)/profile/notification') },
-        { label: 'Information', icon: 'info', onPress: () => router.push('(tabs)/profile/information') },
+        {label: isBusiness? 'Followers' : 'Following', icon: 'users', onPress: () => router.push('/(tabs)/profile/editFollow')},
+        {label: 'Edit Profile', icon: 'user', onPress: () => router.push('/(tabs)/profile/editProfile')},
+        {label: 'Edit Interests', icon: 'tag', onPress: () => router.push('/(tabs)/profile/editInterests')},
+        {label: 'Notification', icon: 'bell', onPress: () => router.push('/(tabs)/profile/notification')},
+        {label: 'Information', icon: 'info', onPress: () => router.push('(tabs)/profile/information')},
     ];
 
     return (
@@ -120,10 +121,10 @@ export default function Index() {
                         onPress={item.onPress}
                     >
                         <View style={styles.menuItemLeft}>
-                            <Icon name={item.icon} size={20} color="#333" style={styles.menuIcon} />
+                            <Icon name={item.icon} size={20} color="#333" style={styles.menuIcon}/>
                             <Text style={styles.menuLabel}>{item.label}</Text>
                         </View>
-                        <Icon name="chevron-right" size={20} color="#333" />
+                        <Icon name="chevron-right" size={20} color="#333"/>
                     </TouchableOpacity>
                 ))}
             </View>

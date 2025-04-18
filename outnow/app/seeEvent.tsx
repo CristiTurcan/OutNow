@@ -171,7 +171,17 @@ export default function SeeEvent() {
                         })}${event.eventTime ? ' at ' + event.eventTime : ''}`
                         : ''}
                 </Text>
-                <Text style={styles.details}>{`By: ${businessUsername || ''}`}</Text>
+                {/*<Text style={styles.details}>{`By: ${businessUsername || ''}`}</Text>*/}
+                <TouchableOpacity
+                    onPress={() => router.push({
+                        pathname: '/profilePreview',
+                        params: {businessAccountId: event.businessAccountId}
+                    })}
+                >
+                    <Text style={[styles.details, {color: '#007AFF'}]}>
+                        {`By: ${businessUsername || ''}`}
+                    </Text>
+                </TouchableOpacity>
                 <Text style={styles.details}>{`${event.attendees} people are going`}</Text>
                 <Text style={styles.details}>{`Type: ${event.interestList}`}</Text>
             </ScrollView>

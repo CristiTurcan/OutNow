@@ -1,5 +1,5 @@
 // hooks/useUserProfile.ts
-import { useState, useEffect } from 'react';
+import {useState, useEffect} from 'react';
 import axios from 'axios';
 import {BASE_URL} from "@/config/api";
 
@@ -43,7 +43,14 @@ const useUserProfile = (email?: string | null) => {
         fetchProfile();
     }, [email]);
 
-    return { getProfile: profile, loading, error };
+    // helper: fetch a user profile by numeric user‑ID
+    const getUserProfileById = async (id: number) => {
+        const res = await axios.get(`${BASE_URL}/users/${id}`);
+        return res.data;
+    };
+
+
+    return {getProfile: profile, loading, error, getUserProfileById};
 };
 
 export default useUserProfile;

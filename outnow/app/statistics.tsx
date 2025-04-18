@@ -52,7 +52,7 @@ export default function Statistics() {
             try {
                 const all = await getFeedback(eventId);
                 if (!all) throw new Error('Failed to load feedback');
-                // 1) Count ratings
+                // Count ratings
                 const counts: Record<string, number> = {
                     VERY_BAD: 0,
                     BAD: 0,
@@ -65,7 +65,7 @@ export default function Statistics() {
                 });
                 setRatingsCount(counts);
 
-                // 2) Prepare comments list
+                // Prepare comments list
                 const cms = all.map(fb => ({
                     feedbackId: fb.feedbackId,
                     userId: fb.userId,
