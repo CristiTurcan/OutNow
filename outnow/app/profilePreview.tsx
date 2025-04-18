@@ -159,15 +159,32 @@ export default function ProfilePreview() {
                     </>
                 ) : (
                     <>
-                        <Text style={styles.meta}>
-                            Date of Birth: {(profile as UserDTO).dateOfBirth || 'N/A'}
-                        </Text>
+                        {(profile as UserDTO).showDob       && (
+                            <Text style={styles.meta}>
+                                Date of Birth: {(profile as UserDTO).dateOfBirth || 'N/A'}
+                            </Text>
+                        )}
+
+                        {(profile as UserDTO).showGender    && (profile as UserDTO).gender && (
+                            <Text style={styles.meta}>
+                                Gender: {(profile as UserDTO).gender}
+                            </Text>
+                        )}
+
+                        {(profile as UserDTO).showLocation  && profile.location && (
+                            <Text style={styles.meta}>{profile.location}</Text>
+                        )}
+
+                        {(profile as UserDTO).showInterests && profile.interestList && (
+                            <Text style={styles.meta}>{profile.interestList}</Text>
+                        )}
+
                         <Text style={styles.email}>Contact: {profile.email}</Text>
                     </>
                 )}
 
-                {profile.location && <Text style={styles.meta}>{profile.location}</Text>}
-                {profile.interestList && <Text style={styles.meta}>{profile.interestList}</Text>}
+                {/*{profile.location && <Text style={styles.meta}>{profile.location}</Text>}*/}
+                {/*{profile.interestList && <Text style={styles.meta}>{profile.interestList}</Text>}*/}
             </View>
 
 

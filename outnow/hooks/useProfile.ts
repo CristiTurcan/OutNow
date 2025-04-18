@@ -19,9 +19,18 @@ const useProfile = () => {
         setLoading(true);
         setError(null);
         try {
+            const { data: current } = await axios.get(
+                `${BASE_URL}/users/by-email`,
+                { params: { email: profileData.email } }
+            );
+
             const payload = {
                 ...profileData,
                 interestList: profileData.interestList?.join(','),
+                showDob:       'showDob'       in profileData ? (profileData as any).showDob       : current.showDob,
+                showLocation:  'showLocation'  in profileData ? (profileData as any).showLocation  : current.showLocation,
+                showGender:    'showGender'    in profileData ? (profileData as any).showGender    : current.showGender,
+                showInterests: 'showInterests' in profileData ? (profileData as any).showInterests : current.showInterests,
             };
             await axios.put(`${BASE_URL}/users/update-profile`, payload, {
                 headers: { 'Content-Type': 'application/json' },

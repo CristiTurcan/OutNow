@@ -8,6 +8,7 @@ import useBusinessProfile from "@/hooks/useBusinessProfile";
 import {router} from "expo-router";
 
 const EventCard = ({event, cardWidth, onToggleFavorite}) => {
+    const {isBusiness} = useAuthContext();
     const [isFavorited, setIsFavorited] = useState(event.isFavorited);
     const isGoing = event.isGoing || false;
     const {favoriteEvent, removeFavoriteEvent} = useFavoriteEvent();
@@ -84,26 +85,28 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
                     </Text>
                     <Text style={styles.details}>{`@${businessUsername}`}</Text>
                     <Text style={styles.details}>{`${event.attendees} people are going`}</Text>
-                    <View style={styles.iconRow}>
-                        <TouchableOpacity onPress={toggleFavorite}>
-                            <Ionicons name={isFavorited ? "heart" : "heart-outline"} size={24}
-                                      color={isFavorited ? "red" : "gray"}/>
-                        </TouchableOpacity>
+                    {!isBusiness && (
+                        <View style={styles.iconRow}>
+                            <TouchableOpacity onPress={toggleFavorite}>
+                                <Ionicons name={isFavorited ? "heart" : "heart-outline"} size={24}
+                                          color={isFavorited ? "red" : "gray"}/>
+                            </TouchableOpacity>
 
-                        <View>
-                            <Ionicons
-                                name={isGoing ? "checkmark-circle" : "checkmark-circle-outline"}
-                                size={24}
-                                color={isGoing ? "green" : "gray"}
-                                style={styles.icon}
-                            />
+                            <View>
+                                <Ionicons
+                                    name={isGoing ? "checkmark-circle" : "checkmark-circle-outline"}
+                                    size={24}
+                                    color={isGoing ? "green" : "gray"}
+                                    style={styles.icon}
+                                />
+                            </View>
+
+
+                            <TouchableOpacity>
+                                <Feather name="send" size={24} color="grey"/>
+                            </TouchableOpacity>
                         </View>
-
-
-                        <TouchableOpacity>
-                            <Feather name="send" size={24} color="grey"/>
-                        </TouchableOpacity>
-                    </View>
+                    )}
                 </View>
             </View>
         </TouchableOpacity>

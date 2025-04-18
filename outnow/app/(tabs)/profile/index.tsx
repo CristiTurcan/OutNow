@@ -91,6 +91,7 @@ export default function Index() {
         {label: isBusiness? 'Followers' : 'Following', icon: 'users', onPress: () => router.push('/(tabs)/profile/editFollow')},
         {label: 'Edit Profile', icon: 'user', onPress: () => router.push('/(tabs)/profile/editProfile')},
         {label: 'Edit Interests', icon: 'tag', onPress: () => router.push('/(tabs)/profile/editInterests')},
+        ...( !isBusiness ? [{label: 'My data', icon: 'settings', onPress: () => router.push('/(tabs)/profile/myData'),}] : [] ),
         {label: 'Notification', icon: 'bell', onPress: () => router.push('/(tabs)/profile/notification')},
         {label: 'Information', icon: 'info', onPress: () => router.push('(tabs)/profile/information')},
     ];

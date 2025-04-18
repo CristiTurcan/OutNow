@@ -69,7 +69,19 @@ const useAuth = (): AuthHook => {
             const businessStatus: boolean = idTokenResult.claims.isBusiness || false;
             setIsBusiness(businessStatus);
             if (!businessStatus) {
-                await axios.post(`${BASE_URL}/users/upsert`, { email: userCredential.user?.email });
+                // fetch current flags so we don’t overwrite them
+                const { data: current } = await axios.get(
+                    `${BASE_URL}/users/by-email`,
+                    { params: { email: userCredential.user?.email } }
+                );
+
+                await axios.post(`${BASE_URL}/users/upsert`, {
+                    email: userCredential.user?.email,
+                    showDob:       current.showDob,
+                    showLocation:  current.showLocation,
+                    showGender:    current.showGender,
+                    showInterests: current.showInterests,
+                });
             }
         } catch (error: any) {
             throw new Error(error.message);

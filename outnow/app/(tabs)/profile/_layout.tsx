@@ -40,6 +40,12 @@ export default function ProfileLayout() {
                     headerShown: false,
                 }}
             />
+            <Stack.Screen
+                name="myData"
+                options={{
+                    headerShown: false,
+                }}
+            />
         </Stack>
     );
 }

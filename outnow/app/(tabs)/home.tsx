@@ -13,7 +13,6 @@ import globalStyles from "@/styles/globalStyles";
 import {router} from "expo-router";
 import useMyEvents from "@/hooks/useMyEvents";
 import useBusinessProfile from "@/hooks/useBusinessProfile";
-import EventCardBusiness from "@/components/EventCardBusiness";
 import useGoingEvent from "@/hooks/useGoingEvents";
 
 
