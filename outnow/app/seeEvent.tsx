@@ -86,23 +86,10 @@ export default function SeeEvent() {
         }
 
         if (!isGoing) {
-            Alert.alert(
-                "Buy Event",
-                "Are you sure you want to buy this event?",
-                [
-                    {text: "Cancel", style: "cancel"},
-                    {
-                        text: "Buy", onPress: async () => {
-                            try {
-                                await addGoingEvent(userId, event.eventId);
-                                fetchGoingEvents(userId);
-                            } catch (err) {
-                                console.error("Error buying event:", err);
-                            }
-                        }
-                    }
-                ]
-            );
+            router.push({
+                pathname: '/buyMockup',
+                params: {eventId: event.eventId.toString()},
+            });
         } else {
             Alert.alert(
                 "Refund Event",
