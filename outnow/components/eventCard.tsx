@@ -12,7 +12,6 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
     const [isFavorited, setIsFavorited] = useState(event.isFavorited);
     const isGoing = event.isGoing || false;
     const {favoriteEvent, removeFavoriteEvent} = useFavoriteEvent();
-    // const [isConfirmed, setIsConfirmed] = useState(false);
     const {user} = useAuthContext();
     const {userId} = useUserIdByEmail(user?.email || null);
     const {getBusinessProfileById} = useBusinessProfile();
@@ -58,10 +57,6 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
         }
     };
 
-    // const toggleConfirm = () => {
-    //     setIsConfirmed(!isConfirmed);
-    // };
-
     return (
         <TouchableOpacity
             onPress={() => {
@@ -100,8 +95,6 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
                                     style={styles.icon}
                                 />
                             </View>
-
-
                             <TouchableOpacity>
                                 <Feather name="send" size={24} color="grey"/>
                             </TouchableOpacity>

@@ -1,4 +1,4 @@
-import React, {useEffect, useCallback} from 'react';
+import React, {useEffect, useCallback, useState} from 'react';
 import {View, Text, FlatList, StyleSheet, ActivityIndicator, SectionList} from 'react-native';
 import EventCard from '../../components/eventCard';
 import useFavoriteEvent from '@/hooks/useFavoriteEvent';
@@ -9,12 +9,18 @@ import {useFocusEffect} from '@react-navigation/native';
 import {useLoadEvents} from '@/hooks/useLoadEvents';
 import useGoingEvent from "@/hooks/useGoingEvents";
 import globalStyles from "@/styles/globalStyles";
+import {useAuthContext} from "@/contexts/AuthContext";
+import useBusinessProfile from "@/hooks/useBusinessProfile";
+import useMyEvents from "@/hooks/useMyEvents";
+import {router} from "expo-router";
+import LoadingIndicator from "@/components/LoadingIndicator";
+import CustomButton from "@/components/customButton";
 
 const windowWidth = Dimensions.get('window').width;
 const cardWidth = (windowWidth - 40) / 2;
 
 export default function Favorites() {
-    const {user} = useAuth();
+    const {user, isBusiness} = useAuthContext();
     const {userId} = useUserIdByEmail(user?.email || null);
     const {fetchFavoritedEvents, favoritedEvents, removeFavoriteEvent, favoriteEvent} = useFavoriteEvent();
     const {events, loading, error, loadEvents} = useLoadEvents(favoritedEvents);
@@ -31,11 +37,24 @@ export default function Favorites() {
         error: goError,
         loadEvents: loadGoEvents
     } = useLoadEvents(goingEventIds);
-
     type EventSection = {
         title: string;
         data: any[];
     };
+    const {getBusinessProfile} = useBusinessProfile();
+    const [businessAccountId, setBusinessAccountId] = useState<string | null>(null);
+    const {events: myEvents, loading: myEventsLoading, error: myEventsError} = useMyEvents(businessAccountId);
+    const currentDate = new Date();
+    const futureBusinessEvents = myEvents.filter(evt => new Date(evt.eventDate) >= currentDate);
+    const pastBusinessEvents = myEvents.filter(evt => new Date(evt.eventDate) < currentDate);
+
+    useEffect(() => {
+        if (isBusiness && user?.email) {
+            getBusinessProfile(user.email)
+                .then(profile => setBusinessAccountId(profile.email))
+                .catch(console.error);
+        }
+    }, [isBusiness, user?.email]);
 
 
     // Fetch favorites when screen is focused
@@ -84,7 +103,7 @@ export default function Favorites() {
     }
 
 // If both favorites and going sections are empty, show a "no events" message
-    if (favEvents.length === 0 && goEvents.length === 0) {
+    if (favEvents.length === 0 && goEvents.length === 0 && !isBusiness) {
         return (
             <View style={styles.emptyContainer}>
                 <Text style={styles.emptyText}>No favorited or going events yet.</Text>
@@ -94,10 +113,63 @@ export default function Favorites() {
 
     const sections: { title: string; data: any[] }[] = [];
     if (favEvents.length > 0) {
-        sections.push({ title: 'Favorited', data: groupIntoRows(favEvents, 2) });
+        sections.push({title: 'Favorited', data: groupIntoRows(favEvents, 2)});
     }
     if (goEvents.length > 0) {
-        sections.push({ title: 'Going', data: groupIntoRows(goEvents, 2) });
+        sections.push({title: 'Going', data: groupIntoRows(goEvents, 2)});
+    }
+
+    const businessSections = [
+        {title: 'Trending', data: groupIntoRows(futureBusinessEvents, 2)},
+        {title: 'Past', data: groupIntoRows(pastBusinessEvents, 2)},
+    ];
+
+    const addEvent = () => {
+        router.push('/createEvent');
+    }
+
+    if(isBusiness){
+        return (
+            <>
+                {myEventsLoading ? (
+                    <LoadingIndicator/>
+                ) : myEventsError ? (
+                    <Text>Error: {myEventsError}</Text>
+                ) : (
+                    <SectionList
+                        sections={businessSections}
+                        keyExtractor={(row, idx) =>
+                            row.map(evt => evt.eventId).join('-') + '-' + idx
+                        }
+                        renderItem={({item: row}) => (
+                            <View style={styles.rowContainer}>
+                                {row.map(evt => (
+                                    <EventCard
+                                        key={evt.eventId}
+                                        event={evt}
+                                        cardWidth={cardWidth}
+                                    />
+                                ))}
+                            </View>
+                        )}
+                        renderSectionHeader={({section}) => (
+                            <View style={styles.headerContainer}>
+                                <Text style={globalStyles.title}>{section.title}</Text>
+                            </View>
+                        )}
+                        stickySectionHeadersEnabled
+                        contentContainerStyle={styles.container}
+                    />
+                )}
+                <View style={globalStyles.centeredFooter}>
+                    <CustomButton
+                        onPress={addEvent}
+                        title="Add Event"
+                        style={globalStyles.nextButton}
+                    />
+                </View>
+            </>
+        )
     }
 
     return (
@@ -187,5 +259,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 10,
+    },
+    container: {
+        paddingHorizontal: 10,
+        paddingTop: 10,
     },
 });

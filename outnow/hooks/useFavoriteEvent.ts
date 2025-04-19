@@ -45,7 +45,7 @@ const useFavoriteEvent = () => {
             const response = await axios.get(`${BASE_URL}/users/${userId}/favorites`);
             const eventIds = response.data.map((event: any) => event.eventId); // Extract event IDs
             setFavoritedEvents(eventIds); // Update hook state
-            console.log('Favorited events fetched successfully:', eventIds);
+            // console.log('Favorited events fetched successfully:', eventIds);
             return eventIds; // Explicitly return the event IDs
         } catch (err: any) {
             console.error('Error fetching favorited events:', err);

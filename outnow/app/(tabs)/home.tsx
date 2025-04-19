@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {FlatList, SafeAreaView, SectionList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {SafeAreaView, SectionList, StyleSheet, Text, TextInput, View} from 'react-native';
 import EventCard from '../../components/eventCard';
 import {Dimensions} from 'react-native';
 import useFavoriteEvent from "@/hooks/useFavoriteEvent";
@@ -8,12 +8,9 @@ import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
 import {useFocusEffect} from '@react-navigation/native';
 import {useAllEvents} from '@/hooks/useAllEvents';
 import LoadingIndicator from '@/components/LoadingIndicator';
-import CustomButton from "@/components/customButton";
 import globalStyles from "@/styles/globalStyles";
-import {router} from "expo-router";
-import useMyEvents from "@/hooks/useMyEvents";
-import useBusinessProfile from "@/hooks/useBusinessProfile";
 import useGoingEvent from "@/hooks/useGoingEvents";
+import useSearchEvents from "@/hooks/useSearchEvents";
 
 
 const windowWidth = Dimensions.get('window').width;
@@ -24,16 +21,14 @@ const Home = () => {
     const {userId} = useUserIdByEmail(user?.email || null);
     const {fetchFavoritedEvents, favoritedEvents} = useFavoriteEvent();
     const {events, loading, error, loadEvents} = useAllEvents();
-    const {getBusinessProfile} = useBusinessProfile();
-    const [businessProfile, setBusinessProfile] = useState(null);
-    const [businessAccountId, setBusinessAccountId] = useState<String | null>(null);
-    const {events: myEvents, loading: myEventsLoading, error: myEventsError} = useMyEvents(businessAccountId);
-    const { goingEvents, fetchGoingEvents } = useGoingEvent();
+    const {goingEvents, fetchGoingEvents} = useGoingEvent();
+    const [searchQuery, setSearchQuery] = useState('');
+    const {results: searchResults, loading: searchLoading, error: searchError, searchEvents} = useSearchEvents();
+    const displayedEvents = searchQuery.length > 0 ? searchResults : events;
     const currentDate = new Date();
-    const futureEvents = events.filter(e => new Date(e.eventDate) >= currentDate);
-    const pastEvents = events.filter(e => new Date(e.eventDate) < currentDate);
-    const futureBusinessEvents = myEvents.filter(evt => new Date(evt.eventDate) >= currentDate);
-    const pastBusinessEvents = myEvents.filter(evt => new Date(evt.eventDate) < currentDate);
+    const futureEvents = displayedEvents.filter(e => new Date(e.eventDate) >= currentDate);
+    const pastEvents = displayedEvents.filter(e => new Date(e.eventDate) < currentDate);
+
     const groupIntoRows = (data: any[], columns: number) => {
         const rows = [];
         for (let i = 0; i < data.length; i += columns) {
@@ -45,28 +40,17 @@ const Home = () => {
     const futureRows = groupIntoRows(futureEvents, 2);
     const pastRows = groupIntoRows(pastEvents, 2);
 
-    const businessSections = [
-        { title: 'Trending', data: groupIntoRows(futureBusinessEvents, 2) },
-        { title: 'Past',     data: groupIntoRows(pastBusinessEvents,   2) },
-    ];
-
-
-    useEffect(() => {
-        if (isBusiness && user?.email) {
-            getBusinessProfile(user.email)
-                .then(data => {
-                    setBusinessProfile(data);
-                    setBusinessAccountId(data.email);
-                })
-                .catch(err => console.error("Error fetching business profile:", err));
-        }
-    }, [isBusiness, user?.email]);
-
     useEffect(() => {
         if (!isBusiness) {
             loadEvents();
         }
     }, [isBusiness, loadEvents]);
+
+    useEffect(() => {
+        if (searchQuery.length > 1) {
+            searchEvents(searchQuery);
+        }
+    }, [searchQuery, searchEvents]);
 
 
     useFocusEffect(
@@ -86,11 +70,6 @@ const Home = () => {
         }, [userId, fetchGoingEvents])
     );
 
-
-    const addEvent = () => {
-        router.push('/createEvent');
-    }
-
     if (loading) {
         return <LoadingIndicator/>;
     }
@@ -101,15 +80,25 @@ const Home = () => {
 
     return (
         <SafeAreaView style={{flex: 1}}>
-            {!isBusiness && (
+            <TextInput
+                placeholder="Search events…"
+                placeholderTextColor="#999"
+                clearButtonMode="while-editing"
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="default"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                style={styles.searchBox}
+            />
                 <>
                     <SectionList
                         sections={[
-                            { title: 'Trending', data: futureRows },
-                            { title: 'Past events', data: pastRows },
+                            {title: 'Trending', data: futureRows},
+                            {title: 'Past events', data: pastRows},
                         ]}
                         keyExtractor={(_, index) => index.toString()}
-                        renderItem={({ item: row }) => (
+                        renderItem={({item: row}) => (
                             <View style={styles.rowContainer}>
                                 {row.map((eventItem: any) => (
                                     <EventCard
@@ -137,48 +126,6 @@ const Home = () => {
                         contentContainerStyle={styles.container}
                     />
                 </>
-            )}
-            {isBusiness && (
-                <>
-                    {myEventsLoading ? (
-                        <LoadingIndicator/>
-                    ) : myEventsError ? (
-                        <Text>Error: {myEventsError}</Text>
-                    ) : (
-                        <SectionList
-                            sections={businessSections}
-                            keyExtractor={(row, idx) =>
-                                row.map(evt => evt.eventId).join('-') + '-' + idx
-                            }
-                            renderItem={({ item: row }) => (
-                                <View style={styles.rowContainer}>
-                                    {row.map(evt => (
-                                        <EventCard
-                                            key={evt.eventId}
-                                            event={evt}
-                                            cardWidth={cardWidth}
-                                        />
-                                    ))}
-                                </View>
-                            )}
-                            renderSectionHeader={({ section }) => (
-                                <View style={styles.headerContainer}>
-                                    <Text style={globalStyles.title}>{section.title}</Text>
-                                </View>
-                            )}
-                            stickySectionHeadersEnabled
-                            contentContainerStyle={styles.container}
-                        />
-                    )}
-                    <View style={globalStyles.centeredFooter}>
-                        <CustomButton
-                            onPress={addEvent}
-                            title="Add Event"
-                            style={globalStyles.nextButton}
-                        />
-                    </View>
-                </>
-            )}
         </SafeAreaView>
     );
 };
@@ -187,6 +134,21 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 10,
         paddingTop: 10,
+    },
+    searchBox: {
+        height: 40,
+        margin: 10,
+        paddingHorizontal: 15,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 10,
+        fontSize: 16,
+        // iOS shadow
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        // Android elevation
+        elevation: 3,
     },
     column: {
         justifyContent: 'space-between',

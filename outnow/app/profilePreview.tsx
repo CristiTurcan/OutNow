@@ -179,12 +179,17 @@ export default function ProfilePreview() {
                             <Text style={styles.meta}>{profile.interestList}</Text>
                         )}
 
-                        <Text style={styles.email}>Contact: {profile.email}</Text>
+                        <Text style={styles.meta}>Contact: {profile.email}</Text>
                     </>
                 )}
 
-                {/*{profile.location && <Text style={styles.meta}>{profile.location}</Text>}*/}
-                {/*{profile.interestList && <Text style={styles.meta}>{profile.interestList}</Text>}*/}
+                {!isBusiness && (
+                    <>
+                        {profile.location && <Text style={styles.meta}>{profile.location}</Text>}
+                        {profile.interestList && <Text style={styles.meta}>{profile.interestList}</Text>}
+                        <Text style={styles.meta}>Contact: {profile.email}</Text>
+                    </>
+                )}
             </View>
 
 
