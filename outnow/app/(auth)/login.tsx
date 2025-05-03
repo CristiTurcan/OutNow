@@ -1,24 +1,23 @@
-import { useState } from 'react';
+import React, {useState} from 'react';
 import {
-    View,
-    TextInput,
-    StyleSheet,
     ActivityIndicator,
     Button,
-    TouchableOpacity,
-    Text,
     Keyboard,
-    TouchableWithoutFeedback
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
-import React from 'react';
 import CustomButton from "@/components/customButton";
-import { router } from "expo-router";
+import {router} from "expo-router";
 import useAuth from '@/hooks/useAuth';
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { signIn, loading } = useAuth();
+    const {signIn, loading} = useAuth();
 
     const handleSignIn = async () => {
         try {
@@ -31,37 +30,37 @@ export default function Login() {
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
-            <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                placeholder="Email"
-            />
-            <TextInput
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                placeholder="Password"
-            />
+            <View style={styles.container}>
+                <TextInput
+                    style={styles.input}
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    placeholder="Email"
+                />
+                <TextInput
+                    style={styles.input}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    placeholder="Password"
+                />
 
-            {/* Forgot Password Button */}
-            <TouchableOpacity onPress={() => router.push('(auth)/forgot_password')}>
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-            </TouchableOpacity>
+                {/* Forgot Password Button */}
+                <TouchableOpacity onPress={() => router.push('(auth)/forgot_password')}>
+                    <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+                </TouchableOpacity>
 
-            {loading ? (
-                <ActivityIndicator size="small" style={{ margin: 28 }} />
-            ) : (
-                <View style={styles.buttonContainer}>
-                    <CustomButton onPress={handleSignIn} title="Login" style={styles.loginButton} />
-                    <Button onPress={() => router.push('/(auth)/signup')} title="or create account" />
-                </View>
-            )}
-        </View>
+                {loading ? (
+                    <ActivityIndicator size="small" style={{margin: 28}}/>
+                ) : (
+                    <View style={styles.buttonContainer}>
+                        <CustomButton onPress={handleSignIn} title="Login" style={styles.loginButton}/>
+                        <Button onPress={() => router.push('/(auth)/signup')} title="or create account"/>
+                    </View>
+                )}
+            </View>
         </TouchableWithoutFeedback>
     );
 }

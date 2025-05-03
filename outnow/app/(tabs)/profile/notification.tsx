@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, StyleSheet, SafeAreaView} from 'react-native';
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 import globalStyles from "@/styles/globalStyles";
 import CustomBackButton from "@/components/customBackButton";
 

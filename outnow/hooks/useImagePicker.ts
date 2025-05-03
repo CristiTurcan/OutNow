@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import * as ImagePicker from 'expo-image-picker';
 
 interface ImagePickerResult {
@@ -47,5 +47,5 @@ export function useImagePicker(): ImagePickerResult {
         await pickImage(ImagePicker.requestMediaLibraryPermissionsAsync, ImagePicker.launchImageLibraryAsync);
     };
 
-    return { photoUri, photoBase64, openCamera, openLibrary };
+    return {photoUri, photoBase64, openCamera, openLibrary};
 }

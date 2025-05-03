@@ -1,16 +1,18 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
+    Image,
+    Keyboard,
+    Platform,
     SafeAreaView,
-    View,
+    ScrollView,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    StyleSheet,
-    Image,
-    Platform,
-    Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view'
 import {GooglePlacesAutocomplete} from 'react-native-google-places-autocomplete';
 import Constants from 'expo-constants';
 import CustomButton from '@/components/customButton';
@@ -168,7 +170,7 @@ export default function CreateEvent() {
                 {/*>*/}
                 <KeyboardAwareScrollView
                     keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+                    contentContainerStyle={{flexGrow: 1, paddingBottom: 20}}
                 >
                     <ScrollView contentContainerStyle={styles.bodyContainer}>
                         {/* Image Picker */}
@@ -282,7 +284,7 @@ export default function CreateEvent() {
 
                         {/*Select event type*/}
                         <TouchableOpacity
-                            style={[styles.eventTypeButton, { alignSelf: 'center', width: '50%' }]}
+                            style={[styles.eventTypeButton, {alignSelf: 'center', width: '50%'}]}
                             onPress={() => router.push('/eventInterests')}
                         >
                             <Text style={styles.eventTypeButtonText}>Select Event Type</Text>

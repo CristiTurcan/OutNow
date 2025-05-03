@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import {BASE_URL} from "@/config/api";
 
 export type Feedback = {
@@ -89,5 +89,5 @@ export default function useFeedback() {
         }
     };
 
-    return { addFeedback, getFeedback, loading, error };
+    return {addFeedback, getFeedback, loading, error};
 }

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import axios from 'axios';
-import { BASE_URL } from '@/config/api';
+import {BASE_URL} from '@/config/api';
 
 export interface EventDetails {
     eventId: number;
@@ -39,5 +39,5 @@ export default function useEventDetails(eventId: number | null) {
         fetchEventDetails();
     }, [eventId]);
 
-    return { event, loading, error, refetch: fetchEventDetails };
+    return {event, loading, error, refetch: fetchEventDetails};
 }

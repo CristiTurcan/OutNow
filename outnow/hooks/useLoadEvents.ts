@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { fetchAllEvents } from '@/services/eventService';
+import {useCallback, useState} from 'react';
+import {fetchAllEvents} from '@/services/eventService';
 
 export function useLoadEvents(favoritedEvents: number[]) {
     const [events, setEvents] = useState([]);
@@ -28,5 +28,5 @@ export function useLoadEvents(favoritedEvents: number[]) {
         }
     }, [favoritedEvents]);
 
-    return { events, loading, error, loadEvents };
+    return {events, loading, error, loadEvents};
 }

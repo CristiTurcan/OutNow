@@ -1,16 +1,16 @@
 import React from 'react';
 import {
-    View,
-    TextInput,
-    StyleSheet,
-    KeyboardAvoidingView,
-    Text,
-    SafeAreaView,
-    Switch,
     Keyboard,
-    TouchableWithoutFeedback
+    KeyboardAvoidingView,
+    SafeAreaView,
+    StyleSheet,
+    Switch,
+    Text,
+    TextInput,
+    TouchableWithoutFeedback,
+    View
 } from 'react-native';
-import {useForm, Controller} from 'react-hook-form';
+import {Controller, useForm} from 'react-hook-form';
 import * as yup from 'yup';
 import {yupResolver} from '@hookform/resolvers/yup';
 import CustomButton from '@/components/customButton';

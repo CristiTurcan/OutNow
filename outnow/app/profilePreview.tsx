@@ -1,12 +1,15 @@
 import React, {useEffect, useState} from 'react';
+// Determine card width (example: two columns)
 import {
-    SafeAreaView,
-    View,
-    Text,
-    Image,
-    StyleSheet,
+    Alert,
+    Dimensions,
     FlatList,
-    Alert, TouchableOpacity,
+    Image,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import {useLocalSearchParams} from 'expo-router';
 import {useAuthContext} from '@/contexts/AuthContext';
@@ -19,9 +22,6 @@ import globalStyles from "@/styles/globalStyles";
 import CustomBackButton from "@/components/customBackButton";
 import useFavoriteEvent from '@/hooks/useFavoriteEvent';
 import useGoingEvent from '@/hooks/useGoingEvents';
-
-// Determine card width (example: two columns)
-import {Dimensions} from 'react-native';
 import useUserProfile from "@/hooks/useUserProfile";
 
 const {width} = Dimensions.get('window');
@@ -159,19 +159,19 @@ export default function ProfilePreview() {
                     </>
                 ) : (
                     <>
-                        {(profile as UserDTO).showDob       && (
+                        {(profile as UserDTO).showDob && (
                             <Text style={styles.meta}>
                                 Date of Birth: {(profile as UserDTO).dateOfBirth || 'N/A'}
                             </Text>
                         )}
 
-                        {(profile as UserDTO).showGender    && (profile as UserDTO).gender && (
+                        {(profile as UserDTO).showGender && (profile as UserDTO).gender && (
                             <Text style={styles.meta}>
                                 Gender: {(profile as UserDTO).gender}
                             </Text>
                         )}
 
-                        {(profile as UserDTO).showLocation  && profile.location && (
+                        {(profile as UserDTO).showLocation && profile.location && (
                             <Text style={styles.meta}>{profile.location}</Text>
                         )}
 

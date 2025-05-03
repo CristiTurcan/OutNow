@@ -1,24 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import {
-    SafeAreaView,
-    View,
-    Text,
-    Switch,
-    StyleSheet,
-} from 'react-native';
+import React from 'react';
+import {SafeAreaView, StyleSheet, Switch, Text, View,} from 'react-native';
 import globalStyles from '@/styles/globalStyles';
 import CustomBackButton from '@/components/customBackButton';
 import useVisibilityPrefs from "@/hooks/useVisibilityPrefs";
 
 export default function MyData() {
-    const { prefs, loading, updatePref } = useVisibilityPrefs();
+    const {prefs, loading, updatePref} = useVisibilityPrefs();
 
     if (loading) return <Text>Loading…</Text>;
 
     return (
         <SafeAreaView style={globalStyles.container}>
             <View style={globalStyles.headerRow}>
-                <CustomBackButton text="" style={globalStyles.backButton} />
+                <CustomBackButton text="" style={globalStyles.backButton}/>
                 <Text style={globalStyles.title}>My data</Text>
             </View>
 
@@ -68,5 +62,5 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: '#eee',
     },
-    label: { fontSize: 16 },
+    label: {fontSize: 16},
 });

@@ -1,10 +1,8 @@
-import React, {useEffect, useCallback, useState} from 'react';
-import {View, Text, FlatList, StyleSheet, ActivityIndicator, SectionList} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {ActivityIndicator, Dimensions, SectionList, StyleSheet, Text, View} from 'react-native';
 import EventCard from '../../components/eventCard';
 import useFavoriteEvent from '@/hooks/useFavoriteEvent';
-import useAuth from '@/hooks/useAuth';
 import useUserIdByEmail from '@/hooks/useUserByIdByEmail';
-import {Dimensions} from 'react-native';
 import {useFocusEffect} from '@react-navigation/native';
 import {useLoadEvents} from '@/hooks/useLoadEvents';
 import useGoingEvent from "@/hooks/useGoingEvents";
@@ -128,7 +126,7 @@ export default function Favorites() {
         router.push('/createEvent');
     }
 
-    if(isBusiness){
+    if (isBusiness) {
         return (
             <>
                 {myEventsLoading ? (

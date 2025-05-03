@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import {useCallback, useState} from 'react';
 import {BASE_URL} from "@/config/api";
 
 export interface EventDTO {
@@ -26,5 +26,5 @@ export default function useSearchEvents() {
         }
     }, []);
 
-    return { results, loading, error, searchEvents };
+    return {results, loading, error, searchEvents};
 }

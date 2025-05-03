@@ -1,7 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {SafeAreaView, SectionList, StyleSheet, Text, TextInput, View} from 'react-native';
+import {Dimensions, SafeAreaView, SectionList, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import EventCard from '../../components/eventCard';
-import {Dimensions} from 'react-native';
 import useFavoriteEvent from "@/hooks/useFavoriteEvent";
 import {useAuthContext} from '@/contexts/AuthContext';
 import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
@@ -11,6 +10,11 @@ import LoadingIndicator from '@/components/LoadingIndicator';
 import globalStyles from "@/styles/globalStyles";
 import useGoingEvent from "@/hooks/useGoingEvents";
 import useSearchEvents from "@/hooks/useSearchEvents";
+import {Ionicons} from "@expo/vector-icons";
+import {router} from "expo-router";
+import useBusinessProfile from "@/hooks/useBusinessProfile";
+import {useLocalNotifications} from "@/hooks/useLocalNotifications";
+import {useNotificationSocket} from "@/hooks/useNotificationSocket";
 
 
 const windowWidth = Dimensions.get('window').width;
@@ -28,6 +32,38 @@ const Home = () => {
     const currentDate = new Date();
     const futureEvents = displayedEvents.filter(e => new Date(e.eventDate) >= currentDate);
     const pastEvents = displayedEvents.filter(e => new Date(e.eventDate) < currentDate);
+    const [bizAccountId, setBizAccountId] = useState<number | null>(null)
+    const {getBusinessAccountId} = useBusinessProfile()
+
+    useEffect(() => {
+        if (isBusiness && user?.email) {
+            getBusinessAccountId(user.email).then(setBizAccountId)
+        }
+    }, [isBusiness, user?.email, getBusinessAccountId])
+
+    const notifUserId = isBusiness ? bizAccountId : userId
+    const {
+        notifications,
+        unreadCount,
+        loading: notifLoading,
+        error: notifError,
+        refresh: refreshNotifications,
+        markAsRead
+    } = useLocalNotifications(notifUserId);
+
+// — insert these lines immediately below —
+    const [count, setCount] = useState<number>(unreadCount);
+
+    useEffect(() => {
+        setCount(unreadCount);
+    }, [unreadCount]);
+
+    useNotificationSocket(
+        notifUserId,
+        newCount => setCount(newCount),
+        () => {
+        }   // we don’t need the full DTO here
+    );
 
     const groupIntoRows = (data: any[], columns: number) => {
         const rows = [];
@@ -70,6 +106,14 @@ const Home = () => {
         }, [userId, fetchGoingEvents])
     );
 
+    useFocusEffect(
+        useCallback(() => {
+            if (notifUserId) {
+                refreshNotifications()
+            }
+        }, [notifUserId, refreshNotifications])
+    )
+
     if (loading) {
         return <LoadingIndicator/>;
     }
@@ -80,52 +124,64 @@ const Home = () => {
 
     return (
         <SafeAreaView style={{flex: 1}}>
-            <TextInput
-                placeholder="Search events…"
-                placeholderTextColor="#999"
-                clearButtonMode="while-editing"
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="default"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                style={styles.searchBox}
-            />
-                <>
-                    <SectionList
-                        sections={[
-                            {title: 'Trending', data: futureRows},
-                            {title: 'Past events', data: pastRows},
-                        ]}
-                        keyExtractor={(_, index) => index.toString()}
-                        renderItem={({item: row}) => (
-                            <View style={styles.rowContainer}>
-                                {row.map((eventItem: any) => (
-                                    <EventCard
-                                        key={eventItem.eventId}
-                                        event={{
-                                            ...eventItem,
-                                            isFavorited: favoritedEvents.includes(eventItem.eventId),
-                                            isGoing: goingEvents.includes(eventItem.eventId)
-                                        }}
-                                        cardWidth={cardWidth}
-                                        userId={userId}
-                                    />
-                                ))}
+            <View style={styles.searchRow}>
+                <TextInput
+                    placeholder="Search events…"
+                    placeholderTextColor="#999"
+                    clearButtonMode="while-editing"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="default"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    style={styles.searchBoxFlex}
+                />
+                <TouchableOpacity onPress={() => router.push('/NotificationCenter')}>
+                    <View style={styles.bellContainer}>
+                        <Ionicons name="notifications-outline" size={24}/>
+                        {count > 0 && (
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>{count}</Text>
                             </View>
                         )}
-                        renderSectionHeader={({
-                                                  section,
-                                              }: { section: { title: string; data: any[] } }) => (
-                            <View style={styles.headerContainer}>
-                                <Text style={globalStyles.title}>{section.title}</Text>
-                            </View>
-                        )}
+                    </View>
+                </TouchableOpacity>
+            </View>
+            <>
+                <SectionList
+                    sections={[
+                        {title: 'Trending', data: futureRows},
+                        {title: 'Past events', data: pastRows},
+                    ]}
+                    keyExtractor={(_, index) => index.toString()}
+                    renderItem={({item: row}) => (
+                        <View style={styles.rowContainer}>
+                            {row.map((eventItem: any) => (
+                                <EventCard
+                                    key={eventItem.eventId}
+                                    event={{
+                                        ...eventItem,
+                                        isFavorited: favoritedEvents.includes(eventItem.eventId),
+                                        isGoing: goingEvents.includes(eventItem.eventId)
+                                    }}
+                                    cardWidth={cardWidth}
+                                    userId={userId}
+                                />
+                            ))}
+                        </View>
+                    )}
+                    renderSectionHeader={({
+                                              section,
+                                          }: { section: { title: string; data: any[] } }) => (
+                        <View style={styles.headerContainer}>
+                            <Text style={globalStyles.title}>{section.title}</Text>
+                        </View>
+                    )}
 
-                        stickySectionHeadersEnabled={true}
-                        contentContainerStyle={styles.container}
-                    />
-                </>
+                    stickySectionHeadersEnabled={true}
+                    contentContainerStyle={styles.container}
+                />
+            </>
         </SafeAreaView>
     );
 };
@@ -134,21 +190,6 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 10,
         paddingTop: 10,
-    },
-    searchBox: {
-        height: 40,
-        margin: 10,
-        paddingHorizontal: 15,
-        backgroundColor: '#f0f0f0',
-        borderRadius: 10,
-        fontSize: 16,
-        // iOS shadow
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        // Android elevation
-        elevation: 3,
     },
     column: {
         justifyContent: 'space-between',
@@ -164,6 +205,55 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         marginBottom: 10,
     },
+    searchRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,
+        marginVertical: 10,
+    },
+    searchBoxFlex: {
+        flex: 1,
+        height: 40,
+        paddingHorizontal: 15,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 10,
+        fontSize: 16,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    headerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginHorizontal: 10,
+        marginTop: 10,
+    },
+    bellContainer: {
+        position: 'relative',
+        padding: 4,
+    },
+    badge: {
+        position: 'absolute',
+        top: -2,
+        right: -2,
+        backgroundColor: 'red',
+        borderRadius: 8,
+        minWidth: 16,
+        height: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 2,
+    },
+    badgeText: {
+        color: 'white',
+        fontSize: 10,
+        fontWeight: 'bold',
+    },
+
+
 });
 
 

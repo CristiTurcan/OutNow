@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import {useCallback, useState} from 'react';
 import axios from 'axios';
 import {BASE_URL} from "@/config/api";
 

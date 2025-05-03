@@ -1,27 +1,14 @@
 // src/hooks/useFollowedBusiness.ts
-import { useState, useEffect, useCallback } from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import axios from 'axios'
-import { BASE_URL } from '@/config/api'
-
-export interface UserDTO {
-    userid: number
-    email: string
-    username: string
-    userPhoto?: string
-    bio?: string
-    gender?: string
-    dateOfBirth?: string
-    location?: string
-    interestList?: string
-}
+import {BASE_URL} from '@/config/api'
+import type {UserDTO} from '@/types/UserDTO'
 
 export default function useFollowedBusiness(
     userId: number | null,
     businessAccountId: number | null = null
 ) {
-    //
-    // — User side: follow/unfollow & list of followed business‑account IDs
-    //
+
     const [followed, setFollowed] = useState<number[]>([])
     const [userFetchLoading, setUserFetchLoading] = useState(false)
     const [userActionLoading, setUserActionLoading] = useState(false)
@@ -93,9 +80,6 @@ export default function useFollowedBusiness(
         [followed]
     )
 
-    //
-    // — Business side: fetch followers & count
-    //
     const [followers, setFollowers] = useState<UserDTO[]>([])
     const [followersLoading, setFollowersLoading] = useState(false)
     const [followersError, setFollowersError] = useState<string | null>(null)
@@ -142,7 +126,6 @@ export default function useFollowedBusiness(
         }
     }, [businessAccountId])
 
-    // auto-fetch when inputs change
     useEffect(() => {
         fetchFollowed()
     }, [fetchFollowed])
@@ -153,9 +136,6 @@ export default function useFollowedBusiness(
     }, [fetchFollowers, fetchFollowerCount])
 
     return {
-        //
-        // user‐side API
-        //
         followed,
         userFetchLoading,
         userActionLoading,
@@ -164,15 +144,10 @@ export default function useFollowedBusiness(
         follow,
         unfollow,
         isFollowing,
-
-        //
-        // business‐side API
-        //
         followers,
         followersLoading,
         followersError,
         fetchFollowers,
-
         followerCount,
         countLoading,
         countError,

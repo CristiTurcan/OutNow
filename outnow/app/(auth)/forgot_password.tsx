@@ -1,5 +1,15 @@
 import React, {useState} from 'react';
-import {View, TextInput, Button, Alert, StyleSheet, Text, SafeAreaView, Keyboard} from 'react-native';
+import {
+    Alert,
+    Button,
+    Keyboard,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableWithoutFeedback,
+    View
+} from 'react-native';
 import auth from '@react-native-firebase/auth';
 import {router} from 'expo-router';
 import CustomBackButton from "@/components/customBackButton";

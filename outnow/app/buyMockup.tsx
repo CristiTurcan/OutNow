@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import {SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, StyleSheet, Alert} from 'react-native';
-import {useRouter, useLocalSearchParams} from 'expo-router';
+import {Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
+import {useLocalSearchParams, useRouter} from 'expo-router';
 import CustomButton from '@/components/customButton';
 import globalStyles from '@/styles/globalStyles';
 import CustomBackButton from "@/components/customBackButton";
@@ -11,9 +11,9 @@ import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
 export default function BuyMockup() {
     const router = useRouter();
     const {eventId} = useLocalSearchParams() as { eventId: string };
-    const { addGoingEvent, fetchGoingEvents } = useGoingEvent();
-    const { user } = useAuthContext();
-    const { userId } = useUserIdByEmail(user?.email || null);
+    const {addGoingEvent, fetchGoingEvents} = useGoingEvent();
+    const {user} = useAuthContext();
+    const {userId} = useUserIdByEmail(user?.email || null);
 
     const [cardNumber, setCardNumber] = useState('');
     const [expiry, setExpiry] = useState('');

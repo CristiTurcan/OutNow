@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import axios from 'axios';
 import useBusinessProfile from '@/hooks/useBusinessProfile';
 import {BASE_URL} from "@/config/api";
 
 export default function useMyEvents(businessEmail: string | null) {
-    const { getBusinessAccountId } = useBusinessProfile();
+    const {getBusinessAccountId} = useBusinessProfile();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -31,5 +31,5 @@ export default function useMyEvents(businessEmail: string | null) {
         fetchMyEvents();
     }, [businessEmail, getBusinessAccountId]);
 
-    return { events, loading, error };
+    return {events, loading, error};
 }

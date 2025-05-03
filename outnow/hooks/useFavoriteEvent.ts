@@ -57,7 +57,6 @@ const useFavoriteEvent = () => {
     }, []);
 
 
-
     return {
         favoriteEvent,
         removeFavoriteEvent,

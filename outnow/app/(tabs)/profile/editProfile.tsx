@@ -1,17 +1,16 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-    View,
-    Text,
+    ActivityIndicator,
+    Keyboard,
+    Modal,
+    Platform,
+    SafeAreaView,
     StyleSheet,
+    Text,
     TextInput,
     TouchableOpacity,
-    Image,
-    SafeAreaView,
-    Modal,
     TouchableWithoutFeedback,
-    Platform,
-    ActionSheetIOS,
-    ActivityIndicator, Keyboard,
+    View,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import {router} from 'expo-router';

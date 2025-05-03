@@ -1,16 +1,16 @@
 import React, {useState} from 'react';
 import {
-    View,
-    Text,
+    ActionSheetIOS,
+    Keyboard,
+    Modal,
+    Platform,
+    SafeAreaView,
     StyleSheet,
+    Text,
     TextInput,
     TouchableOpacity,
-    Image,
-    SafeAreaView,
-    Modal,
     TouchableWithoutFeedback,
-    Platform,
-    ActionSheetIOS, Keyboard,
+    View,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import {router, useLocalSearchParams} from 'expo-router';

@@ -1,5 +1,4 @@
 import {StyleSheet} from "react-native";
-import {green} from "react-native-reanimated/lib/typescript/Colors";
 
 const globalStyles = StyleSheet.create({
     container: {

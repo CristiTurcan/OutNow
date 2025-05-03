@@ -1,17 +1,18 @@
 import React, {useEffect, useState} from 'react';
 import {
-    SafeAreaView,
-    View,
-    Text,
-    StyleSheet,
+    Alert,
     Keyboard,
-    TouchableWithoutFeedback,
+    Modal,
+    SafeAreaView,
+    StyleSheet,
+    Text,
     TextInput,
     TouchableOpacity,
-    Modal, Alert,
+    TouchableWithoutFeedback,
+    View,
 } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
-import {router, useLocalSearchParams} from 'expo-router';
+import {useLocalSearchParams} from 'expo-router';
 import globalStyles from '@/styles/globalStyles';
 import CustomBackButton from '@/components/customBackButton';
 import CustomButton from '@/components/customButton';

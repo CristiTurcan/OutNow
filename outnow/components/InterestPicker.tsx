@@ -1,5 +1,5 @@
 import React from 'react';
-import {FlatList, StyleSheet, Text, View} from 'react-native';
+import {FlatList, StyleSheet, View} from 'react-native';
 import CustomButton from '@/components/customButton';
 import AnimatedInterestCell from '@/components/AnimatedInterestCell';
 import globalStyles from "@/styles/globalStyles";

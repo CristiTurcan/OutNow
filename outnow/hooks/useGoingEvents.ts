@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import {useCallback, useState} from 'react';
 import axios from 'axios';
-import { BASE_URL } from '@/config/api';
+import {BASE_URL} from '@/config/api';
 
 const useGoingEvent = () => {
     // State for storing event IDs that the user is going to
@@ -44,7 +44,7 @@ const useGoingEvent = () => {
         }
     }, []);
 
-    return { goingEvents, loading, error, fetchGoingEvents, addGoingEvent, removeGoingEvent };
+    return {goingEvents, loading, error, fetchGoingEvents, addGoingEvent, removeGoingEvent};
 };
 
 export default useGoingEvent;

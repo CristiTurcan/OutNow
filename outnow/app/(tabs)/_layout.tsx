@@ -1,6 +1,6 @@
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { Dimensions, Platform, StyleSheet } from 'react-native';
+import {Tabs} from 'expo-router';
+import {Ionicons} from '@expo/vector-icons';
+import {Dimensions} from 'react-native';
 
 const screenHeight = Dimensions.get('window').height;
 const headerHeight = screenHeight > 800 ? 70 : 50;
@@ -33,8 +33,8 @@ export default function TabLayout() {
                 name="home"
                 options={{
                     title: 'Home',
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="home-outline" color={color} size={size} />
+                    tabBarIcon: ({color, size}) => (
+                        <Ionicons name="home-outline" color={color} size={size}/>
                     ),
                 }}
             />
@@ -42,8 +42,8 @@ export default function TabLayout() {
                 name="events"
                 options={{
                     title: 'My Events',
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="bookmark-outline" color={color} size={size} />
+                    tabBarIcon: ({color, size}) => (
+                        <Ionicons name="bookmark-outline" color={color} size={size}/>
                     ),
                 }}
             />
@@ -51,8 +51,8 @@ export default function TabLayout() {
                 name="profile"
                 options={{
                     title: 'Profile',
-                    tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="person-outline" color={color} size={size} />
+                    tabBarIcon: ({color, size}) => (
+                        <Ionicons name="person-outline" color={color} size={size}/>
                     ),
                 }}
             />

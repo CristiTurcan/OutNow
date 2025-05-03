@@ -1,5 +1,6 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
+    Image,
     Keyboard,
     SafeAreaView,
     ScrollView,
@@ -8,8 +9,7 @@ import {
     TextInput,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    View,
-    Image
+    View
 } from 'react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import CustomBackButton from '@/components/customBackButton';
@@ -19,9 +19,8 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 import useEvents from "@/hooks/useEvents";
 import useEventDetails from "@/hooks/useEventDetails";
-import { useImagePicker } from '@/hooks/useImagePicker';
+import {useImagePicker} from '@/hooks/useImagePicker';
 import tempStore from "@/services/tempStore";
-import {useFocusEffect} from "@react-navigation/native";
 
 export default function EditEvent() {
     const {eventId} = useLocalSearchParams() as { eventId: string };
@@ -29,10 +28,9 @@ export default function EditEvent() {
     const [eventData, setEventData] = useState<any>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const { updateEvent } = useEvents();
-    const { event, refetch } = useEventDetails(Number(eventId));
-    const { photoUri, photoBase64, openLibrary } = useImagePicker();
-
+    const {updateEvent} = useEvents();
+    const {event, refetch} = useEventDetails(Number(eventId));
+    const {photoUri, photoBase64, openLibrary} = useImagePicker();
 
 
     // Form states
@@ -160,7 +158,7 @@ export default function EditEvent() {
             price: Number(price),
             eventDate: eventDate ? eventDate.toLocaleDateString('en-CA') : null,
             eventTime: eventTime
-                ? eventTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                ? eventTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
                 : null,
             interestList: (tempStore.eventInterests && tempStore.eventInterests.length > 0)
                 ? tempStore.eventInterests.join(',')
@@ -189,116 +187,116 @@ export default function EditEvent() {
                 </View>
                 <KeyboardAwareScrollView
                     keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+                    contentContainerStyle={{flexGrow: 1, paddingBottom: 20}}
                 >
-                <ScrollView contentContainerStyle={styles.contentContainer}>
+                    <ScrollView contentContainerStyle={styles.contentContainer}>
 
-                    <TouchableOpacity onPress={openLibrary} style={styles.imagePicker}>
-                        {eventImageUri ? (
-                            <Image source={{ uri: eventImageUri }} style={styles.image} />
-                        ) : (
-                            <Text style={styles.placeholderText}>Select Event Image</Text>
-                        )}
-                    </TouchableOpacity>
-                    {imageError !== '' && <Text style={globalStyles.errorText}>{imageError}</Text>}
+                        <TouchableOpacity onPress={openLibrary} style={styles.imagePicker}>
+                            {eventImageUri ? (
+                                <Image source={{uri: eventImageUri}} style={styles.image}/>
+                            ) : (
+                                <Text style={styles.placeholderText}>Select Event Image</Text>
+                            )}
+                        </TouchableOpacity>
+                        {imageError !== '' && <Text style={globalStyles.errorText}>{imageError}</Text>}
 
 
-                    {/* Title Field */}
-                    <Text style={styles.fieldLabel}>Title</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={title}
-                        onChangeText={setTitle}
-                    />
-                    {titleError !== '' && <Text style={globalStyles.errorText}>{titleError}</Text>}
+                        {/* Title Field */}
+                        <Text style={styles.fieldLabel}>Title</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={title}
+                            onChangeText={setTitle}
+                        />
+                        {titleError !== '' && <Text style={globalStyles.errorText}>{titleError}</Text>}
 
-                    {/* Description Field */}
-                    <Text style={styles.fieldLabel}>Description</Text>
-                    <TextInput
-                        style={[styles.input, styles.textArea]}
-                        value={description}
-                        onChangeText={setDescription}
-                        multiline
-                    />
-                    {descriptionError !== '' && <Text style={globalStyles.errorText}>{descriptionError}</Text>}
+                        {/* Description Field */}
+                        <Text style={styles.fieldLabel}>Description</Text>
+                        <TextInput
+                            style={[styles.input, styles.textArea]}
+                            value={description}
+                            onChangeText={setDescription}
+                            multiline
+                        />
+                        {descriptionError !== '' && <Text style={globalStyles.errorText}>{descriptionError}</Text>}
 
-                    {/* Date Picker */}
-                    <Text style={styles.fieldLabel}>Date</Text>
-                    <TouchableOpacity
-                        style={styles.datePickerButton}
-                        onPress={() => setShowDatePicker(true)}
-                    >
-                        <Text style={[styles.datePickerButtonText, !eventDate && globalStyles.placeholderText]}>
-                            {eventDate ? eventDate.toLocaleDateString() : "Select date"}
-                        </Text>
-                    </TouchableOpacity>
-                    {dateError !== '' && <Text style={globalStyles.errorText}>{dateError}</Text>}
+                        {/* Date Picker */}
+                        <Text style={styles.fieldLabel}>Date</Text>
+                        <TouchableOpacity
+                            style={styles.datePickerButton}
+                            onPress={() => setShowDatePicker(true)}
+                        >
+                            <Text style={[styles.datePickerButtonText, !eventDate && globalStyles.placeholderText]}>
+                                {eventDate ? eventDate.toLocaleDateString() : "Select date"}
+                            </Text>
+                        </TouchableOpacity>
+                        {dateError !== '' && <Text style={globalStyles.errorText}>{dateError}</Text>}
 
-                    <DateTimePickerModal
-                        isVisible={showDatePicker}
-                        mode="date"
-                        date={eventDate || new Date()}
-                        onConfirm={(selectedDate) => {
-                            setEventDate(selectedDate);
-                            setShowDatePicker(false);
-                        }}
-                        onCancel={() => setShowDatePicker(false)}
-                    />
+                        <DateTimePickerModal
+                            isVisible={showDatePicker}
+                            mode="date"
+                            date={eventDate || new Date()}
+                            onConfirm={(selectedDate) => {
+                                setEventDate(selectedDate);
+                                setShowDatePicker(false);
+                            }}
+                            onCancel={() => setShowDatePicker(false)}
+                        />
 
-                    {/* Time Picker */}
-                    <Text style={styles.fieldLabel}>Time</Text>
-                    <TouchableOpacity
-                        style={styles.datePickerButton}
-                        onPress={() => setShowTimePicker(true)}
-                    >
-                        <Text style={[styles.datePickerButtonText, !eventTime && globalStyles.placeholderText]}>
-                            {eventTime ? eventTime.toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit'
-                            }) : "Select time"}
-                        </Text>
-                    </TouchableOpacity>
-                    {timeError !== '' && <Text style={globalStyles.errorText}>{timeError}</Text>}
+                        {/* Time Picker */}
+                        <Text style={styles.fieldLabel}>Time</Text>
+                        <TouchableOpacity
+                            style={styles.datePickerButton}
+                            onPress={() => setShowTimePicker(true)}
+                        >
+                            <Text style={[styles.datePickerButtonText, !eventTime && globalStyles.placeholderText]}>
+                                {eventTime ? eventTime.toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) : "Select time"}
+                            </Text>
+                        </TouchableOpacity>
+                        {timeError !== '' && <Text style={globalStyles.errorText}>{timeError}</Text>}
 
-                    {/* Location Field */}
-                    <Text style={styles.fieldLabel}>Location</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={location}
-                        onChangeText={setLocation}
-                    />
-                    {locationError !== '' && <Text style={globalStyles.errorText}>{locationError}</Text>}
+                        {/* Location Field */}
+                        <Text style={styles.fieldLabel}>Location</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={location}
+                            onChangeText={setLocation}
+                        />
+                        {locationError !== '' && <Text style={globalStyles.errorText}>{locationError}</Text>}
 
-                    {/* Price Field */}
-                    <Text style={styles.fieldLabel}>Price</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={price}
-                        onChangeText={setPrice}
-                        keyboardType="numeric"
-                    />
-                    {priceError !== '' && <Text style={globalStyles.errorText}>{priceError}</Text>}
+                        {/* Price Field */}
+                        <Text style={styles.fieldLabel}>Price</Text>
+                        <TextInput
+                            style={styles.input}
+                            value={price}
+                            onChangeText={setPrice}
+                            keyboardType="numeric"
+                        />
+                        {priceError !== '' && <Text style={globalStyles.errorText}>{priceError}</Text>}
 
-                    {/*Select event type*/}
-                    <TouchableOpacity
-                        style={[styles.eventTypeButton, { alignSelf: 'center', width: '50%' }]}
-                        onPress={() => router.push('/eventInterests')}
-                    >
-                        <Text style={styles.eventTypeButtonText}>Select Event Type</Text>
-                    </TouchableOpacity>
-                    {interestError !== '' && <Text style={globalStyles.errorText}>{interestError}</Text>}
+                        {/*Select event type*/}
+                        <TouchableOpacity
+                            style={[styles.eventTypeButton, {alignSelf: 'center', width: '50%'}]}
+                            onPress={() => router.push('/eventInterests')}
+                        >
+                            <Text style={styles.eventTypeButtonText}>Select Event Type</Text>
+                        </TouchableOpacity>
+                        {interestError !== '' && <Text style={globalStyles.errorText}>{interestError}</Text>}
 
-                    <DateTimePickerModal
-                        isVisible={showTimePicker}
-                        mode="time"
-                        date={eventTime || new Date()}
-                        onConfirm={(selectedTime) => {
-                            setEventTime(selectedTime);
-                            setShowTimePicker(false);
-                        }}
-                        onCancel={() => setShowTimePicker(false)}
-                    />
-                </ScrollView>
+                        <DateTimePickerModal
+                            isVisible={showTimePicker}
+                            mode="time"
+                            date={eventTime || new Date()}
+                            onConfirm={(selectedTime) => {
+                                setEventTime(selectedTime);
+                                setShowTimePicker(false);
+                            }}
+                            onCancel={() => setShowTimePicker(false)}
+                        />
+                    </ScrollView>
                 </KeyboardAwareScrollView>
 
                 {/* Footer */}

@@ -1,14 +1,12 @@
 import React, {useState} from 'react';
-import {View, SafeAreaView, Text, StyleSheet, FlatList} from 'react-native';
-import {router} from 'expo-router';
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import {router, useLocalSearchParams} from 'expo-router';
 import CustomBackButton from "@/components/customBackButton";
-import CustomButton from "@/components/customButton";
 import globalStyles from "@/styles/globalStyles";
 import interestsData from '../../assets/interests.json';
 import AnimatedInterestCell from "@/components/AnimatedInterestCell";
 import useProfile from '@/hooks/useProfile';
 import useAuth from "@/hooks/useAuth";
-import {useLocalSearchParams} from 'expo-router';
 import useBusinessProfile from '@/hooks/useBusinessProfile';
 import tempStore from "@/services/tempStore";
 import InterestPicker from "@/components/InterestPicker";

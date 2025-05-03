@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { Animated, Pressable, StyleSheet, Text } from 'react-native';
+import React, {useRef} from 'react';
+import {Animated, Pressable, StyleSheet, Text} from 'react-native';
 
 interface AnimatedInterestCellProps {
     interest: string;
@@ -39,7 +39,7 @@ export default function AnimatedInterestCell({
                 style={[
                     styles.cellContainer,
                     isSelected && styles.selectedCell,
-                    { transform: [{ scale: scaleAnim }] },
+                    {transform: [{scale: scaleAnim}]},
                 ]}
             >
                 <Text

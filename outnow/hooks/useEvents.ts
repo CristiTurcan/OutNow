@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useState} from 'react';
 import axios from 'axios';
 import {BASE_URL} from "@/config/api";
 
@@ -74,6 +74,5 @@ export default function useEvents() {
     };
 
 
-
-    return { createEvent, updateEvent, deleteEvent, loading, error };
+    return {createEvent, updateEvent, deleteEvent, loading, error};
 }

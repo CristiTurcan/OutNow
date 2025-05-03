@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
 interface AvatarPickerProps {
     photoUri: string | null;
@@ -7,14 +7,14 @@ interface AvatarPickerProps {
     onPress: () => void;
 }
 
-const AvatarPicker: React.FC<AvatarPickerProps> = ({ photoUri, photoBase64, onPress }) => {
+const AvatarPicker: React.FC<AvatarPickerProps> = ({photoUri, photoBase64, onPress}) => {
     return (
         <View style={styles.avatarContainer}>
             <TouchableOpacity onPress={onPress}>
                 <View style={styles.avatarWrapper}>
                     {photoUri ? (
                         <Image
-                            source={{ uri: photoBase64 ? photoBase64 : photoUri }}
+                            source={{uri: photoBase64 ? photoBase64 : photoUri}}
                             style={styles.avatar}
                         />
                     ) : (

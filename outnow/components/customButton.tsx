@@ -1,12 +1,6 @@
 // CustomButton.tsx
 import React from 'react';
-import {
-    Pressable,
-    Text,
-    StyleSheet,
-    GestureResponderEvent,
-    ViewStyle,
-} from 'react-native';
+import {GestureResponderEvent, Pressable, StyleSheet, Text, ViewStyle,} from 'react-native';
 
 interface CustomButtonProps {
     onPress: (event: GestureResponderEvent) => void;
@@ -14,10 +8,10 @@ interface CustomButtonProps {
     style?: ViewStyle;
 }
 
-const CustomButton: React.FC<CustomButtonProps> = ({ onPress, title, style }) => {
+const CustomButton: React.FC<CustomButtonProps> = ({onPress, title, style}) => {
     return (
         <Pressable
-            style={({ pressed }) => [
+            style={({pressed}) => [
                 styles.buttonBase,
                 style, // Apply external style
                 pressed && styles.buttonPressed,

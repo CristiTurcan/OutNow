@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, Image, TouchableOpacity, StyleSheet, Platform, ActionSheetIOS} from 'react-native';
+import {ActionSheetIOS, Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useRouter} from 'expo-router';
 import Icon from 'react-native-vector-icons/Feather';
 import globalStyles from "@/styles/globalStyles";
@@ -88,10 +88,18 @@ export default function Index() {
 
     // Menu items for the list
     const menuItems = [
-        {label: isBusiness? 'Followers' : 'Following', icon: 'users', onPress: () => router.push('/(tabs)/profile/editFollow')},
+        {
+            label: isBusiness ? 'Followers' : 'Following',
+            icon: 'users',
+            onPress: () => router.push('/(tabs)/profile/editFollow')
+        },
         {label: 'Edit Profile', icon: 'user', onPress: () => router.push('/(tabs)/profile/editProfile')},
         {label: 'Edit Interests', icon: 'tag', onPress: () => router.push('/(tabs)/profile/editInterests')},
-        ...( !isBusiness ? [{label: 'My data', icon: 'settings', onPress: () => router.push('/(tabs)/profile/myData'),}] : [] ),
+        ...(!isBusiness ? [{
+            label: 'My data',
+            icon: 'settings',
+            onPress: () => router.push('/(tabs)/profile/myData'),
+        }] : []),
         {label: 'Notification', icon: 'bell', onPress: () => router.push('/(tabs)/profile/notification')},
         {label: 'Information', icon: 'info', onPress: () => router.push('(tabs)/profile/information')},
     ];

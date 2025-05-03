@@ -4,6 +4,7 @@ import axios from 'axios';
 import useBusinessProfile from "@/hooks/useBusinessProfile";
 import functions from '@react-native-firebase/functions';
 import {BASE_URL} from "@/config/api";
+import {UserDTO} from "@/types/UserDTO";
 
 
 export interface AuthHook {
@@ -13,13 +14,17 @@ export interface AuthHook {
     signUp: (email: string, password: string, username: string, isBusiness?: boolean) => Promise<void>;
     signOut: () => Promise<void>;
     isBusiness: boolean;
+    appUser: UserDTO | null
+    loadingAppUser: boolean
 }
 
 const useAuth = (): AuthHook => {
     const [user, setUser] = useState<FirebaseAuthTypes.User | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [isBusiness, setIsBusiness] = useState<boolean>(false);
-    const { getBusinessProfile } = useBusinessProfile();
+    const {getBusinessProfile} = useBusinessProfile();
+    const [appUser, setAppUser] = useState<UserDTO | null>(null);
+    const [loadingAppUser, setLoadingAppUser] = useState(false);
 
     useEffect(() => {
         const unsubscribe = auth().onIdTokenChanged(async (user) => {
@@ -57,6 +62,20 @@ const useAuth = (): AuthHook => {
         }
     }, [user]);
 
+    // fetch backend user once Firebase gives us an email
+    useEffect(() => {
+        if (!user?.email) {
+            setAppUser(null)
+            return
+        }
+        setLoadingAppUser(true)
+        axios
+            .get<UserDTO>(`${BASE_URL}/users/by-email`, {params: {email: user.email}})
+            .then(res => setAppUser(res.data))
+            .catch(() => setAppUser(null))
+            .finally(() => setLoadingAppUser(false))
+    }, [user?.email])
+
     const signIn = async (email: string, password: string): Promise<void> => {
         setLoading(true);
         try {
@@ -70,16 +89,16 @@ const useAuth = (): AuthHook => {
             setIsBusiness(businessStatus);
             if (!businessStatus) {
                 // fetch current flags so we don’t overwrite them
-                const { data: current } = await axios.get(
+                const {data: current} = await axios.get(
                     `${BASE_URL}/users/by-email`,
-                    { params: { email: userCredential.user?.email } }
+                    {params: {email: userCredential.user?.email}}
                 );
 
                 await axios.post(`${BASE_URL}/users/upsert`, {
                     email: userCredential.user?.email,
-                    showDob:       current.showDob,
-                    showLocation:  current.showLocation,
-                    showGender:    current.showGender,
+                    showDob: current.showDob,
+                    showLocation: current.showLocation,
+                    showGender: current.showGender,
                     showInterests: current.showInterests,
                 });
             }
@@ -89,7 +108,6 @@ const useAuth = (): AuthHook => {
             setLoading(false);
         }
     };
-
 
 
     const signUp = async (
@@ -106,7 +124,7 @@ const useAuth = (): AuthHook => {
             if (isBusiness) {
                 // set the custom claim
                 const setUserRole = functions().httpsCallable('setUserRole');
-                await setUserRole({ uid, isBusiness });
+                await setUserRole({uid, isBusiness});
             } else {
                 await axios.post(`${BASE_URL}/users/upsert`, {
                     email: userCredential.user?.email,
@@ -136,7 +154,7 @@ const useAuth = (): AuthHook => {
     };
 
 
-    return {user, loading, signIn, signUp, signOut, isBusiness };
+    return {user, loading, signIn, signUp, signOut, isBusiness, appUser, loadingAppUser};
 };
 
 export default useAuth;

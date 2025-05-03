@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Alert} from 'react-native';
+import {Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import CustomBackButton from '@/components/customBackButton';
 import CustomButton from '@/components/customButton';
 import globalStyles from '@/styles/globalStyles';
-import {Ionicons, Feather} from '@expo/vector-icons';
+import {Ionicons} from '@expo/vector-icons';
 import useEventDetails from '@/hooks/useEventDetails';
 import useBusinessProfile from "@/hooks/useBusinessProfile";
 import {useAuthContext} from '@/contexts/AuthContext';

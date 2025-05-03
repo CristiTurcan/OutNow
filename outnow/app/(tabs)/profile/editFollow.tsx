@@ -1,14 +1,5 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {
-    SafeAreaView,
-    FlatList,
-    Text,
-    View,
-    TouchableOpacity,
-    Image,
-    StyleSheet,
-    Alert
-} from 'react-native';
+import {Alert, FlatList, Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useRouter} from 'expo-router';
 import {useAuthContext} from '@/contexts/AuthContext';
 import useUserIdByEmail from '@/hooks/useUserByIdByEmail';
@@ -183,5 +174,5 @@ const styles = StyleSheet.create({
         backgroundColor: '#eee',
         marginHorizontal: 16
     },
-    count: { fontSize: 14, color: '#666', marginVertical: 4, paddingHorizontal: 13 },
+    count: {fontSize: 14, color: '#666', marginVertical: 4, paddingHorizontal: 13},
 });

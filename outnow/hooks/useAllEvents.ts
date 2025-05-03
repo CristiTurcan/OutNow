@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { fetchAllEvents } from '@/services/eventService';
+import {useCallback, useState} from 'react';
+import {fetchAllEvents} from '@/services/eventService';
 
 export function useAllEvents() {
     const [events, setEvents] = useState([]);
@@ -20,5 +20,5 @@ export function useAllEvents() {
         }
     }, []);
 
-    return { events, loading, error, loadEvents };
+    return {events, loading, error, loadEvents};
 }

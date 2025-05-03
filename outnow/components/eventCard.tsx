@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, Image, StyleSheet, TouchableOpacity} from 'react-native';
+import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Feather, Ionicons} from '@expo/vector-icons';
 import useFavoriteEvent from "@/hooks/useFavoriteEvent";
 import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
@@ -60,7 +60,7 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
     return (
         <TouchableOpacity
             onPress={() => {
-                    router.push(`seeEvent?eventId=${event.eventId}`);
+                router.push(`seeEvent?eventId=${event.eventId}`);
             }}
         >
             <View style={[styles.card, {width: cardWidth}]}>

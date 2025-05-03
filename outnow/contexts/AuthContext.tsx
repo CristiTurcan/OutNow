@@ -1,9 +1,9 @@
 import React, {createContext, useContext, useEffect} from 'react';
-import useAuth, { AuthHook } from '@/hooks/useAuth';
+import useAuth, {AuthHook} from '@/hooks/useAuth';
 
 const AuthContext = createContext<AuthHook | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({children}) => {
     const auth = useAuth();
 
     useEffect(() => {

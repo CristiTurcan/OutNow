@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
-import { router } from 'expo-router';
+import {router} from 'expo-router';
 import InterestPicker from '@/components/InterestPicker';
 import tempStore from '@/services/tempStore';
 import interestsData from '../assets/interests.json';
@@ -42,6 +42,6 @@ export default function EventInterests() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 16 },
-    title: { fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
+    container: {flex: 1, padding: 16},
+    title: {fontSize: 20, fontWeight: 'bold', marginBottom: 16},
 });

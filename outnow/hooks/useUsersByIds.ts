@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import axios from 'axios';
-import { BASE_URL } from '@/config/api';
+import {BASE_URL} from '@/config/api';
 
 export type UserProfile = {
     userid: number;
@@ -23,7 +23,8 @@ export default function useUsersByIds(userIds: number[]) {
         if (userIds.length === 0) {
             setLoading(false);
             return;
-        };
+        }
+        ;
 
         setLoading(true);
         setError(null);
@@ -50,5 +51,5 @@ export default function useUsersByIds(userIds: number[]) {
             });
     }, [userIds]);
 
-    return { profiles, loading, error };
+    return {profiles, loading, error};
 }

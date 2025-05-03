@@ -1,13 +1,13 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle } from 'react-native';
-import { useRouter } from 'expo-router';
+import {StyleSheet, Text, TouchableOpacity, ViewStyle} from 'react-native';
+import {useRouter} from 'expo-router';
 
 type CustomBackButtonProps = {
     text?: string;
     style?: ViewStyle;
 };
 
-export default function CustomBackButton({ text = '← Back', style }: CustomBackButtonProps) {
+export default function CustomBackButton({text = '← Back', style}: CustomBackButtonProps) {
     const router = useRouter();
 
     return (

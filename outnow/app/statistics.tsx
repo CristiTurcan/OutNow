@@ -1,17 +1,9 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {
-    SafeAreaView,
-    View,
-    Text,
-    StyleSheet,
-    SectionList,
-    ActivityIndicator,
-    Dimensions,
-} from 'react-native';
-import {router, useLocalSearchParams} from 'expo-router';
+import {ActivityIndicator, Dimensions, SafeAreaView, SectionList, StyleSheet, Text, View,} from 'react-native';
+import {useLocalSearchParams} from 'expo-router';
 import globalStyles from '@/styles/globalStyles';
 import CustomBackButton from '@/components/customBackButton';
-import useFeedback, {Feedback} from '@/hooks/useFeedback';
+import useFeedback from '@/hooks/useFeedback';
 import useUsersByIds from "@/hooks/useUsersByIds";
 import useEventStats from "@/hooks/useEventStats";
 import {Ionicons} from '@expo/vector-icons';

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import axios from 'axios';
 import {BASE_URL} from "@/config/api";
 
@@ -15,7 +15,7 @@ const useUserIdByEmail = (email: string | null) => {
             setError(null);
             try {
                 const response = await axios.get(`${BASE_URL}/users/id-by-email`, {
-                    params: { email },
+                    params: {email},
                 });
                 setUserId(response.data);
             } catch (err: any) {
@@ -29,7 +29,7 @@ const useUserIdByEmail = (email: string | null) => {
         fetchUserId();
     }, [email]);
 
-    return { userId, loading, error };
+    return {userId, loading, error};
 };
 
 export default useUserIdByEmail;
