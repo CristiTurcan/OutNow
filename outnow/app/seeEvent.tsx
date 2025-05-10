@@ -1,17 +1,19 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import CustomBackButton from '@/components/customBackButton';
 import CustomButton from '@/components/customButton';
 import globalStyles from '@/styles/globalStyles';
 import {Ionicons} from '@expo/vector-icons';
-import useEventDetails from '@/hooks/useEventDetails';
+import useEventDetails, {EventDetails} from '@/hooks/useEventDetails';
 import useBusinessProfile from "@/hooks/useBusinessProfile";
 import {useAuthContext} from '@/contexts/AuthContext';
 import useEvents from "@/hooks/useEvents";
 import useFavoriteEvent from '@/hooks/useFavoriteEvent';
 import useUserIdByEmail from '../hooks/useUserByIdByEmail';
 import useGoingEvent from "@/hooks/useGoingEvents";
+import {useEventSocket} from "@/hooks/useEventSocket";
+import {EventDTO} from "@/types/EventDTO";
 
 
 export default function SeeEvent() {
@@ -20,6 +22,8 @@ export default function SeeEvent() {
     const router = useRouter();
 
     const {event, loading, error} = useEventDetails(eventId);
+    const initialEvents = useMemo(() => (event ? [event] : []), [event]);
+    const [eventState] = useEventSocket<EventDetails>(initialEvents);
     const {getBusinessProfileById} = useBusinessProfile();
     const [businessUsername, setBusinessUsername] = useState<string>('');
     const {isBusiness, user} = useAuthContext();
@@ -56,7 +60,7 @@ export default function SeeEvent() {
 
     if (loading) return <Text>Loading...</Text>;
     if (error) return <Text>Error: {error}</Text>;
-    if (!event) return <Text>No event found</Text>;
+    if (!eventState) return <Text>No event found</Text>;
 
     const handleDelete = async () => {
         Alert.alert(
@@ -88,7 +92,7 @@ export default function SeeEvent() {
         if (!isGoing) {
             router.push({
                 pathname: '/buyMockup',
-                params: {eventId: event.eventId.toString()},
+                params: {eventId: eventState.eventId.toString()},
             });
         } else {
             Alert.alert(
@@ -99,7 +103,7 @@ export default function SeeEvent() {
                     {
                         text: "Refund", onPress: async () => {
                             try {
-                                await removeGoingEvent(userId, event.eventId);
+                                await removeGoingEvent(userId, eventState.eventId);
                                 fetchGoingEvents(userId);
                             } catch (err) {
                                 console.error("Error refunding event:", err);
@@ -118,12 +122,12 @@ export default function SeeEvent() {
             return;
         }
 
-        const isFav = favoritedEvents.includes(event.eventId);
+        const isFav = favoritedEvents.includes(eventState.eventId);
         try {
             if (isFav) {
-                await removeFavoriteEvent(userId, event.eventId);
+                await removeFavoriteEvent(userId, eventState.eventId);
             } else {
-                await favoriteEvent(userId, event.eventId);
+                await favoriteEvent(userId, eventState.eventId);
             }
             // Refresh favorites after toggling
             fetchFavoritedEvents(userId);
@@ -132,7 +136,7 @@ export default function SeeEvent() {
         }
     };
 
-    const isFavorited = userId && favoritedEvents.includes(event.eventId);
+    const isFavorited = userId && favoritedEvents.includes(eventState.eventId);
 
     return (
         <SafeAreaView style={globalStyles.container}>
@@ -144,33 +148,33 @@ export default function SeeEvent() {
 
             {/* Content */}
             <ScrollView contentContainerStyle={styles.content}>
-                <Image source={{uri: event.imageUrl}} style={styles.image}/>
-                <Text style={styles.title}>{event.title}</Text>
-                <Text style={styles.details}>{event.description}</Text>
-                <Text style={styles.details}>{`Location: ${event.location}`}</Text>
-                <Text style={styles.details}>{`Price: $${event.price}`}</Text>
+                <Image source={{uri: eventState.imageUrl}} style={styles.image}/>
+                <Text style={styles.title}>{eventState.title}</Text>
+                <Text style={styles.details}>{eventState.description}</Text>
+                <Text style={styles.details}>{`Location: ${eventState.location}`}</Text>
+                <Text style={styles.details}>{`Price: $${eventState.price}`}</Text>
                 <Text style={styles.details}>
-                    {event.eventDate
-                        ? `${new Date(event.eventDate).toLocaleDateString('en-GB', {
+                    {eventState.eventDate
+                        ? `${new Date(eventState.eventDate).toLocaleDateString('en-GB', {
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric'
-                        })}${event.eventTime ? ' at ' + event.eventTime : ''}`
+                        })}${eventState.eventTime ? ' at ' + eventState.eventTime : ''}`
                         : ''}
                 </Text>
                 {/*<Text style={styles.details}>{`By: ${businessUsername || ''}`}</Text>*/}
                 <TouchableOpacity
                     onPress={() => router.push({
                         pathname: '/profilePreview',
-                        params: {businessAccountId: event.businessAccountId}
+                        params: {businessAccountId: eventState.businessAccountId}
                     })}
                 >
                     <Text style={[styles.details, {color: '#007AFF'}]}>
                         {`By: ${businessUsername || ''}`}
                     </Text>
                 </TouchableOpacity>
-                <Text style={styles.details}>{`${event.attendees} people are going`}</Text>
-                <Text style={styles.details}>{`Type: ${event.interestList}`}</Text>
+                <Text style={styles.details}>{`${eventState.attendees} people are going`}</Text>
+                <Text style={styles.details}>{`Type: ${eventState.interestList}`}</Text>
             </ScrollView>
 
             {/* Footer */}
@@ -187,7 +191,7 @@ export default function SeeEvent() {
                         <CustomButton
                             title={isPast ? "Feedback" : (isGoing ? "Refund" : "Buy")}
                             onPress={isPast
-                                ? () => router.push(`/feedback?eventId=${event.eventId}`)
+                                ? () => router.push(`/feedback?eventId=${eventState.eventId}`)
                                 : handleBuyOrRefund}
                             style={globalStyles.nextButton}
                         />
@@ -203,12 +207,12 @@ export default function SeeEvent() {
                         </TouchableOpacity>
                         <CustomButton
                             title={"Statistics"}
-                            onPress={() => router.push(`/statistics?eventId=${event.eventId}`)}
+                            onPress={() => router.push(`/statistics?eventId=${eventState.eventId}`)}
                             style={globalStyles.nextButton}
                         />
                         <CustomButton
                             title={"Edit"}
-                            onPress={() => router.push(`/editEvent?eventId=${event.eventId}`)}
+                            onPress={() => router.push(`/editEvent?eventId=${eventState.eventId}`)}
                             style={globalStyles.nextButton}
                         />
                     </>

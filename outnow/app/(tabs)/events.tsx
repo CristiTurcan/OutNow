@@ -54,7 +54,6 @@ export default function Favorites() {
         }
     }, [isBusiness, user?.email]);
 
-
     // Fetch favorites when screen is focused
     useFocusEffect(
         useCallback(() => {

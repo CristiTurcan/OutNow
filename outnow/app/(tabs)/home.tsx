@@ -15,6 +15,7 @@ import {router} from "expo-router";
 import useBusinessProfile from "@/hooks/useBusinessProfile";
 import {useLocalNotifications} from "@/hooks/useLocalNotifications";
 import {useNotificationSocket} from "@/hooks/useNotificationSocket";
+import {useEventSocket} from "@/hooks/useEventSocket";
 
 
 const windowWidth = Dimensions.get('window').width;
@@ -25,10 +26,11 @@ const Home = () => {
     const {userId} = useUserIdByEmail(user?.email || null);
     const {fetchFavoritedEvents, favoritedEvents} = useFavoriteEvent();
     const {events, loading, error, loadEvents} = useAllEvents();
+    const eventsState = useEventSocket(events);
     const {goingEvents, fetchGoingEvents} = useGoingEvent();
     const [searchQuery, setSearchQuery] = useState('');
     const {results: searchResults, loading: searchLoading, error: searchError, searchEvents} = useSearchEvents();
-    const displayedEvents = searchQuery.length > 0 ? searchResults : events;
+    const displayedEvents = searchQuery.length > 0 ? searchResults : eventsState;
     const currentDate = new Date();
     const futureEvents = displayedEvents.filter(e => new Date(e.eventDate) >= currentDate);
     const pastEvents = displayedEvents.filter(e => new Date(e.eventDate) < currentDate);
