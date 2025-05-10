@@ -25,7 +25,7 @@ export default function useEvents() {
                 `${BASE_URL}/events/${businessAccountId}`,
                 eventData
             );
-            console.log("eventData:\n" + JSON.stringify(eventData));
+            // console.log("eventData:\n" + JSON.stringify(eventData));
             return response.data;
         } catch (err: any) {
             const errorMsg = err.response?.data?.message || err.message;

@@ -5,7 +5,6 @@ import useFavoriteEvent from "@/hooks/useFavoriteEvent";
 import {useAuthContext} from '@/contexts/AuthContext';
 import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
 import {useFocusEffect} from '@react-navigation/native';
-import {useAllEvents} from '@/hooks/useAllEvents';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import globalStyles from "@/styles/globalStyles";
 import useGoingEvent from "@/hooks/useGoingEvents";
@@ -16,6 +15,7 @@ import useBusinessProfile from "@/hooks/useBusinessProfile";
 import {useLocalNotifications} from "@/hooks/useLocalNotifications";
 import {useNotificationSocket} from "@/hooks/useNotificationSocket";
 import {useEventSocket} from "@/hooks/useEventSocket";
+import usePersonalizedEvents from "@/hooks/usePersonalizedEvents";
 
 
 const windowWidth = Dimensions.get('window').width;
@@ -25,7 +25,8 @@ const Home = () => {
     const {user, isBusiness} = useAuthContext();
     const {userId} = useUserIdByEmail(user?.email || null);
     const {fetchFavoritedEvents, favoritedEvents} = useFavoriteEvent();
-    const {events, loading, error, loadEvents} = useAllEvents();
+    // const {events, loading, error, loadEvents} = useAllEvents();
+    const {events, loading, error, loadEvents} = usePersonalizedEvents(userId);
     const eventsState = useEventSocket(events);
     const {goingEvents, fetchGoingEvents} = useGoingEvent();
     const [searchQuery, setSearchQuery] = useState('');
@@ -116,6 +117,16 @@ const Home = () => {
         }, [notifUserId, refreshNotifications])
     )
 
+
+    const sections: { title: string; data: any[] }[] = [
+        {title: 'Trending', data: futureRows}
+    ];
+
+    if (searchQuery.length > 0 && pastRows.length > 0) {
+        sections.push({title: 'Past events', data: pastRows});
+    }
+
+
     if (loading) {
         return <LoadingIndicator/>;
     }
@@ -151,10 +162,7 @@ const Home = () => {
             </View>
             <>
                 <SectionList
-                    sections={[
-                        {title: 'Trending', data: futureRows},
-                        {title: 'Past events', data: pastRows},
-                    ]}
+                    sections={sections}
                     keyExtractor={(_, index) => index.toString()}
                     renderItem={({item: row}) => (
                         <View style={styles.rowContainer}>
