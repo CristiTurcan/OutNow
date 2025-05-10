@@ -24,15 +24,22 @@ const useGoingEvent = () => {
         }
     }, []);
 
-    const addGoingEvent = useCallback(async (userId: number, eventId: number) => {
+    // Change the signature to include quantity (defaulting to 1)
+    const addGoingEvent = useCallback(async (userId: number, eventId: number, quantity: number = 1) => {
         try {
-            await axios.post(`${BASE_URL}/users/${userId}/going/${eventId}`);
+            // Pass quantity as a query param
+            await axios.post(
+                `${BASE_URL}/users/${userId}/going/${eventId}`,
+                null,
+                { params: { quantity } }
+            );
             setGoingEvents(prev => [...prev, eventId]);
         } catch (err: any) {
             console.error(err);
             throw err;
         }
     }, []);
+
 
     const removeGoingEvent = useCallback(async (userId: number, eventId: number) => {
         try {

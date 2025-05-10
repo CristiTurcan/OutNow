@@ -31,6 +31,13 @@ export default function EditEvent() {
     const {updateEvent} = useEvents();
     const {event, refetch} = useEventDetails(Number(eventId));
     const {photoUri, photoBase64, openLibrary} = useImagePicker();
+    const [endDate, setEndDate] = useState<Date | null>(null);
+    const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+    const [endTime, setEndTime] = useState<Date | null>(null);
+    const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    const [endDateError, setEndDateError] = useState('');
+    const [endTimeError, setEndTimeError] = useState('');
+
 
 
     // Form states
@@ -52,6 +59,9 @@ export default function EditEvent() {
     const [priceError, setPriceError] = useState('');
     const [dateError, setDateError] = useState('');
     const [timeError, setTimeError] = useState('');
+    const [totalTickets, setTotalTickets] = useState('');
+    const [ticketsError, setTicketsError] = useState('');
+
 
     useEffect(() => {
         if (event) {
@@ -75,7 +85,20 @@ export default function EditEvent() {
                 const interestsArray = event.interestList.split(',').map(item => item.trim());
                 setEventInterests(interestsArray);
                 tempStore.eventInterests = interestsArray;
-            } else {
+            }
+            if (event.endDate) {
+                setEndDate(new Date(event.endDate));
+            }
+            if (event.endTime) {
+                const t = new Date();
+                const [h, m] = event.endTime.split(':').map(Number);
+                t.setHours(h, m, 0, 0);
+                setEndTime(t);
+            }
+            if (event.totalTickets != null) {
+                setTotalTickets(event.totalTickets.toString());
+            }
+            else {
                 setEventInterests([]);
                 tempStore.eventInterests = [];
             }
@@ -141,6 +164,27 @@ export default function EditEvent() {
             setTimeError('');
         }
 
+        if (!endDate) {
+            setEndDateError('End date is required.');
+            hasError = true;
+        } else {
+            setEndDateError('');
+        }
+        if (!endTime) {
+            setEndTimeError('End time is required.');
+            hasError = true;
+        } else {
+            setEndTimeError('');
+        }
+        if (!totalTickets.trim()) {
+            setTicketsError('Number of tickets is required.');
+            hasError = true;
+        } else if (isNaN(Number(totalTickets)) || Number(totalTickets) <= 0) {
+            setTicketsError('Please enter a valid ticket count.');
+            hasError = true;
+        } else {
+            setTicketsError('');
+        }
         if (!tempStore.eventInterests || tempStore.eventInterests.length === 0) {
             setInterestError('Please select at least one event type.');
             hasError = true;
@@ -160,6 +204,9 @@ export default function EditEvent() {
             eventTime: eventTime
                 ? eventTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
                 : null,
+            endDate: endDate    ? endDate.toLocaleDateString('en-CA') : null,
+            endTime: endTime    ? endTime.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : null,
+            totalTickets: Number(totalTickets),
             interestList: (tempStore.eventInterests && tempStore.eventInterests.length > 0)
                 ? tempStore.eventInterests.join(',')
                 : null
@@ -258,6 +305,30 @@ export default function EditEvent() {
                         </TouchableOpacity>
                         {timeError !== '' && <Text style={globalStyles.errorText}>{timeError}</Text>}
 
+                        {/* End Date */}
+                        <Text style={styles.fieldLabel}>End Date</Text>
+                        <TouchableOpacity
+                            style={styles.datePickerButton}
+                            onPress={() => setShowEndDatePicker(true)}
+                        >
+                            <Text style={[styles.datePickerButtonText, !endDate && globalStyles.placeholderText]}>
+                                {endDate ? endDate.toLocaleDateString() : 'Select end date'}
+                            </Text>
+                        </TouchableOpacity>
+                        {endDateError !== '' && <Text style={globalStyles.errorText}>{endDateError}</Text>}
+
+                        {/* End Time */}
+                        <Text style={styles.fieldLabel}>End Time</Text>
+                        <TouchableOpacity
+                            style={styles.datePickerButton}
+                            onPress={() => setShowEndTimePicker(true)}
+                        >
+                            <Text style={[styles.datePickerButtonText, !endTime && globalStyles.placeholderText]}>
+                                {endTime ? endTime.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'Select end time'}
+                            </Text>
+                        </TouchableOpacity>
+                        {endTimeError !== '' && <Text style={globalStyles.errorText}>{endTimeError}</Text>}
+
                         {/* Location Field */}
                         <Text style={styles.fieldLabel}>Location</Text>
                         <TextInput
@@ -276,6 +347,19 @@ export default function EditEvent() {
                             keyboardType="numeric"
                         />
                         {priceError !== '' && <Text style={globalStyles.errorText}>{priceError}</Text>}
+
+                        {/* Number of Tickets */}
+                        <Text style={styles.fieldLabel}>Number of Tickets</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter total tickets"
+                            value={totalTickets}
+                            onChangeText={setTotalTickets}
+                            keyboardType="numeric"
+                            placeholderTextColor="#9b9b9b"
+                        />
+                        {ticketsError !== '' && <Text style={globalStyles.errorText}>{ticketsError}</Text>}
+
 
                         {/*Select event type*/}
                         <TouchableOpacity
@@ -296,6 +380,23 @@ export default function EditEvent() {
                             }}
                             onCancel={() => setShowTimePicker(false)}
                         />
+                        <DateTimePickerModal
+                            isVisible={showEndDatePicker}
+                            mode="date"
+                            date={endDate || new Date()}
+                            minimumDate={eventDate || new Date()}
+                            onConfirm={d => { setEndDate(d); setShowEndDatePicker(false); }}
+                            onCancel={() => setShowEndDatePicker(false)}
+                        />
+
+                        <DateTimePickerModal
+                            isVisible={showEndTimePicker}
+                            mode="time"
+                            date={endTime || new Date()}
+                            onConfirm={t => { setEndTime(t); setShowEndTimePicker(false); }}
+                            onCancel={() => setShowEndTimePicker(false)}
+                        />
+
                     </ScrollView>
                 </KeyboardAwareScrollView>
 

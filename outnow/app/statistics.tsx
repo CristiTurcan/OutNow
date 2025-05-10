@@ -13,7 +13,7 @@ import useEventDetails from "@/hooks/useEventDetails";
 const {width: windowWidth} = Dimensions.get('window');
 const BAR_MAX_WIDTH = windowWidth * 0.6;
 const CARD_SPACING = 16;
-const NUM_CARDS = 3;
+const NUM_CARDS = 4;
 const CARD_WIDTH = (windowWidth - CARD_SPACING * (NUM_CARDS + 1)) / NUM_CARDS;
 
 export default function Statistics() {
@@ -36,6 +36,9 @@ export default function Statistics() {
         error: statsError
     } = useEventStats(eventId);
     const {event, loading: eventLoading} = useEventDetails(eventId);
+    const remainingTickets = event?.totalTickets != null
+        ? event.totalTickets - attendeeCount
+        : 0;
     const eventDate = event?.eventDate ? new Date(event.eventDate) : null;
     const isPast = eventDate ? eventDate < new Date() : false;
 
@@ -120,7 +123,8 @@ export default function Statistics() {
                 {[
                     {key: 'attendees', label: 'Attendees', value: attendeeCount, icon: 'people'},
                     {key: 'favorites', label: 'Favorites', value: favoriteCount, icon: 'heart'},
-                    {key: 'unique', label: 'Unique Favs', value: uniqueFavoriteCount, icon: 'star'},
+                    {key: 'unique', label: 'Unique favorites', value: uniqueFavoriteCount, icon: 'star'},
+                    {key: 'remaining', label: 'Remaining tickets', value: remainingTickets, icon: 'ticket'},
                 ].map(stat => (
                     <View key={stat.key} style={styles.card}>
                         <Ionicons name={stat.icon} size={24} color="#0D2C66"/>
@@ -242,12 +246,14 @@ const styles = StyleSheet.create({
     },
     cardsContainer: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
         justifyContent: 'space-between',
         marginHorizontal: CARD_SPACING,
         marginVertical: 12,
     },
     card: {
-        width: CARD_WIDTH,
+        width: '48%',
+        marginBottom: 12,
         backgroundColor: '#fff',
         borderRadius: 12,
         padding: 12,

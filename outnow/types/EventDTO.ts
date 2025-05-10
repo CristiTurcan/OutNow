@@ -11,4 +11,5 @@ export interface EventDTO {
     eventDate: string;
     eventTime: string;
     interestList: string;
+    totalTickets: number;
 }

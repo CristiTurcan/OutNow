@@ -1,5 +1,5 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {Alert, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Alert, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import CustomBackButton from '@/components/customBackButton';
 import CustomButton from '@/components/customButton';
@@ -23,8 +23,8 @@ export default function SeeEvent() {
 
     const {event, loading, error} = useEventDetails(eventId);
     const initialEvents = useMemo(() => (event ? [event] : []), [event]);
-    const [eventState] = useEventSocket<EventDetails>(initialEvents);
-    const {getBusinessProfileById} = useBusinessProfile();
+    const eventsList = useEventSocket<EventDTO>(initialEvents as EventDTO[]);
+    const eventState = eventsList.find(e => e.eventId === eventId) || null;    const {getBusinessProfileById} = useBusinessProfile();
     const [businessUsername, setBusinessUsername] = useState<string>('');
     const {isBusiness, user} = useAuthContext();
     const {deleteEvent} = useEvents();
@@ -35,7 +35,8 @@ export default function SeeEvent() {
     const eventDate = new Date(event?.eventDate);
     const isPast = eventDate < new Date();
     const showControls = !isBusiness && (isGoing || !isPast);
-
+    const [modalVisible, setModalVisible] = useState(false);
+    const [ticketQty, setTicketQty] = useState(1);
 
     useEffect(() => {
         if (event && event.businessAccountId) {
@@ -61,6 +62,13 @@ export default function SeeEvent() {
     if (loading) return <Text>Loading...</Text>;
     if (error) return <Text>Error: {error}</Text>;
     if (!eventState) return <Text>No event found</Text>;
+
+    const availableTickets = eventState.totalTickets != null
+        ? eventState.totalTickets - eventState.attendanceCount
+        : 0;
+
+    // console.log(eventState.attendanceCount);
+    // console.log(availableTickets);
 
     const handleDelete = async () => {
         Alert.alert(
@@ -90,14 +98,16 @@ export default function SeeEvent() {
         }
 
         if (!isGoing) {
-            router.push({
-                pathname: '/buyMockup',
-                params: {eventId: eventState.eventId.toString()},
-            });
+            // router.push({
+            //     pathname: '/buyMockup',
+            //     params: {eventId: eventState.eventId.toString()},
+            // });
+            setTicketQty(1);
+            setModalVisible(true);
         } else {
             Alert.alert(
                 "Refund Event",
-                "Are you sure you want to refund this event?",
+                "Are you sure you want to refund this event? You will lose all your tickets.",
                 [
                     {text: "Cancel", style: "cancel"},
                     {
@@ -154,14 +164,17 @@ export default function SeeEvent() {
                 <Text style={styles.details}>{`Location: ${eventState.location}`}</Text>
                 <Text style={styles.details}>{`Price: $${eventState.price}`}</Text>
                 <Text style={styles.details}>
-                    {eventState.eventDate
-                        ? `${new Date(eventState.eventDate).toLocaleDateString('en-GB', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric'
-                        })}${eventState.eventTime ? ' at ' + eventState.eventTime : ''}`
-                        : ''}
+                    {`${new Date(eventState.eventDate).toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    })}${eventState.eventTime ? ` at ${eventState.eventTime}` : ''}${eventState.endDate ? ` - ${new Date(eventState.endDate).toLocaleDateString('en-GB', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    })}${eventState.endTime ? ` at ${eventState.endTime}` : ''}` : ''}`}
                 </Text>
+
                 {/*<Text style={styles.details}>{`By: ${businessUsername || ''}`}</Text>*/}
                 <TouchableOpacity
                     onPress={() => router.push({
@@ -218,6 +231,54 @@ export default function SeeEvent() {
                     </>
                 )}
             </View>
+            <Modal
+                visible={modalVisible}
+                transparent
+                animationType="slide"
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Select Number of Tickets</Text>
+                        <View style={styles.quantityContainer}>
+                            <TouchableOpacity
+                                onPress={() => ticketQty > 1 && setTicketQty(ticketQty - 1)}
+                                style={styles.qtyButton}
+                            >
+                                <Text style={styles.qtyButtonText}>–</Text>
+                            </TouchableOpacity>
+                            <Text style={styles.qtyText}>{ticketQty}</Text>
+                            <TouchableOpacity
+                                onPress={() => ticketQty < availableTickets && setTicketQty(ticketQty + 1)}
+                                style={styles.qtyButton}
+                            >
+                                <Text style={styles.qtyButtonText}>+</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.modalButtons}>
+                            <CustomButton
+                                title="Cancel"
+                                onPress={() => setModalVisible(false)}
+                                style={globalStyles.nextButton}
+                            />
+                            <CustomButton
+                                title="Confirm"
+                                onPress={() => {
+                                    setModalVisible(false);
+                                    router.push({
+                                        pathname: '/buyMockup',
+                                        params: {
+                                            eventId: eventState.eventId.toString(),
+                                            quantity: ticketQty.toString(),
+                                        },
+                                    });
+                                }}
+                                style={globalStyles.nextButton}
+                            />
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
         </SafeAreaView>
     );
 }
@@ -255,5 +316,47 @@ const styles = StyleSheet.create({
     },
     favoriteButton: {
         padding: 8,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+        width: '80%',
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        padding: 16,
+        alignItems: 'center',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 12,
+    },
+    quantityContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    qtyButton: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 4,
+        padding: 8,
+        marginHorizontal: 16,
+    },
+    qtyButtonText: {
+        fontSize: 20,
+    },
+    qtyText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
     },
 });

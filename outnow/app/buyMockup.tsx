@@ -10,7 +10,8 @@ import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
 
 export default function BuyMockup() {
     const router = useRouter();
-    const {eventId} = useLocalSearchParams() as { eventId: string };
+    const { eventId, quantity } = useLocalSearchParams() as { eventId: string; quantity: string };
+    const ticketQty = parseInt(quantity, 10) || 1;
     const {addGoingEvent, fetchGoingEvents} = useGoingEvent();
     const {user} = useAuthContext();
     const {userId} = useUserIdByEmail(user?.email || null);
@@ -20,8 +21,6 @@ export default function BuyMockup() {
     const [cvc, setCvc] = useState('');
     const [name, setName] = useState('');
 
-
-    // Simple Luhn check
     const luhnCheck = (num: string) => {
         const digits = num.replace(/\D/g, '').split('').reverse().map(d => parseInt(d, 10));
         let sum = 0;
@@ -73,7 +72,7 @@ export default function BuyMockup() {
             return;
         }
 
-        addGoingEvent(userId, parseInt(eventId, 10))
+        addGoingEvent(userId, parseInt(eventId, 10), ticketQty)
             .then(() => {
                 fetchGoingEvents(userId);
                 router.replace('/(tabs)/home');

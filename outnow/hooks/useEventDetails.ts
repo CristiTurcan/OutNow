@@ -11,9 +11,10 @@ export interface EventDetails {
     price: number;
     eventDate: string;
     eventTime: string;
-    attendees: string; // or number if you prefer
+    attendees: number;
     interestList: string;
     businessAccountId: number;
+    totalTickets: number;
 }
 
 export default function useEventDetails(eventId: number | null) {
