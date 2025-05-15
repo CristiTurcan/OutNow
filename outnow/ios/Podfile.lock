@@ -2091,6 +2091,27 @@ PODS:
     - Firebase/Functions (= 11.10.0)
     - React-Core
     - RNFBApp
+  - RNFlashList (1.8.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNGestureHandler (2.20.2):
     - DoubleConversion
     - glog
@@ -2379,6 +2400,7 @@ DEPENDENCIES:
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBAuth (from `../node_modules/@react-native-firebase/auth`)"
   - "RNFBFunctions (from `../node_modules/@react-native-firebase/functions`)"
+  - "RNFlashList (from `../node_modules/@shopify/flash-list`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -2612,6 +2634,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/auth"
   RNFBFunctions:
     :path: "../node_modules/@react-native-firebase/functions"
+  RNFlashList:
+    :path: "../node_modules/@shopify/flash-list"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
@@ -2674,7 +2698,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
   GTMSessionFetcher: 75b671f9e551e4c49153d4c4f8659ef4f559b970
   hermes-engine: 9e868dc7be781364296d6ee2f56d0c1a9ef0bb11
-  RCT-Folly: 7b4f73a92ad9571b9dbdb05bb30fad927fa971e1
+  RCT-Folly: b3820fdca667c15bf108d2f9d4bd524265d2d8d7
   RCTDeprecation: ebe712bb05077934b16c6bf25228bdec34b64f83
   RCTRequired: ca91e5dd26b64f577b528044c962baf171c6b716
   RCTTypeSafety: e7678bd60850ca5a41df9b8dc7154638cb66871f
@@ -2741,6 +2765,7 @@ SPEC CHECKSUMS:
   RNFBApp: 7734835c765a86ea6cdc37570813c5661d7ecb5c
   RNFBAuth: fb7c2301ca353bb86e56bf10c844657d70b28a07
   RNFBFunctions: 99bc74f67dccc8f0abede380195547e01d7aa1b7
+  RNFlashList: 0b99998e43338d979b23a54a733f464a9104f5be
   RNGestureHandler: e7ed303cb2f818d7c3481b588f49b7c66d3f3d6c
   RNReanimated: 039a77e8407a7b607d2c9281ead5fb508a0eefa3
   RNScreens: a09a20dc045ca372549fccd0537e2ced95e90aea

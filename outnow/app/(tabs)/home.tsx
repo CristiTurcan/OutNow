@@ -14,27 +14,44 @@ import {router} from "expo-router";
 import useBusinessProfile from "@/hooks/useBusinessProfile";
 import {useLocalNotifications} from "@/hooks/useLocalNotifications";
 import {useNotificationSocket} from "@/hooks/useNotificationSocket";
-import {useEventSocket} from "@/hooks/useEventSocket";
-import usePersonalizedEvents from "@/hooks/usePersonalizedEvents";
+import {FlashList} from '@shopify/flash-list';
+import usePersonalizedEventsWithSocket from "@/hooks/usePersonalizedEventsWithSocket";
 
 
 const windowWidth = Dimensions.get('window').width;
 const cardWidth = (windowWidth - 40) / 2;
+const ESTIMATED_ITEM_HEIGHT = 250;
+
 
 const Home = () => {
     const {user, isBusiness} = useAuthContext();
     const {userId} = useUserIdByEmail(user?.email || null);
     const {fetchFavoritedEvents, favoritedEvents} = useFavoriteEvent();
-    // const {events, loading, error, loadEvents} = useAllEvents();
-    const {events, loading, error, loadEvents} = usePersonalizedEvents(userId);
-    const eventsState = useEventSocket(events);
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        status,
+        error,
+    } = usePersonalizedEventsWithSocket(userId)
+    const events = data?.pages.flat() ?? [];
     const {goingEvents, fetchGoingEvents} = useGoingEvent();
     const [searchQuery, setSearchQuery] = useState('');
+    const isSearching = searchQuery.length > 0;
+    const now = new Date();
     const {results: searchResults, loading: searchLoading, error: searchError, searchEvents} = useSearchEvents();
-    const displayedEvents = searchQuery.length > 0 ? searchResults : eventsState;
-    const currentDate = new Date();
-    const futureEvents = displayedEvents.filter(e => new Date(e.eventDate) >= currentDate);
-    const pastEvents = displayedEvents.filter(e => new Date(e.eventDate) < currentDate);
+    const upcomingEvents = isSearching ? searchResults.filter(e => new Date(e.eventDate) >= now) : events;
+    const pastEvents = isSearching ? searchResults.filter(e => new Date(e.eventDate) < now) : [];
+    const groupIntoRows = (data: any[], columns: number) => {
+        const rows = [];
+        for (let i = 0; i < data.length; i += columns) {
+            rows.push(data.slice(i, i + columns));
+        }
+        return rows;
+    };
+    const upcomingRows = groupIntoRows(upcomingEvents, 2);
+    const pastRows = groupIntoRows(pastEvents, 2);
     const [bizAccountId, setBizAccountId] = useState<number | null>(null)
     const {getBusinessAccountId} = useBusinessProfile()
 
@@ -53,8 +70,6 @@ const Home = () => {
         refresh: refreshNotifications,
         markAsRead
     } = useLocalNotifications(notifUserId);
-
-// — insert these lines immediately below —
     const [count, setCount] = useState<number>(unreadCount);
 
     useEffect(() => {
@@ -65,40 +80,22 @@ const Home = () => {
         notifUserId,
         newCount => setCount(newCount),
         () => {
-        }   // we don’t need the full DTO here
+        }
     );
-
-    const groupIntoRows = (data: any[], columns: number) => {
-        const rows = [];
-        for (let i = 0; i < data.length; i += columns) {
-            rows.push(data.slice(i, i + columns));
-        }
-        return rows;
-    };
-
-    const futureRows = groupIntoRows(futureEvents, 2);
-    const pastRows = groupIntoRows(pastEvents, 2);
-
-    useEffect(() => {
-        if (!isBusiness) {
-            loadEvents();
-        }
-    }, [isBusiness, loadEvents]);
 
     useEffect(() => {
         if (searchQuery.length > 1) {
             searchEvents(searchQuery);
         }
-    }, [searchQuery, searchEvents]);
-
+    }, [searchQuery]);
 
     useFocusEffect(
         useCallback(() => {
             if (!isBusiness && userId) {
                 fetchFavoritedEvents(userId);
-                loadEvents();
+                // loadMore();
             }
-        }, [isBusiness, userId, fetchFavoritedEvents, loadEvents])
+        }, [isBusiness, userId])
     );
 
     useFocusEffect(
@@ -106,7 +103,7 @@ const Home = () => {
             if (userId) {
                 fetchGoingEvents(userId);
             }
-        }, [userId, fetchGoingEvents])
+        }, [userId])
     );
 
     useFocusEffect(
@@ -114,25 +111,15 @@ const Home = () => {
             if (notifUserId) {
                 refreshNotifications()
             }
-        }, [notifUserId, refreshNotifications])
+        }, [notifUserId])
     )
 
-
-    const sections: { title: string; data: any[] }[] = [
-        {title: 'Trending', data: futureRows}
-    ];
-
-    if (searchQuery.length > 0 && pastRows.length > 0) {
-        sections.push({title: 'Past events', data: pastRows});
-    }
-
-
-    if (loading) {
+    if (status === 'loading') {
         return <LoadingIndicator/>;
     }
 
-    if (error) {
-        return <Text>Error: {error}</Text>;
+    if (status === 'error') {
+        return <Text>Error: {error.message}</Text>;
     }
 
     return (
@@ -161,36 +148,75 @@ const Home = () => {
                 </TouchableOpacity>
             </View>
             <>
-                <SectionList
-                    sections={sections}
-                    keyExtractor={(_, index) => index.toString()}
-                    renderItem={({item: row}) => (
-                        <View style={styles.rowContainer}>
-                            {row.map((eventItem: any) => (
+                {isSearching ? (
+                    <SectionList
+                        sections={[
+                            {title: 'Upcoming', data: upcomingRows},
+                            ...(
+                                pastRows.length
+                                    ? [{title: 'Past events', data: pastRows}]
+                                    : []
+                            )
+                        ]}
+                        keyExtractor={(_, i) => i.toString()}
+                        renderItem={({item: row}) => (
+                            <View style={styles.rowContainer}>
+                                {row.map((evt: any) => (
+                                    <EventCard
+                                        key={evt.eventId}
+                                        event={{
+                                            ...evt,
+                                            isFavorited: favoritedEvents.includes(evt.eventId),
+                                            isGoing: goingEvents.includes(evt.eventId)
+                                        }}
+                                        cardWidth={cardWidth}
+                                        userId={userId}
+                                    />
+                                ))}
+                            </View>
+                        )}
+                        renderSectionHeader={({section}) => (
+                            <View style={styles.headerContainer}>
+                                <Text style={globalStyles.title}>{section.title}</Text>
+                            </View>
+                        )}
+                        stickySectionHeadersEnabled
+                        contentContainerStyle={styles.container}
+                    />
+                ) : (
+                    <>
+                        <Text style={[globalStyles.title, {marginHorizontal: 10}]}>
+                            Trending
+                        </Text>
+                        <FlashList
+                            data={events}
+                            renderItem={({item}) => (
                                 <EventCard
-                                    key={eventItem.eventId}
                                     event={{
-                                        ...eventItem,
-                                        isFavorited: favoritedEvents.includes(eventItem.eventId),
-                                        isGoing: goingEvents.includes(eventItem.eventId)
+                                        ...item,
+                                        isFavorited: favoritedEvents.includes(item.eventId),
+                                        isGoing: goingEvents.includes(item.eventId)
                                     }}
                                     cardWidth={cardWidth}
                                     userId={userId}
                                 />
-                            ))}
-                        </View>
-                    )}
-                    renderSectionHeader={({
-                                              section,
-                                          }: { section: { title: string; data: any[] } }) => (
-                        <View style={styles.headerContainer}>
-                            <Text style={globalStyles.title}>{section.title}</Text>
-                        </View>
-                    )}
-
-                    stickySectionHeadersEnabled={true}
-                    contentContainerStyle={styles.container}
-                />
+                            )}
+                            keyExtractor={item => item.eventId.toString()}
+                            numColumns={2}
+                            estimatedItemSize={ESTIMATED_ITEM_HEIGHT}
+                            onEndReached={() => {
+                                if (hasNextPage && !isFetchingNextPage) {
+                                    fetchNextPage();
+                                }
+                            }}
+                            onEndReachedThreshold={0.5}
+                            ListFooterComponent={
+                                isFetchingNextPage ? <LoadingIndicator/> : null
+                            }
+                            contentContainerStyle={styles.container}
+                        />
+                    </>
+                )}
             </>
         </SafeAreaView>
     );

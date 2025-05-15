@@ -39,7 +39,6 @@ export default function EditEvent() {
     const [endTimeError, setEndTimeError] = useState('');
 
 
-
     // Form states
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -97,8 +96,7 @@ export default function EditEvent() {
             }
             if (event.totalTickets != null) {
                 setTotalTickets(event.totalTickets.toString());
-            }
-            else {
+            } else {
                 setEventInterests([]);
                 tempStore.eventInterests = [];
             }
@@ -204,8 +202,8 @@ export default function EditEvent() {
             eventTime: eventTime
                 ? eventTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
                 : null,
-            endDate: endDate    ? endDate.toLocaleDateString('en-CA') : null,
-            endTime: endTime    ? endTime.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : null,
+            endDate: endDate ? endDate.toLocaleDateString('en-CA') : null,
+            endTime: endTime ? endTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'}) : null,
             totalTickets: Number(totalTickets),
             interestList: (tempStore.eventInterests && tempStore.eventInterests.length > 0)
                 ? tempStore.eventInterests.join(',')
@@ -324,7 +322,10 @@ export default function EditEvent() {
                             onPress={() => setShowEndTimePicker(true)}
                         >
                             <Text style={[styles.datePickerButtonText, !endTime && globalStyles.placeholderText]}>
-                                {endTime ? endTime.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'Select end time'}
+                                {endTime ? endTime.toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                }) : 'Select end time'}
                             </Text>
                         </TouchableOpacity>
                         {endTimeError !== '' && <Text style={globalStyles.errorText}>{endTimeError}</Text>}
@@ -385,7 +386,10 @@ export default function EditEvent() {
                             mode="date"
                             date={endDate || new Date()}
                             minimumDate={eventDate || new Date()}
-                            onConfirm={d => { setEndDate(d); setShowEndDatePicker(false); }}
+                            onConfirm={d => {
+                                setEndDate(d);
+                                setShowEndDatePicker(false);
+                            }}
                             onCancel={() => setShowEndDatePicker(false)}
                         />
 
@@ -393,7 +397,10 @@ export default function EditEvent() {
                             isVisible={showEndTimePicker}
                             mode="time"
                             date={endTime || new Date()}
-                            onConfirm={t => { setEndTime(t); setShowEndTimePicker(false); }}
+                            onConfirm={t => {
+                                setEndTime(t);
+                                setShowEndTimePicker(false);
+                            }}
                             onCancel={() => setShowEndTimePicker(false)}
                         />
 

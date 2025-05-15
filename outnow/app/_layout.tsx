@@ -4,6 +4,7 @@ import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
 import {ActivityIndicator, View} from 'react-native';
 import {AuthProvider} from '@/contexts/AuthContext';
 import NotificationsManager from '@/notifications/NotificationsManager';
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 
 export default function RootLayout() {
     // const { appUser, loadingAppUser } = useAuthContext()
@@ -11,6 +12,7 @@ export default function RootLayout() {
     const [user, setUser] = useState<FirebaseAuthTypes.User | null>();
     const router = useRouter();
     const segments = useSegments();
+    const queryClient = new QueryClient();
 
     useEffect(() => {
         const unsubscribe = auth().onAuthStateChanged((user) => {
@@ -51,22 +53,24 @@ export default function RootLayout() {
         );
 
     return (
-        <AuthProvider>
-            <NotificationsManager/>
-            <Stack>
-                <Stack.Screen name="index" options={{headerShown: false}}/>
-                <Stack.Screen name="(auth)" options={{headerShown: false}}/>
-                <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
-                <Stack.Screen name="createEvent" options={{headerShown: false}}/>
-                <Stack.Screen name="eventInterests" options={{headerShown: false}}/>
-                <Stack.Screen name="seeEvent" options={{headerShown: false}}/>
-                <Stack.Screen name="editEvent" options={{headerShown: false}}/>
-                <Stack.Screen name="feedback" options={{headerShown: false}}/>
-                <Stack.Screen name="statistics" options={{headerShown: false}}/>
-                <Stack.Screen name="profilePreview" options={{headerShown: false}}/>
-                <Stack.Screen name="buyMockup" options={{headerShown: false}}/>
-                <Stack.Screen name="NotificationCenter" options={{headerShown: false}}/>
-            </Stack>
-        </AuthProvider>
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <NotificationsManager/>
+                <Stack>
+                    <Stack.Screen name="index" options={{headerShown: false}}/>
+                    <Stack.Screen name="(auth)" options={{headerShown: false}}/>
+                    <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+                    <Stack.Screen name="createEvent" options={{headerShown: false}}/>
+                    <Stack.Screen name="eventInterests" options={{headerShown: false}}/>
+                    <Stack.Screen name="seeEvent" options={{headerShown: false}}/>
+                    <Stack.Screen name="editEvent" options={{headerShown: false}}/>
+                    <Stack.Screen name="feedback" options={{headerShown: false}}/>
+                    <Stack.Screen name="statistics" options={{headerShown: false}}/>
+                    <Stack.Screen name="profilePreview" options={{headerShown: false}}/>
+                    <Stack.Screen name="buyMockup" options={{headerShown: false}}/>
+                    <Stack.Screen name="NotificationCenter" options={{headerShown: false}}/>
+                </Stack>
+            </AuthProvider>
+        </QueryClientProvider>
     );
 }

@@ -5,7 +5,7 @@ import CustomBackButton from '@/components/customBackButton';
 import CustomButton from '@/components/customButton';
 import globalStyles from '@/styles/globalStyles';
 import {Ionicons} from '@expo/vector-icons';
-import useEventDetails, {EventDetails} from '@/hooks/useEventDetails';
+import useEventDetails from '@/hooks/useEventDetails';
 import useBusinessProfile from "@/hooks/useBusinessProfile";
 import {useAuthContext} from '@/contexts/AuthContext';
 import useEvents from "@/hooks/useEvents";
@@ -24,7 +24,8 @@ export default function SeeEvent() {
     const {event, loading, error} = useEventDetails(eventId);
     const initialEvents = useMemo(() => (event ? [event] : []), [event]);
     const eventsList = useEventSocket<EventDTO>(initialEvents as EventDTO[]);
-    const eventState = eventsList.find(e => e.eventId === eventId) || null;    const {getBusinessProfileById} = useBusinessProfile();
+    const eventState = eventsList.find(e => e.eventId === eventId) || null;
+    const {getBusinessProfileById} = useBusinessProfile();
     const [businessUsername, setBusinessUsername] = useState<string>('');
     const {isBusiness, user} = useAuthContext();
     const {deleteEvent} = useEvents();

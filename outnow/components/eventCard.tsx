@@ -5,6 +5,7 @@ import useFavoriteEvent from "@/hooks/useFavoriteEvent";
 import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
 import {useAuthContext} from "@/contexts/AuthContext";
 import useBusinessProfile from "@/hooks/useBusinessProfile";
+import placeholderImage from "../assets/images/placeholder-image.png"
 import {router} from "expo-router";
 
 const EventCard = ({event, cardWidth, onToggleFavorite}) => {
@@ -64,7 +65,16 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
             }}
         >
             <View style={[styles.card, {width: cardWidth}]}>
-                <Image source={{uri: event.imageUrl}} style={styles.image}/>
+                {/*<Image source={{uri: event.imageUrl}} style={styles.image}/>*/}
+                <Image
+                    source={
+                        event.imageUrl && event.imageUrl.trim().length > 0
+                            ? {uri: event.imageUrl}
+                            : placeholderImage
+                    }
+                    style={styles.image}
+                />
+
                 <View style={styles.info}>
                     <Text style={styles.title}>{event.title}</Text>
                     <Text style={styles.details}>{event.location}</Text>

@@ -10,7 +10,7 @@ import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
 
 export default function BuyMockup() {
     const router = useRouter();
-    const { eventId, quantity } = useLocalSearchParams() as { eventId: string; quantity: string };
+    const {eventId, quantity} = useLocalSearchParams() as { eventId: string; quantity: string };
     const ticketQty = parseInt(quantity, 10) || 1;
     const {addGoingEvent, fetchGoingEvents} = useGoingEvent();
     const {user} = useAuthContext();

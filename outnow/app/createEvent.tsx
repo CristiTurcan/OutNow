@@ -288,7 +288,7 @@ export default function CreateEvent() {
                         >
                             <Text style={[styles.datePickerButtonText, !endTimeValue && globalStyles.placeholderText]}>
                                 {endTimeValue
-                                    ? endTimeValue.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                    ? endTimeValue.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
                                     : 'Select end time'}
                             </Text>
                         </TouchableOpacity>
@@ -401,7 +401,10 @@ export default function CreateEvent() {
                     mode="date"
                     date={endDateTime || new Date()}
                     minimumDate={eventDateTime || new Date()}
-                    onConfirm={d => { setEndDateTime(d); setShowEndDatePicker(false); }}
+                    onConfirm={d => {
+                        setEndDateTime(d);
+                        setShowEndDatePicker(false);
+                    }}
                     onCancel={() => setShowEndDatePicker(false)}
                 />
 
@@ -410,7 +413,10 @@ export default function CreateEvent() {
                     isVisible={showEndTimePicker}
                     mode="time"
                     date={endTimeValue || new Date()}
-                    onConfirm={t => { setEndTimeValue(t); setShowEndTimePicker(false); }}
+                    onConfirm={t => {
+                        setEndTimeValue(t);
+                        setShowEndTimePicker(false);
+                    }}
                     onCancel={() => setShowEndTimePicker(false)}
                 />
             </SafeAreaView>
