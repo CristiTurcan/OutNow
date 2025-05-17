@@ -36,6 +36,7 @@ export default function CreateProfile() {
     const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [location, setLocation] = useState('');
+    const [coords, setCoords] = useState({lat: null, lng: null})
     const [showPhotoOptions, setShowPhotoOptions] = useState(false);
     const [ageError, setAgeError] = useState('');
     const googleApiKey = Constants.expoConfig?.extra?.googleApiKey;
@@ -108,7 +109,9 @@ export default function CreateProfile() {
             `&bio=${bio}` +
             `&gender=${gender}` +
             `&dateOfBirth=${dateOfBirth ? dateOfBirth.toLocaleDateString('en-CA') : ''}` +
-            `&location=${location}`
+            `&location=${location}` +
+            `&latitude=${coords.lat ?? ''}` +
+            `&longitude=${coords.lng ?? ''}`
         );
     };
 
@@ -239,6 +242,8 @@ export default function CreateProfile() {
                         onPress={(data, details = null) => {
                             // here i can extract detailed address info from details.address_components
                             setLocation(data.description);
+                            const {lat, lng} = details.geometry.location
+                            setCoords({lat, lng})
                         }}
                         query={{
                             key: googleApiKey,

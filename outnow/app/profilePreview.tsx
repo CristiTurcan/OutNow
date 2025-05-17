@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-// Determine card width (example: two columns)
 import {
     Alert,
     Dimensions,

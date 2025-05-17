@@ -19,7 +19,6 @@ export default function EventInterests() {
     };
 
     const handleFinish = () => {
-        // Save the selection in a temporary store
         tempStore.eventInterests = selectedInterests;
         router.back();
     };

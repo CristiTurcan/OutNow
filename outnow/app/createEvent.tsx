@@ -55,6 +55,7 @@ export default function CreateEvent() {
     const [endTimeValue, setEndTimeValue] = useState<Date | null>(null);
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
     const [totalTickets, setTotalTickets] = useState('');
+    const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({lat: null, lng: null});
 
 
     useEffect(() => {
@@ -64,6 +65,10 @@ export default function CreateEvent() {
                     setBusinessProfile(data);
                     if (data?.location) {
                         setLocation(data.location);
+                        setCoords({
+                            lat: data.latitude,
+                            lng: data.longitude,
+                        });
                     }
                 })
                 .catch(err => console.error("Error fetching business profile:", err));
@@ -166,7 +171,8 @@ export default function CreateEvent() {
             interestList: tempStore.eventInterests && tempStore.eventInterests.length > 0
                 ? tempStore.eventInterests.join(',')
                 : null,
-
+            latitude: coords.lat,
+            longitude: coords.lng,
         };
 
         if (!user?.email) {
@@ -302,6 +308,8 @@ export default function CreateEvent() {
                             onPress={(data, details = null) => {
                                 setLocation(data.description);
                                 setIsLocationEditable(false);
+                                const {lat, lng} = details.geometry.location;
+                                setCoords({lat, lng});
                             }}
                             query={{
                                 key: googleApiKey,

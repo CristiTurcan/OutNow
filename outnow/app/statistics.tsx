@@ -258,12 +258,10 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         padding: 12,
         alignItems: 'center',
-        // shadows for iOS
         shadowColor: '#000',
         shadowOffset: {width: 0, height: 2},
         shadowOpacity: 0.1,
         shadowRadius: 4,
-        // elevation for Android
         elevation: 3,
     },
     cardValue: {

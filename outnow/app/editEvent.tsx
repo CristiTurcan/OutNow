@@ -21,6 +21,8 @@ import useEvents from "@/hooks/useEvents";
 import useEventDetails from "@/hooks/useEventDetails";
 import {useImagePicker} from '@/hooks/useImagePicker';
 import tempStore from "@/services/tempStore";
+import {GooglePlacesAutocomplete} from "react-native-google-places-autocomplete";
+import Constants from "expo-constants";
 
 export default function EditEvent() {
     const {eventId} = useLocalSearchParams() as { eventId: string };
@@ -29,6 +31,8 @@ export default function EditEvent() {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const {updateEvent} = useEvents();
+    const googleApiKey = Constants.expoConfig?.extra?.googleApiKey;
+    const [isLocationEditable, setIsLocationEditable] = useState(false);
     const {event, refetch} = useEventDetails(Number(eventId));
     const {photoUri, photoBase64, openLibrary} = useImagePicker();
     const [endDate, setEndDate] = useState<Date | null>(null);
@@ -60,6 +64,7 @@ export default function EditEvent() {
     const [timeError, setTimeError] = useState('');
     const [totalTickets, setTotalTickets] = useState('');
     const [ticketsError, setTicketsError] = useState('');
+    const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({lat: null, lng: null});
 
 
     useEffect(() => {
@@ -207,7 +212,9 @@ export default function EditEvent() {
             totalTickets: Number(totalTickets),
             interestList: (tempStore.eventInterests && tempStore.eventInterests.length > 0)
                 ? tempStore.eventInterests.join(',')
-                : null
+                : null,
+            latitude: coords.lat,
+            longitude: coords.lng,
         };
 
         try {
@@ -332,10 +339,41 @@ export default function EditEvent() {
 
                         {/* Location Field */}
                         <Text style={styles.fieldLabel}>Location</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={location}
-                            onChangeText={setLocation}
+                        <GooglePlacesAutocomplete
+                            placeholder="Where is the event?"
+                            fetchDetails={true}
+                            onPress={(data, details = null) => {
+                                setLocation(data.description);
+                                setIsLocationEditable(false);
+                                const {lat, lng} = details.geometry.location;
+                                setCoords({lat, lng});
+                            }}
+                            query={{
+                                key: googleApiKey,
+                                language: 'en',
+                                types: '(cities)',
+                            }}
+                            styles={{
+                                container: {flex: 0, width: '100%'},
+                                textInput: styles.input,
+                            }}
+                            textInputProps={{
+                                onTouchStart: () => setIsLocationEditable(true),
+                                value: location,
+                                onChangeText: (text) => {
+                                    if (isLocationEditable) {
+                                        setLocation(text);
+                                    }
+                                },
+                                onBlur: () => {
+                                    if (!location.trim()) {
+                                        setLocationError("No location provided");
+                                    } else {
+                                        setLocationError("");
+                                    }
+                                    setIsLocationEditable(false);
+                                },
+                            }}
                         />
                         {locationError !== '' && <Text style={globalStyles.errorText}>{locationError}</Text>}
 

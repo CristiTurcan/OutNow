@@ -103,7 +103,7 @@ export default function BuyMockup() {
                     value={cardNumber}
                     onChangeText={text => setCardNumber(text.replace(/(\d{4})(?=\d)/g, '$1 '))}
                     keyboardType="numeric"
-                    maxLength={19 + 3} // spaces
+                    maxLength={19 + 3}
                 />
 
                 <View style={styles.row}>

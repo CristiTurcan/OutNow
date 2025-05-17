@@ -34,6 +34,7 @@ const Home = () => {
         isFetchingNextPage,
         status,
         error,
+        refetch,
     } = usePersonalizedEventsWithSocket(userId)
     const events = data?.pages.flat() ?? [];
     const {goingEvents, fetchGoingEvents} = useGoingEvent();
@@ -93,7 +94,6 @@ const Home = () => {
         useCallback(() => {
             if (!isBusiness && userId) {
                 fetchFavoritedEvents(userId);
-                // loadMore();
             }
         }, [isBusiness, userId])
     );
@@ -113,6 +113,14 @@ const Home = () => {
             }
         }, [notifUserId])
     )
+
+    useFocusEffect(
+        useCallback(() => {
+            if (userId) {
+                refetch();
+            }
+        }, [userId, refetch])
+    );
 
     if (status === 'loading') {
         return <LoadingIndicator/>;

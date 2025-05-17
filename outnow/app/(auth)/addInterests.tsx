@@ -25,6 +25,8 @@ export default function AddInterests() {
         gender,
         dateOfBirth,
         location,
+        latitude,
+        longitude,
     } = useLocalSearchParams();
     const isBusinessAccount = isBusiness === 'true';
 
@@ -36,6 +38,10 @@ export default function AddInterests() {
     const dateOfBirthStr = Array.isArray(dateOfBirth) ? dateOfBirth[0] : dateOfBirth;
     const locationStr = Array.isArray(location) ? location[0] : location;
     const photoStr = tempStore.photoBase64 || '';
+    const latStr = Array.isArray(latitude) ? latitude[0] : latitude;
+    const lngStr = Array.isArray(longitude) ? longitude[0] : longitude;
+    const latitudeNum = latStr ? parseFloat(latStr) : null;
+    const longitudeNum = lngStr ? parseFloat(lngStr) : null;
 
     const handleFinish = async () => {
         try {
@@ -48,6 +54,8 @@ export default function AddInterests() {
                     bio: bioStr,
                     location: locationStr,
                     interestList: selectedInterests,
+                    latitude: latitudeNum,
+                    longitude: longitudeNum,
                 };
                 await updateBusinessProfile(businessData);
                 await signUp(emailStr, passwordStr, usernameStr, isBusinessAccount);
@@ -61,6 +69,8 @@ export default function AddInterests() {
                     dateOfBirth: dateOfBirthStr,
                     location: locationStr,
                     interestList: selectedInterests,
+                    latitude: latitudeNum,
+                    longitude: longitudeNum,
                 };
                 await signUp(emailStr, passwordStr, usernameStr, isBusinessAccount);
                 await updateProfile(profileData);

@@ -35,6 +35,7 @@ export default function EditProfile() {
     const [gender, setGender] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
     const [location, setLocation] = useState('');
+    const [coords, setCoords] = useState({lat: null, lng: null})
     const [showGenderPicker, setShowGenderPicker] = useState(false);
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [showPhotoOptions, setShowPhotoOptions] = useState(false);
@@ -111,6 +112,8 @@ export default function EditProfile() {
             email: user?.email || '',
             bio,
             location,
+            latitude: coords.lat,
+            longitude: coords.lng,
         };
 
         if (!user?.email) {
@@ -247,11 +250,13 @@ export default function EditProfile() {
                     {/* Location */}
                     <Text style={styles.fieldLabel}>Location</Text>
                     <GooglePlacesAutocomplete
-                        placeholder="Where do you live?"
+                        placeholder="City, Country"
                         fetchDetails={true}
                         onPress={(data, details = null) => {
                             setLocation(data.description);
                             setIsLocationEditable(false);
+                            const {lat, lng} = details.geometry.location
+                            setCoords({lat, lng})
                         }}
                         query={{
                             key: googleApiKey,

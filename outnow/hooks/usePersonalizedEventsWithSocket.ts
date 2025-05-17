@@ -1,15 +1,10 @@
-import { useEffect } from 'react'
-import {
-    useInfiniteQuery,
-    useQueryClient,
-    InfiniteData,
-    QueryKey,
-} from '@tanstack/react-query'
-import { Client } from '@stomp/stompjs'
+import {useEffect} from 'react'
+import {InfiniteData, QueryKey, useInfiniteQuery, useQueryClient,} from '@tanstack/react-query'
+import {Client} from '@stomp/stompjs'
 import SockJS from 'sockjs-client'
 import axios from 'axios'
-import { BASE_URL } from '@/config/api'
-import { EventDTO } from '@/types/EventDTO'
+import {BASE_URL} from '@/config/api'
+import {EventDTO} from '@/types/EventDTO'
 
 const PAGE_SIZE = 20
 
@@ -18,18 +13,22 @@ export default function usePersonalizedEventsWithSocket(
 ) {
     const queryClient = useQueryClient()
     const queryKey: QueryKey = ['events', userId]
-    const query = useInfiniteQuery<
-        EventDTO[],
-        Error,
-        InfiniteData<EventDTO[]>,
-        QueryKey
-    >({
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        status,
+        error,
+        refetch,
+    } = useInfiniteQuery<EventDTO[], Error, InfiniteData<EventDTO[]>, QueryKey>({
         queryKey,
-        queryFn: async ({ pageParam = 0 }) => {
+        queryFn: async ({pageParam = 0}): Promise<EventDTO[]> => {
             // console.log('[RQ] fetching page', pageParam)
             const resp = await axios.get(`${BASE_URL}/events/personalized`, {
-                params: { userId, page: pageParam, size: PAGE_SIZE },
+                params: {userId, page: pageParam, size: PAGE_SIZE},
             })
+            // console.log("api called");
             const data: EventDTO[] = Array.isArray(resp.data)
                 ? resp.data
                 : resp.data.content
@@ -114,5 +113,13 @@ export default function usePersonalizedEventsWithSocket(
         }
     }, [userId, queryClient])
 
-    return query
+    return {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        status,
+        error,
+        refetch,
+    };
 }

@@ -11,6 +11,8 @@ interface EventData {
     eventDate?: string | null;
     eventTime?: string | null;
     interestList?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
 }
 
 export default function useEvents() {
