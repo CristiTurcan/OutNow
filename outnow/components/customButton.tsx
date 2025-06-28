@@ -13,7 +13,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({onPress, title, style}) => {
         <Pressable
             style={({pressed}) => [
                 styles.buttonBase,
-                style, // Apply external style
+                style,
                 pressed && styles.buttonPressed,
             ]}
             onPress={onPress}

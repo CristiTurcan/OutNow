@@ -15,6 +15,8 @@ export interface EventDetails {
     interestList: string;
     businessAccountId: number;
     totalTickets: number;
+    latitude: number;
+    longitude: number;
 }
 
 export default function useEventDetails(eventId: number | null) {
@@ -27,6 +29,8 @@ export default function useEventDetails(eventId: number | null) {
         setLoading(true);
         try {
             const response = await axios.get(`${BASE_URL}/events/${eventId}`);
+            console.log(response.data.title);
+            console.log(response.data.latitude);
             setEvent(response.data);
             setError(null);
         } catch (err: any) {

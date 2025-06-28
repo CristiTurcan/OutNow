@@ -27,6 +27,26 @@ const Home = () => {
     const {user, isBusiness} = useAuthContext();
     const {userId} = useUserIdByEmail(user?.email || null);
     const {fetchFavoritedEvents, favoritedEvents} = useFavoriteEvent();
+    const [bizAccountId, setBizAccountId] = useState<number | null>(null)
+    const {getBusinessAccountId} = useBusinessProfile()
+
+    useEffect(() => {
+        if (isBusiness && user?.email) {
+            getBusinessAccountId(user.email).then(setBizAccountId)
+        }
+    }, [isBusiness, user?.email, getBusinessAccountId])
+
+    const accountId = isBusiness ? bizAccountId : userId
+    const {
+        notifications,
+        unreadCount,
+        loading: notifLoading,
+        error: notifError,
+        refresh: refreshNotifications,
+        markAsRead
+    } = useLocalNotifications(accountId);
+    const [count, setCount] = useState<number>(unreadCount);
+
     const {
         data,
         fetchNextPage,
@@ -35,7 +55,7 @@ const Home = () => {
         status,
         error,
         refetch,
-    } = usePersonalizedEventsWithSocket(userId)
+    } = usePersonalizedEventsWithSocket(accountId)
     const events = data?.pages.flat() ?? [];
     const {goingEvents, fetchGoingEvents} = useGoingEvent();
     const [searchQuery, setSearchQuery] = useState('');
@@ -53,32 +73,14 @@ const Home = () => {
     };
     const upcomingRows = groupIntoRows(upcomingEvents, 2);
     const pastRows = groupIntoRows(pastEvents, 2);
-    const [bizAccountId, setBizAccountId] = useState<number | null>(null)
-    const {getBusinessAccountId} = useBusinessProfile()
 
-    useEffect(() => {
-        if (isBusiness && user?.email) {
-            getBusinessAccountId(user.email).then(setBizAccountId)
-        }
-    }, [isBusiness, user?.email, getBusinessAccountId])
-
-    const notifUserId = isBusiness ? bizAccountId : userId
-    const {
-        notifications,
-        unreadCount,
-        loading: notifLoading,
-        error: notifError,
-        refresh: refreshNotifications,
-        markAsRead
-    } = useLocalNotifications(notifUserId);
-    const [count, setCount] = useState<number>(unreadCount);
 
     useEffect(() => {
         setCount(unreadCount);
     }, [unreadCount]);
 
     useNotificationSocket(
-        notifUserId,
+        accountId,
         newCount => setCount(newCount),
         () => {
         }
@@ -108,10 +110,10 @@ const Home = () => {
 
     useFocusEffect(
         useCallback(() => {
-            if (notifUserId) {
+            if (accountId) {
                 refreshNotifications()
             }
-        }, [notifUserId])
+        }, [accountId])
     )
 
     useFocusEffect(
@@ -169,18 +171,20 @@ const Home = () => {
                         keyExtractor={(_, i) => i.toString()}
                         renderItem={({item: row}) => (
                             <View style={styles.rowContainer}>
-                                {row.map((evt: any) => (
-                                    <EventCard
-                                        key={evt.eventId}
-                                        event={{
-                                            ...evt,
-                                            isFavorited: favoritedEvents.includes(evt.eventId),
-                                            isGoing: goingEvents.includes(evt.eventId)
-                                        }}
-                                        cardWidth={cardWidth}
-                                        userId={userId}
-                                    />
+                                {row.map(evt => (
+                                    <View key={evt.eventId} style={styles.cardWrapper}>
+                                        <EventCard
+                                            event={{
+                                                ...evt,
+                                                isFavorited: favoritedEvents.includes(evt.eventId),
+                                                isGoing: goingEvents.includes(evt.eventId)
+                                            }}
+                                            cardWidth={cardWidth}
+                                            userId={userId}
+                                        />
+                                    </View>
                                 ))}
+
                             </View>
                         )}
                         renderSectionHeader={({section}) => (
@@ -247,6 +251,7 @@ const styles = StyleSheet.create({
     rowContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: 'stretch',
         marginBottom: 10,
     },
     searchRow: {
@@ -295,6 +300,10 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 10,
         fontWeight: 'bold',
+    },
+    cardWrapper: {
+        flex: 1,
+        marginHorizontal: 5,
     },
 
 

@@ -47,7 +47,6 @@ export default function Statistics() {
             try {
                 const all = await getFeedback(eventId);
                 if (!all) throw new Error('Failed to load feedback');
-                // Count ratings
                 const counts: Record<string, number> = {
                     VERY_BAD: 0,
                     BAD: 0,
@@ -60,7 +59,6 @@ export default function Statistics() {
                 });
                 setRatingsCount(counts);
 
-                // Prepare comments list
                 const cms = all.map(fb => ({
                     feedbackId: fb.feedbackId,
                     userId: fb.userId,
@@ -95,7 +93,7 @@ export default function Statistics() {
         );
     }
 
-    // Find the maximum count to scale bars
+    // maximum count to scale bars
     const maxCount = Math.max(...Object.values(ratingsCount), 1);
 
 
@@ -149,7 +147,6 @@ export default function Statistics() {
                     )}
 
                     renderItem={({item}) => {
-                        // Ratings row
                         if ('count' in item) {
                             const barWidth = (item.count / maxCount) * BAR_MAX_WIDTH;
                             const labelMap: Record<string, string> = {
@@ -170,7 +167,6 @@ export default function Statistics() {
                             );
                         }
 
-                        // Comments row
                         return (
                             <View style={styles.commentRow}>
                                 <Text style={styles.commentUser}>

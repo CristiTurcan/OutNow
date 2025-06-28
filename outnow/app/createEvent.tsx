@@ -42,6 +42,8 @@ export default function CreateEvent() {
     const [titleError, setTitleError] = useState('');
     const [priceError, setPriceError] = useState('');
     const [imageError, setImageError] = useState('');
+    const [eventDateError, setEventDateError] = useState('');
+    const [eventTimeError, setEventTimeError] = useState('');
     const [endDateError, setEndDateError] = useState('');
     const [endTimeError, setEndTimeError] = useState('');
     const [ticketsError, setTicketsError] = useState('');
@@ -99,12 +101,12 @@ export default function CreateEvent() {
             setTitleError('');
         }
 
-        // if (!photoBase64) {
-        //     setImageError('Event image is required.');
-        //     hasError = true;
-        // } else {
-        //     setImageError('');
-        // }
+        if (!photoBase64) {
+            setImageError('Event image is required.');
+            hasError = true;
+        } else {
+            setImageError('');
+        }
 
         if (!description.trim()) {
             setDescriptionError('Description is required.');
@@ -128,6 +130,21 @@ export default function CreateEvent() {
         } else {
             setPriceError('');
         }
+
+        if (!eventDateTime) {
+            setEventDateError('Event date is required.');
+            hasError = true;
+        } else {
+            setEventDateError('');
+        }
+
+        if (!eventTime) {
+            setEventTimeError('Event time is required.');
+            hasError = true;
+        } else {
+            setEventTimeError('');
+        }
+
 
         if (!endDateTime) {
             setEndDateError('End date is required.');
@@ -258,6 +275,7 @@ export default function CreateEvent() {
                                 {eventDateTime ? eventDateTime.toLocaleDateString() : "Select date"}
                             </Text>
                         </TouchableOpacity>
+                        {eventDateError !== '' && <Text style={globalStyles.errorText}>{eventDateError}</Text>}
 
                         {/* Time Picker */}
                         <Text style={styles.fieldLabel}>Time</Text>
@@ -271,6 +289,7 @@ export default function CreateEvent() {
                                     : "Select time"}
                             </Text>
                         </TouchableOpacity>
+                        {eventTimeError !== '' && <Text style={globalStyles.errorText}>{eventTimeError}</Text>}
 
                         {/* End Date Field */}
                         <Text style={styles.fieldLabel}>End Date</Text>
@@ -393,6 +412,11 @@ export default function CreateEvent() {
                         setShowEventDatePicker(false);
                     }}
                     onCancel={() => setShowEventDatePicker(false)}
+                    pickerContainerStyleIOS={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
                 />
                 <DateTimePickerModal
                     isVisible={showTimePicker}
@@ -403,6 +427,11 @@ export default function CreateEvent() {
                         setShowTimePicker(false);
                     }}
                     onCancel={() => setShowTimePicker(false)}
+                    pickerContainerStyleIOS={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
                 />
                 <DateTimePickerModal
                     isVisible={showEndDatePicker}
@@ -414,9 +443,12 @@ export default function CreateEvent() {
                         setShowEndDatePicker(false);
                     }}
                     onCancel={() => setShowEndDatePicker(false)}
+                    pickerContainerStyleIOS={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
                 />
-
-
                 <DateTimePickerModal
                     isVisible={showEndTimePicker}
                     mode="time"
@@ -426,6 +458,11 @@ export default function CreateEvent() {
                         setShowEndTimePicker(false);
                     }}
                     onCancel={() => setShowEndTimePicker(false)}
+                    pickerContainerStyleIOS={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
                 />
             </SafeAreaView>
         </TouchableWithoutFeedback>

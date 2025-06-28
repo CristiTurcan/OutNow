@@ -1,13 +1,17 @@
 import {Stack, useRouter, useSegments} from 'expo-router';
 import {useEffect, useState} from 'react';
 import auth, {FirebaseAuthTypes} from '@react-native-firebase/auth';
-import {ActivityIndicator, View} from 'react-native';
+import {ActivityIndicator, TextInput, View} from 'react-native';
 import {AuthProvider} from '@/contexts/AuthContext';
 import NotificationsManager from '@/notifications/NotificationsManager';
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 
+;(TextInput as any).defaultProps = {
+    ...(TextInput as any).defaultProps || {},
+    placeholderTextColor: '#999',
+};
+
 export default function RootLayout() {
-    // const { appUser, loadingAppUser } = useAuthContext()
     const [initializing, setInitializing] = useState(true);
     const [user, setUser] = useState<FirebaseAuthTypes.User | null>();
     const router = useRouter();

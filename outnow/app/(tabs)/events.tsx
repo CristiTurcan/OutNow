@@ -1,11 +1,8 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {ActivityIndicator, Dimensions, SectionList, StyleSheet, Text, View} from 'react-native';
 import EventCard from '../../components/eventCard';
-import useFavoriteEvent from '@/hooks/useFavoriteEvent';
 import useUserIdByEmail from '@/hooks/useUserByIdByEmail';
 import {useFocusEffect} from '@react-navigation/native';
-import {useLoadEvents} from '@/hooks/useLoadEvents';
-import useGoingEvent from "@/hooks/useGoingEvents";
 import globalStyles from "@/styles/globalStyles";
 import {useAuthContext} from "@/contexts/AuthContext";
 import useBusinessProfile from "@/hooks/useBusinessProfile";
@@ -13,6 +10,7 @@ import useMyEvents from "@/hooks/useMyEvents";
 import {router} from "expo-router";
 import LoadingIndicator from "@/components/LoadingIndicator";
 import CustomButton from "@/components/customButton";
+import useUserEvents from "@/hooks/useUserEvents";
 
 const windowWidth = Dimensions.get('window').width;
 const cardWidth = (windowWidth - 40) / 2;
@@ -20,28 +18,20 @@ const cardWidth = (windowWidth - 40) / 2;
 export default function Favorites() {
     const {user, isBusiness} = useAuthContext();
     const {userId} = useUserIdByEmail(user?.email || null);
-    const {fetchFavoritedEvents, favoritedEvents, removeFavoriteEvent, favoriteEvent} = useFavoriteEvent();
-    const {events, loading, error, loadEvents} = useLoadEvents(favoritedEvents);
-    const {goingEvents: goingEventIds, fetchGoingEvents} = useGoingEvent();
-    const {
-        events: favEvents,
-        loading: favLoading,
-        error: favError,
-        loadEvents: loadFavEvents
-    } = useLoadEvents(favoritedEvents);
-    const {
-        events: goEvents,
-        loading: goLoading,
-        error: goError,
-        loadEvents: loadGoEvents
-    } = useLoadEvents(goingEventIds);
+
+    const {favorites: favEvents, going: goEvents, loading, error, refetch} = useUserEvents(userId);
     type EventSection = {
         title: string;
         data: any[];
     };
     const {getBusinessProfile} = useBusinessProfile();
     const [businessAccountId, setBusinessAccountId] = useState<string | null>(null);
-    const {events: myEvents, loading: myEventsLoading, error: myEventsError} = useMyEvents(businessAccountId);
+    const {
+        events: myEvents,
+        loading: myEventsLoading,
+        error: myEventsError,
+        refetchBusiness
+    } = useMyEvents(businessAccountId);
     const currentDate = new Date();
     const futureBusinessEvents = myEvents.filter(evt => new Date(evt.eventDate) >= currentDate);
     const pastBusinessEvents = myEvents.filter(evt => new Date(evt.eventDate) < currentDate);
@@ -54,23 +44,21 @@ export default function Favorites() {
         }
     }, [isBusiness, user?.email]);
 
-    // Fetch favorites when screen is focused
     useFocusEffect(
         useCallback(() => {
             if (userId) {
-                fetchFavoritedEvents(userId);
-                fetchGoingEvents(userId);
+                refetch();
             }
-        }, [userId, fetchFavoritedEvents, fetchGoingEvents])
+        }, [userId])
     );
 
-    useEffect(() => {
-        loadFavEvents();
-    }, [favoritedEvents, loadFavEvents]);
-
-    useEffect(() => {
-        loadGoEvents();
-    }, [goingEventIds, loadGoEvents]);
+    useFocusEffect(
+        useCallback(() => {
+            if (isBusiness && businessAccountId) {
+                refetchBusiness();
+            }
+        }, [isBusiness, businessAccountId])
+    );
 
     const groupIntoRows = (data: any[], columns: number) => {
         const rows = [];
@@ -81,8 +69,7 @@ export default function Favorites() {
     };
 
 
-    // Show a loader if either favorites or going events are loading
-    if (favLoading || goLoading) {
+    if (!isBusiness && loading) {
         return (
             <View style={styles.loaderContainer}>
                 <ActivityIndicator size="large" color="#0000ff"/>
@@ -90,16 +77,14 @@ export default function Favorites() {
         );
     }
 
-// Show an error if one occurred
-    if (favError || goError) {
+    if (error) {
         return (
             <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>{favError || goError}</Text>
+                <Text style={styles.errorText}>{error}</Text>
             </View>
         );
     }
 
-// If both favorites and going sections are empty, show a "no events" message
     if (favEvents.length === 0 && goEvents.length === 0 && !isBusiness) {
         return (
             <View style={styles.emptyContainer}>
@@ -180,14 +165,13 @@ export default function Favorites() {
                             key={eventItem.eventId}
                             event={{
                                 ...eventItem,
-                                isFavorited: favoritedEvents.includes(eventItem.eventId),
-                                isGoing: goingEventIds.includes(eventItem.eventId),
+                                isFavorited: favEvents.some(e => e.eventId === eventItem.eventId),
+                                isGoing: goEvents.some(e => e.eventId === eventItem.eventId),
                             }}
                             cardWidth={cardWidth}
                             onToggleFavorite={() => {
                                 if (userId) {
-                                    fetchFavoritedEvents(userId);
-                                    fetchGoingEvents(userId);
+                                    refetch();
                                 }
                             }}
                         />

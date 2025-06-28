@@ -36,7 +36,6 @@ export default function Feedback() {
         : globalStyles.nextButton;
 
 
-// When component mounts, fetch feedback and check if the current user already submitted
     useEffect(() => {
         async function fetchExistingFeedback() {
             const eventIdNumber = parseInt(eventId, 10);
@@ -69,9 +68,18 @@ export default function Feedback() {
         loadExisting();
     }, [userId]);
 
+    function formatRatingLabel(rating: string): string {
+        return rating
+            .toLowerCase()
+            .replace(/_/g, ' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+
 
     const handleSend = async () => {
-        // Validate that a rating is selected
+        // validate that a rating is selected
         if (!rating) {
             setRatingError("Please select a rating.");
             return;
@@ -79,7 +87,7 @@ export default function Feedback() {
             setRatingError("");
         }
 
-        // Validate comment word count
+        // validate comment word count
         const words = comment.trim().split(/\s+/).filter(word => word.length > 0);
         if (words.length > 200) {
             setCommentError(`Word limit reached: ${words.length}/200`);
@@ -88,7 +96,6 @@ export default function Feedback() {
             setCommentError("");
         }
 
-        // Ensure we have a valid user id
         if (!userId) {
             console.error("User ID is not available");
             return;
@@ -100,8 +107,6 @@ export default function Feedback() {
             if (result) {
                 console.log("Feedback submitted successfully", result);
                 setFeedbackSubmitted(true);
-                // setRating('');
-                // setComment('');
             }
         } catch (e) {
             console.error("Error sending feedback:", e);
@@ -126,7 +131,7 @@ export default function Feedback() {
                         onPress={() => !feedbackSubmitted && setShowRatingPicker(true)}
                     >
                         <Text style={[styles.ratingButtonText, !rating && globalStyles.placeholderText]}>
-                            {rating ? rating : 'Select a rating'}
+                            {rating ? formatRatingLabel(rating) : 'Select a rating'}
                         </Text>
                     </TouchableOpacity>
                     {ratingError !== '' && <Text style={globalStyles.errorText}>{ratingError}</Text>}

@@ -38,6 +38,19 @@ export default function SeeEvent() {
     const showControls = !isBusiness && (isGoing || !isPast);
     const [modalVisible, setModalVisible] = useState(false);
     const [ticketQty, setTicketQty] = useState(1);
+    const [myBusinessAccountId, setMyBusinessAccountId] = useState<number | null>(null);
+    const {getBusinessAccountId} = useBusinessProfile();
+
+    useEffect(() => {
+        if (isBusiness && user?.email) {
+            getBusinessAccountId(user.email)
+                .then((id) => setMyBusinessAccountId(id))
+                .catch(console.error);
+        }
+    }, [isBusiness, user?.email, getBusinessAccountId]);
+
+    const isOwner = eventState?.businessAccountId === myBusinessAccountId;
+
 
     useEffect(() => {
         if (event && event.businessAccountId) {
@@ -68,9 +81,6 @@ export default function SeeEvent() {
         ? eventState.totalTickets - eventState.attendanceCount
         : 0;
 
-    // console.log(eventState.attendanceCount);
-    // console.log(availableTickets);
-
     const handleDelete = async () => {
         Alert.alert(
             "Delete Event",
@@ -81,7 +91,6 @@ export default function SeeEvent() {
                     text: "Delete", style: "destructive", onPress: async () => {
                         try {
                             await deleteEvent(eventId);
-                            // Navigate back to home or events list after deletion
                             router.replace('/(tabs)/home');
                         } catch (err) {
                             console.error("Error deleting event", err);
@@ -99,10 +108,6 @@ export default function SeeEvent() {
         }
 
         if (!isGoing) {
-            // router.push({
-            //     pathname: '/buyMockup',
-            //     params: {eventId: eventState.eventId.toString()},
-            // });
             setTicketQty(1);
             setModalVisible(true);
         } else {
@@ -140,7 +145,6 @@ export default function SeeEvent() {
             } else {
                 await favoriteEvent(userId, eventState.eventId);
             }
-            // Refresh favorites after toggling
             fetchFavoritedEvents(userId);
         } catch (err) {
             console.error('Error toggling favorite status:', err);
@@ -187,7 +191,7 @@ export default function SeeEvent() {
                         {`By: ${businessUsername || ''}`}
                     </Text>
                 </TouchableOpacity>
-                <Text style={styles.details}>{`${eventState.attendees} people are going`}</Text>
+                {/*<Text style={styles.details}>{`${eventState.attendees} people are going`}</Text>*/}
                 <Text style={styles.details}>{`Type: ${eventState.interestList}`}</Text>
             </ScrollView>
 
@@ -202,17 +206,29 @@ export default function SeeEvent() {
                                 color={isFavorited ? "red" : "gray"}
                             />
                         </TouchableOpacity>
-                        <CustomButton
-                            title={isPast ? "Feedback" : (isGoing ? "Refund" : "Buy")}
-                            onPress={isPast
-                                ? () => router.push(`/feedback?eventId=${eventState.eventId}`)
-                                : handleBuyOrRefund}
-                            style={globalStyles.nextButton}
-                        />
+                        {availableTickets > 0 && (
+                            <CustomButton
+                                title={isPast ? "Feedback" : (isGoing ? "Refund" : "Buy")}
+                                onPress={isPast
+                                    ? () => router.push(`/feedback?eventId=${eventState.eventId}`)
+                                    : handleBuyOrRefund}
+                                style={globalStyles.nextButton}
+                            />
+                        )}
+                        {availableTickets == 0 && (
+                            <CustomButton
+                                title={isPast ? "Feedback" : "Sold Out"}
+                                onPress={isPast
+                                    ? () => router.push(`/feedback?eventId=${eventState.eventId}`)
+                                    : () => {
+                                    }}
+                                style={globalStyles.nextButton}
+                            />
+                        )}
 
                     </>
                 )}
-                {isBusiness && (
+                {isBusiness && isOwner && (
                     <>
                         <TouchableOpacity onPress={handleDelete} style={styles.favoriteButton}>
                             {!isPast && (
@@ -224,11 +240,13 @@ export default function SeeEvent() {
                             onPress={() => router.push(`/statistics?eventId=${eventState.eventId}`)}
                             style={globalStyles.nextButton}
                         />
-                        <CustomButton
-                            title={"Edit"}
-                            onPress={() => router.push(`/editEvent?eventId=${eventState.eventId}`)}
-                            style={globalStyles.nextButton}
-                        />
+                        {!isPast && (
+                            <CustomButton
+                                title={"Edit"}
+                                onPress={() => router.push(`/editEvent?eventId=${eventState.eventId}`)}
+                                style={globalStyles.nextButton}
+                            />
+                        )}
                     </>
                 )}
             </View>

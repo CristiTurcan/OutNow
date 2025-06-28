@@ -57,8 +57,8 @@ export default function AddInterests() {
                     latitude: latitudeNum,
                     longitude: longitudeNum,
                 };
-                await updateBusinessProfile(businessData);
                 await signUp(emailStr, passwordStr, usernameStr, isBusinessAccount);
+                await updateBusinessProfile(businessData);
 
             } else {
                 const profileData = {

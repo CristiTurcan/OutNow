@@ -5,6 +5,7 @@ import SockJS from 'sockjs-client'
 import axios from 'axios'
 import {BASE_URL} from '@/config/api'
 import {EventDTO} from '@/types/EventDTO'
+import {useAuthContext} from "@/contexts/AuthContext";
 
 const PAGE_SIZE = 20
 
@@ -12,6 +13,7 @@ export default function usePersonalizedEventsWithSocket(
     userId: number | null
 ) {
     const queryClient = useQueryClient()
+    const {isBusiness} = useAuthContext();
     const queryKey: QueryKey = ['events', userId]
     const {
         data,
@@ -24,15 +26,12 @@ export default function usePersonalizedEventsWithSocket(
     } = useInfiniteQuery<EventDTO[], Error, InfiniteData<EventDTO[]>, QueryKey>({
         queryKey,
         queryFn: async ({pageParam = 0}): Promise<EventDTO[]> => {
-            // console.log('[RQ] fetching page', pageParam)
             const resp = await axios.get(`${BASE_URL}/events/personalized`, {
-                params: {userId, page: pageParam, size: PAGE_SIZE},
+                params: {userId, isBusiness, page: pageParam, size: PAGE_SIZE},
             })
-            // console.log("api called");
             const data: EventDTO[] = Array.isArray(resp.data)
                 ? resp.data
                 : resp.data.content
-            // console.log('[RQ] got', data.length, 'items')
             return data
         },
         getNextPageParam: (lastPage, pages) =>

@@ -105,7 +105,7 @@ export default function EditProfile() {
 
         if (!location.trim()) {
             setLocationError("No location provided");
-            // return; // Prevent saving if location is empty.
+            return;
         }
 
         const commonData = {
@@ -171,82 +171,6 @@ export default function EditProfile() {
                         <Text style={globalStyles.errorText}>Character limit reached: 150/150</Text>
                     )}
 
-                    {!isBusiness && (
-                        <>
-                            {/* Gender */}
-                            <Text style={styles.fieldLabel}>Gender</Text>
-                            <TouchableOpacity
-                                style={styles.genderButton}
-                                onPress={() => {
-                                    setShowDatePicker(false);
-                                    setShowGenderPicker(true);
-                                }}
-                            >
-                                <Text style={[styles.genderButtonText, !gender && globalStyles.placeholderText]}>
-                                    {gender ? gender : 'Select your gender'}
-                                </Text>
-                            </TouchableOpacity>
-
-                            {/* Gender Picker Modal */}
-                            <Modal
-                                visible={showGenderPicker}
-                                transparent
-                                animationType="none"
-                                onRequestClose={() => setShowGenderPicker(false)}
-                            >
-                                <TouchableWithoutFeedback onPress={() => setShowGenderPicker(false)}>
-                                    <View style={styles.modalContainer}>
-                                        <TouchableWithoutFeedback>
-                                            <View style={styles.modalContent}>
-                                                <Picker
-                                                    selectedValue={gender}
-                                                    onValueChange={(itemValue) => {
-                                                        setGender(itemValue);
-                                                        setShowGenderPicker(false);
-                                                    }}
-                                                    style={styles.genderPicker}
-                                                >
-                                                    <Picker.Item label="" value=""/>
-                                                    <Picker.Item label="Male" value="Male"/>
-                                                    <Picker.Item label="Female" value="Female"/>
-                                                    <Picker.Item label="Prefer not to say" value="Prefer not to say"/>
-                                                </Picker>
-                                            </View>
-                                        </TouchableWithoutFeedback>
-                                    </View>
-                                </TouchableWithoutFeedback>
-                            </Modal>
-                        </>
-                    )}
-
-                    {!isBusiness && (
-                        <>
-                            {/* Date of Birth */}
-                            <Text style={styles.fieldLabel}>Date of birth</Text>
-                            <TouchableOpacity
-                                style={styles.datePickerButton}
-                                onPress={() => {
-                                    setShowDatePicker(true);
-                                }}
-                            >
-                                <Text
-                                    style={[styles.datePickerButtonText, !dateOfBirth && globalStyles.placeholderText]}>
-                                    {dateOfBirth ? dateOfBirth.toDateString() : 'Select your date of birth'}
-                                </Text>
-                            </TouchableOpacity>
-                            {ageError !== '' && <Text style={globalStyles.errorText}>{ageError}</Text>}
-                            <DateTimePickerModal
-                                isVisible={showDatePicker}
-                                mode="date"
-                                date={dateOfBirth || new Date()}
-                                maximumDate={new Date()}
-                                onConfirm={handleConfirm}
-                                onCancel={() => setShowDatePicker(false)}
-                            />
-                        </>
-                    )}
-
-
                     {/* Location */}
                     <Text style={styles.fieldLabel}>Location</Text>
                     <GooglePlacesAutocomplete
@@ -290,6 +214,87 @@ export default function EditProfile() {
                     />
                     {locationError !== '' && (
                         <Text style={globalStyles.errorText}>{locationError}</Text>
+                    )}
+
+                    {!isBusiness && (
+                        <>
+                            {/* Gender */}
+                            <Text style={styles.fieldLabel}>Gender</Text>
+                            <TouchableOpacity
+                                style={styles.genderButton}
+                                onPress={() => {
+                                    setShowDatePicker(false);
+                                    setShowGenderPicker(true);
+                                }}
+                            >
+                                <Text style={[styles.genderButtonText, !gender && globalStyles.placeholderText]}>
+                                    {gender ? gender : 'Select your gender'}
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* Gender Picker Modal */}
+                            <Modal
+                                visible={showGenderPicker}
+                                transparent
+                                animationType="none"
+                                onRequestClose={() => setShowGenderPicker(false)}
+                            >
+                                <TouchableWithoutFeedback onPress={() => setShowGenderPicker(false)}>
+                                    <View style={styles.modalContainer}>
+                                        <TouchableWithoutFeedback>
+                                            <View style={styles.modalContent}>
+                                                <Picker
+                                                    selectedValue={gender}
+                                                    onValueChange={(itemValue) => {
+                                                        setGender(itemValue);
+                                                        setShowGenderPicker(false);
+                                                    }}
+                                                    style={styles.genderPicker}
+                                                >
+                                                    <Picker.Item label="" value="" color="#000"/>
+                                                    <Picker.Item label="Male" value="Male" color="#000"/>
+                                                    <Picker.Item label="Female" value="Female" color="#000"/>
+                                                    <Picker.Item label="Prefer not to say" value="Prefer not to say"
+                                                                 color="#000"/>
+                                                </Picker>
+                                            </View>
+                                        </TouchableWithoutFeedback>
+                                    </View>
+                                </TouchableWithoutFeedback>
+                            </Modal>
+                        </>
+                    )}
+
+                    {!isBusiness && (
+                        <>
+                            {/* Date of Birth */}
+                            <Text style={styles.fieldLabel}>Date of birth</Text>
+                            <TouchableOpacity
+                                style={styles.datePickerButton}
+                                onPress={() => {
+                                    setShowDatePicker(true);
+                                }}
+                            >
+                                <Text
+                                    style={[styles.datePickerButtonText, !dateOfBirth && globalStyles.placeholderText]}>
+                                    {dateOfBirth ? dateOfBirth.toDateString() : 'Select your date of birth'}
+                                </Text>
+                            </TouchableOpacity>
+                            {ageError !== '' && <Text style={globalStyles.errorText}>{ageError}</Text>}
+                            <DateTimePickerModal
+                                isVisible={showDatePicker}
+                                mode="date"
+                                date={dateOfBirth || new Date()}
+                                maximumDate={new Date()}
+                                onConfirm={handleConfirm}
+                                onCancel={() => setShowDatePicker(false)}
+                                pickerContainerStyleIOS={{
+                                    width: '100%',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
+                            />
+                        </>
                     )}
 
 
@@ -482,6 +487,7 @@ const styles = StyleSheet.create({
     genderPicker: {
         height: 'auto',
         width: '100%',
+        color: '#999',
     },
     photoOptionsOverlay: {
         flex: 1,

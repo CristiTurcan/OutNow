@@ -80,20 +80,16 @@ const useAuth = (): AuthHook => {
         setLoading(true);
         try {
             const userCredential = await auth().signInWithEmailAndPassword(email, password);
-            // Force token refresh
             await userCredential.user.getIdToken(true);
-            // Option 1: Reload user to ensure latest custom claims
             await userCredential.user.reload();
             const idTokenResult = await userCredential.user.getIdTokenResult();
             const businessStatus: boolean = idTokenResult.claims.isBusiness || false;
             setIsBusiness(businessStatus);
             if (!businessStatus) {
-                // fetch current flags so we don’t overwrite them
                 const {data: current} = await axios.get(
                     `${BASE_URL}/users/by-email`,
                     {params: {email: userCredential.user?.email}}
                 );
-
                 await axios.post(`${BASE_URL}/users/upsert`, {
                     email: userCredential.user?.email,
                     showDob: current.showDob,
@@ -122,7 +118,6 @@ const useAuth = (): AuthHook => {
             const uid = userCredential.user.uid;
 
             if (isBusiness) {
-                // set the custom claim
                 const setUserRole = functions().httpsCallable('setUserRole');
                 await setUserRole({uid, isBusiness});
             } else {
@@ -131,7 +126,6 @@ const useAuth = (): AuthHook => {
                     username
                 });
             }
-            // Force token refresh to get updated custom claims
             await userCredential.user.getIdToken(true);
             const idTokenResult = await userCredential.user.getIdTokenResult();
             const businessStatus: boolean = idTokenResult.claims.isBusiness || false;

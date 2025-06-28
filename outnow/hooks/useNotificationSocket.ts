@@ -27,7 +27,6 @@ export function useNotificationSocket(
         client.onConnect = () => {
             // console.log('[STOMP] Connected – subscribing…');
             client.subscribe(`/topic/unreadCount/${userId}`, msg => {
-                console.log('[STOMP] ← unreadCount', msg.body);
                 onCount(Number(msg.body));
             });
             client.subscribe(`/topic/newNotification/${userId}`, msg => {

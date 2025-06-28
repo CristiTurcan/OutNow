@@ -49,10 +49,10 @@ export default function EditInterests() {
 
     const toggleInterest = (interest: string) => {
         if (selectedInterests.includes(interest)) {
-            // Deselect: remove from selectedInterests
+            // Deselect - remove from selected interests
             setSelectedInterests(prev => prev.filter(item => item !== interest));
         } else {
-            // Select: add to selectedInterests
+            // Select - add from selected interests
             setSelectedInterests(prev => [...prev, interest]);
         }
     };
@@ -78,7 +78,7 @@ export default function EditInterests() {
         }
     };
 
-    // Compute other interests by filtering out the selected ones
+    // interests that are not selected
     const otherInterests = interestsData.interests.filter(
         (interest: string) => !selectedInterests.includes(interest)
     );

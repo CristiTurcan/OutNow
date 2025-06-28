@@ -71,7 +71,7 @@ export default function Index() {
                 }
             );
         } else {
-            // For Android, use custom modal
+            // custom modal for android
             setShowPhotoOptions(true);
         }
     };
@@ -86,7 +86,6 @@ export default function Index() {
         }
     };
 
-    // Menu items for the list
     const menuItems = [
         {
             label: isBusiness ? 'Followers' : 'Following',
@@ -100,8 +99,6 @@ export default function Index() {
             icon: 'settings',
             onPress: () => router.push('/(tabs)/profile/myData'),
         }] : []),
-        {label: 'Notification', icon: 'bell', onPress: () => router.push('/(tabs)/profile/notification')},
-        {label: 'Information', icon: 'info', onPress: () => router.push('(tabs)/profile/information')},
     ];
 
     return (

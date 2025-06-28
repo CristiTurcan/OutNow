@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import axios from 'axios';
 import useBusinessProfile from '@/hooks/useBusinessProfile';
 import {BASE_URL} from "@/config/api";
@@ -9,27 +9,27 @@ export default function useMyEvents(businessEmail: string | null) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
+    const fetchMyEvents = useCallback(async () => {
         if (!businessEmail) return;
-        setLoading(true);
 
-        const fetchMyEvents = async () => {
-            try {
-                // Use the function from useBusinessProfile to get the account ID
-                const businessAccountId = await getBusinessAccountId(businessEmail);
-                const eventsResponse = await axios.get(
-                    `${BASE_URL}/events/business/${businessAccountId}`
-                );
-                setEvents(eventsResponse.data);
-            } catch (err: any) {
-                setError(err.response?.data?.message || err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchMyEvents();
+        try {
+            setLoading(true);
+            const businessAccountId = await getBusinessAccountId(businessEmail);
+            const eventsResponse = await axios.get(
+                `${BASE_URL}/events/business/${businessAccountId}`
+            );
+            setEvents(eventsResponse.data);
+            setError(null);
+        } catch (err: any) {
+            setError(err.response?.data?.message || err.message);
+        } finally {
+            setLoading(false);
+        }
     }, [businessEmail, getBusinessAccountId]);
 
-    return {events, loading, error};
+    useEffect(() => {
+        fetchMyEvents();
+    }, [fetchMyEvents]);
+
+    return {events, loading, error, refetchBusiness: fetchMyEvents};
 }

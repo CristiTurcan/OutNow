@@ -1,14 +1,13 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
     Image,
-    Keyboard,
+    LogBox,
     SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     View
 } from 'react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
@@ -16,13 +15,14 @@ import CustomBackButton from '@/components/customBackButton';
 import CustomButton from '@/components/customButton';
 import globalStyles from '@/styles/globalStyles';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import {KeyboardAwareScrollView} from "react-native-keyboard-aware-scroll-view";
 import useEvents from "@/hooks/useEvents";
 import useEventDetails from "@/hooks/useEventDetails";
 import {useImagePicker} from '@/hooks/useImagePicker';
 import tempStore from "@/services/tempStore";
 import {GooglePlacesAutocomplete} from "react-native-google-places-autocomplete";
 import Constants from "expo-constants";
+
+LogBox.ignoreLogs(['VirtualizedLists should never be nested']);
 
 export default function EditEvent() {
     const {eventId} = useLocalSearchParams() as { eventId: string };
@@ -34,6 +34,7 @@ export default function EditEvent() {
     const googleApiKey = Constants.expoConfig?.extra?.googleApiKey;
     const [isLocationEditable, setIsLocationEditable] = useState(false);
     const {event, refetch} = useEventDetails(Number(eventId));
+    console.log("event" + event?.latitude)
     const {photoUri, photoBase64, openLibrary} = useImagePicker();
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [showEndDatePicker, setShowEndDatePicker] = useState(false);
@@ -41,9 +42,8 @@ export default function EditEvent() {
     const [showEndTimePicker, setShowEndTimePicker] = useState(false);
     const [endDateError, setEndDateError] = useState('');
     const [endTimeError, setEndTimeError] = useState('');
+    const locationRef = useRef<GooglePlacesAutocomplete>(null);
 
-
-    // Form states
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState('');
@@ -73,6 +73,12 @@ export default function EditEvent() {
             setDescription(event.description);
             setLocation(event.location);
             setPrice(event.price.toString());
+            setCoords({
+                lat: event!.latitude,
+                lng: event!.longitude,
+            });
+
+            console.log("Evenrttttt" + event?.latitude);
             if (event.eventDate) {
                 setEventDate(new Date(event.eventDate));
             }
@@ -218,6 +224,7 @@ export default function EditEvent() {
         };
 
         try {
+            console.log(updatedEvent.latitude + ' ' + updatedEvent.longitude);
             await updateEvent(Number(eventId), updatedEvent);
             tempStore.eventInterests = [];
             router.replace('/(tabs)/home');
@@ -230,230 +237,311 @@ export default function EditEvent() {
     if (error) return <Text>Error: {error}</Text>;
 
     return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <SafeAreaView style={globalStyles.container}>
-                {/* Header */}
-                <View style={globalStyles.headerRow}>
-                    <CustomBackButton text="" style={globalStyles.backButton}/>
-                    <Text style={globalStyles.title}>Edit Profile</Text>
-                </View>
-                <KeyboardAwareScrollView
-                    keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={{flexGrow: 1, paddingBottom: 20}}
+        <SafeAreaView style={globalStyles.container}>
+            {/* Header */}
+            <View style={globalStyles.headerRow}>
+                <CustomBackButton text="" style={globalStyles.backButton}/>
+                <Text style={globalStyles.title}>Edit Profile</Text>
+            </View>
+            <ScrollView
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                contentContainerStyle={styles.contentContainer}>
+
+                <TouchableOpacity onPress={openLibrary} style={styles.imagePicker}>
+                    {eventImageUri ? (
+                        <Image source={{uri: eventImageUri}} style={styles.image}/>
+                    ) : (
+                        <Text style={styles.placeholderText}>Select Event Image</Text>
+                    )}
+                </TouchableOpacity>
+                {imageError !== '' && <Text style={globalStyles.errorText}>{imageError}</Text>}
+
+
+                {/* Title Field */}
+                <Text style={styles.fieldLabel}>Title</Text>
+                <TextInput
+                    style={styles.input}
+                    value={title}
+                    onChangeText={setTitle}
+                />
+                {titleError !== '' && <Text style={globalStyles.errorText}>{titleError}</Text>}
+
+                {/* Description Field */}
+                <Text style={styles.fieldLabel}>Description</Text>
+                <TextInput
+                    style={[styles.input, styles.textArea]}
+                    value={description}
+                    onChangeText={setDescription}
+                    multiline
+                />
+                {descriptionError !== '' && <Text style={globalStyles.errorText}>{descriptionError}</Text>}
+
+                {/*Location Field*/}
+                <Text style={styles.fieldLabel}>Location</Text>
+                {/*<View style={{zIndex: 999, elevation: 999, overflow: 'visible'}}>*/}
+                <GooglePlacesAutocomplete
+                    placeholder="Where is the event?"
+                    fetchDetails={true}
+                    onPress={(data, details = null) => {
+                        setLocation(data.description);
+                        setIsLocationEditable(false);
+                        const {lat, lng} = details.geometry.location;
+                        setCoords({lat, lng});
+                    }}
+                    query={{
+                        key: googleApiKey,
+                        language: 'en',
+                        types: '(cities)',
+                    }}
+                    listViewProps={{nestedScrollEnabled: true, keyboardShouldPersistTaps: 'always'}}
+                    styles={{
+                        container: {flex: 0, width: '100%'},
+                        textInput: styles.input,
+                        listView: {
+                            position: 'absolute',
+                            top: 48,
+                            left: 0,
+                            right: 0,
+                            backgroundColor: 'white',
+                            zIndex: 999,
+                            elevation: 999,
+                        }
+                    }}
+                    textInputProps={{
+                        onTouchStart: () => setIsLocationEditable(true),
+                        value: location,
+                        onChangeText: (text) => {
+                            if (isLocationEditable) {
+                                setLocation(text);
+                            }
+                        },
+                        onBlur: () => {
+                            if (!location.trim()) {
+                                setLocationError("No location provided");
+                            } else {
+                                setLocationError("");
+                            }
+                            setIsLocationEditable(false);
+                        },
+                    }}
+                />
+                {/*</View>*/}
+                {locationError !== '' && <Text style={globalStyles.errorText}>{locationError}</Text>}
+
+                {/* Date Picker */}
+                <Text style={styles.fieldLabel}>Date</Text>
+                <TouchableOpacity
+                    style={styles.datePickerButton}
+                    onPress={() => setShowDatePicker(true)}
                 >
-                    <ScrollView contentContainerStyle={styles.contentContainer}>
+                    <Text style={[styles.datePickerButtonText, !eventDate && globalStyles.placeholderText]}>
+                        {eventDate ? eventDate.toLocaleDateString() : "Select date"}
+                    </Text>
+                </TouchableOpacity>
+                {dateError !== '' && <Text style={globalStyles.errorText}>{dateError}</Text>}
 
-                        <TouchableOpacity onPress={openLibrary} style={styles.imagePicker}>
-                            {eventImageUri ? (
-                                <Image source={{uri: eventImageUri}} style={styles.image}/>
-                            ) : (
-                                <Text style={styles.placeholderText}>Select Event Image</Text>
-                            )}
-                        </TouchableOpacity>
-                        {imageError !== '' && <Text style={globalStyles.errorText}>{imageError}</Text>}
+                <DateTimePickerModal
+                    isVisible={showDatePicker}
+                    mode="date"
+                    date={eventDate || new Date()}
+                    onConfirm={(selectedDate) => {
+                        setEventDate(selectedDate);
+                        setShowDatePicker(false);
+                    }}
+                    onCancel={() => setShowDatePicker(false)}
+                    pickerContainerStyleIOS={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                />
 
+                {/* Time Picker */}
+                <Text style={styles.fieldLabel}>Time</Text>
+                <TouchableOpacity
+                    style={styles.datePickerButton}
+                    onPress={() => setShowTimePicker(true)}
+                >
+                    <Text style={[styles.datePickerButtonText, !eventTime && globalStyles.placeholderText]}>
+                        {eventTime ? eventTime.toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) : "Select time"}
+                    </Text>
+                </TouchableOpacity>
+                {timeError !== '' && <Text style={globalStyles.errorText}>{timeError}</Text>}
 
-                        {/* Title Field */}
-                        <Text style={styles.fieldLabel}>Title</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={title}
-                            onChangeText={setTitle}
-                        />
-                        {titleError !== '' && <Text style={globalStyles.errorText}>{titleError}</Text>}
+                {/* End Date */}
+                <Text style={styles.fieldLabel}>End Date</Text>
+                <TouchableOpacity
+                    style={styles.datePickerButton}
+                    onPress={() => setShowEndDatePicker(true)}
+                >
+                    <Text style={[styles.datePickerButtonText, !endDate && globalStyles.placeholderText]}>
+                        {endDate ? endDate.toLocaleDateString() : 'Select end date'}
+                    </Text>
+                </TouchableOpacity>
+                {endDateError !== '' && <Text style={globalStyles.errorText}>{endDateError}</Text>}
 
-                        {/* Description Field */}
-                        <Text style={styles.fieldLabel}>Description</Text>
-                        <TextInput
-                            style={[styles.input, styles.textArea]}
-                            value={description}
-                            onChangeText={setDescription}
-                            multiline
-                        />
-                        {descriptionError !== '' && <Text style={globalStyles.errorText}>{descriptionError}</Text>}
-
-                        {/* Date Picker */}
-                        <Text style={styles.fieldLabel}>Date</Text>
-                        <TouchableOpacity
-                            style={styles.datePickerButton}
-                            onPress={() => setShowDatePicker(true)}
-                        >
-                            <Text style={[styles.datePickerButtonText, !eventDate && globalStyles.placeholderText]}>
-                                {eventDate ? eventDate.toLocaleDateString() : "Select date"}
-                            </Text>
-                        </TouchableOpacity>
-                        {dateError !== '' && <Text style={globalStyles.errorText}>{dateError}</Text>}
-
-                        <DateTimePickerModal
-                            isVisible={showDatePicker}
-                            mode="date"
-                            date={eventDate || new Date()}
-                            onConfirm={(selectedDate) => {
-                                setEventDate(selectedDate);
-                                setShowDatePicker(false);
-                            }}
-                            onCancel={() => setShowDatePicker(false)}
-                        />
-
-                        {/* Time Picker */}
-                        <Text style={styles.fieldLabel}>Time</Text>
-                        <TouchableOpacity
-                            style={styles.datePickerButton}
-                            onPress={() => setShowTimePicker(true)}
-                        >
-                            <Text style={[styles.datePickerButtonText, !eventTime && globalStyles.placeholderText]}>
-                                {eventTime ? eventTime.toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }) : "Select time"}
-                            </Text>
-                        </TouchableOpacity>
-                        {timeError !== '' && <Text style={globalStyles.errorText}>{timeError}</Text>}
-
-                        {/* End Date */}
-                        <Text style={styles.fieldLabel}>End Date</Text>
-                        <TouchableOpacity
-                            style={styles.datePickerButton}
-                            onPress={() => setShowEndDatePicker(true)}
-                        >
-                            <Text style={[styles.datePickerButtonText, !endDate && globalStyles.placeholderText]}>
-                                {endDate ? endDate.toLocaleDateString() : 'Select end date'}
-                            </Text>
-                        </TouchableOpacity>
-                        {endDateError !== '' && <Text style={globalStyles.errorText}>{endDateError}</Text>}
-
-                        {/* End Time */}
-                        <Text style={styles.fieldLabel}>End Time</Text>
-                        <TouchableOpacity
-                            style={styles.datePickerButton}
-                            onPress={() => setShowEndTimePicker(true)}
-                        >
-                            <Text style={[styles.datePickerButtonText, !endTime && globalStyles.placeholderText]}>
-                                {endTime ? endTime.toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }) : 'Select end time'}
-                            </Text>
-                        </TouchableOpacity>
-                        {endTimeError !== '' && <Text style={globalStyles.errorText}>{endTimeError}</Text>}
-
-                        {/* Location Field */}
-                        <Text style={styles.fieldLabel}>Location</Text>
-                        <GooglePlacesAutocomplete
-                            placeholder="Where is the event?"
-                            fetchDetails={true}
-                            onPress={(data, details = null) => {
-                                setLocation(data.description);
-                                setIsLocationEditable(false);
-                                const {lat, lng} = details.geometry.location;
-                                setCoords({lat, lng});
-                            }}
-                            query={{
-                                key: googleApiKey,
-                                language: 'en',
-                                types: '(cities)',
-                            }}
-                            styles={{
-                                container: {flex: 0, width: '100%'},
-                                textInput: styles.input,
-                            }}
-                            textInputProps={{
-                                onTouchStart: () => setIsLocationEditable(true),
-                                value: location,
-                                onChangeText: (text) => {
-                                    if (isLocationEditable) {
-                                        setLocation(text);
-                                    }
-                                },
-                                onBlur: () => {
-                                    if (!location.trim()) {
-                                        setLocationError("No location provided");
-                                    } else {
-                                        setLocationError("");
-                                    }
-                                    setIsLocationEditable(false);
-                                },
-                            }}
-                        />
-                        {locationError !== '' && <Text style={globalStyles.errorText}>{locationError}</Text>}
-
-                        {/* Price Field */}
-                        <Text style={styles.fieldLabel}>Price</Text>
-                        <TextInput
-                            style={styles.input}
-                            value={price}
-                            onChangeText={setPrice}
-                            keyboardType="numeric"
-                        />
-                        {priceError !== '' && <Text style={globalStyles.errorText}>{priceError}</Text>}
-
-                        {/* Number of Tickets */}
-                        <Text style={styles.fieldLabel}>Number of Tickets</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter total tickets"
-                            value={totalTickets}
-                            onChangeText={setTotalTickets}
-                            keyboardType="numeric"
-                            placeholderTextColor="#9b9b9b"
-                        />
-                        {ticketsError !== '' && <Text style={globalStyles.errorText}>{ticketsError}</Text>}
+                {/* End Time */}
+                <Text style={styles.fieldLabel}>End Time</Text>
+                <TouchableOpacity
+                    style={styles.datePickerButton}
+                    onPress={() => setShowEndTimePicker(true)}
+                >
+                    <Text style={[styles.datePickerButtonText, !endTime && globalStyles.placeholderText]}>
+                        {endTime ? endTime.toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) : 'Select end time'}
+                    </Text>
+                </TouchableOpacity>
+                {endTimeError !== '' && <Text style={globalStyles.errorText}>{endTimeError}</Text>}
 
 
-                        {/*Select event type*/}
-                        <TouchableOpacity
-                            style={[styles.eventTypeButton, {alignSelf: 'center', width: '50%'}]}
-                            onPress={() => router.push('/eventInterests')}
-                        >
-                            <Text style={styles.eventTypeButtonText}>Select Event Type</Text>
-                        </TouchableOpacity>
-                        {interestError !== '' && <Text style={globalStyles.errorText}>{interestError}</Text>}
+                {/*<Text style={styles.fieldLabel}>Location</Text>*/}
+                {/*<TouchableOpacity*/}
+                {/*    style={styles.input}*/}
+                {/*    onPress={() => setShowLocationModal(true)}*/}
+                {/*>*/}
+                {/*    <Text style={location ? { color: '#000' } : globalStyles.placeholderText}>*/}
+                {/*        {location || 'Select event location'}*/}
+                {/*    </Text>*/}
+                {/*</TouchableOpacity>*/}
+                {/*{locationError !== '' && (*/}
+                {/*    <Text style={globalStyles.errorText}>{locationError}</Text>*/}
+                {/*)}*/}
 
-                        <DateTimePickerModal
-                            isVisible={showTimePicker}
-                            mode="time"
-                            date={eventTime || new Date()}
-                            onConfirm={(selectedTime) => {
-                                setEventTime(selectedTime);
-                                setShowTimePicker(false);
-                            }}
-                            onCancel={() => setShowTimePicker(false)}
-                        />
-                        <DateTimePickerModal
-                            isVisible={showEndDatePicker}
-                            mode="date"
-                            date={endDate || new Date()}
-                            minimumDate={eventDate || new Date()}
-                            onConfirm={d => {
-                                setEndDate(d);
-                                setShowEndDatePicker(false);
-                            }}
-                            onCancel={() => setShowEndDatePicker(false)}
-                        />
 
-                        <DateTimePickerModal
-                            isVisible={showEndTimePicker}
-                            mode="time"
-                            date={endTime || new Date()}
-                            onConfirm={t => {
-                                setEndTime(t);
-                                setShowEndTimePicker(false);
-                            }}
-                            onCancel={() => setShowEndTimePicker(false)}
-                        />
+                {/* Price Field */}
+                <Text style={styles.fieldLabel}>Price</Text>
+                <TextInput
+                    style={styles.input}
+                    value={price}
+                    onChangeText={setPrice}
+                    keyboardType="numeric"
+                />
+                {priceError !== '' && <Text style={globalStyles.errorText}>{priceError}</Text>}
 
-                    </ScrollView>
-                </KeyboardAwareScrollView>
+                {/* Number of Tickets */}
+                <Text style={styles.fieldLabel}>Number of Tickets</Text>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter total tickets"
+                    value={totalTickets}
+                    onChangeText={setTotalTickets}
+                    keyboardType="numeric"
+                    placeholderTextColor="#9b9b9b"
+                />
+                {ticketsError !== '' && <Text style={globalStyles.errorText}>{ticketsError}</Text>}
 
-                {/* Footer */}
-                <View style={[globalStyles.footer, {paddingBottom: 25}]}>
-                    <CustomButton
-                        title="Save"
-                        onPress={handleUpdateEvent}
-                        style={globalStyles.nextButton}/>
-                </View>
-            </SafeAreaView>
-        </TouchableWithoutFeedback>
+
+                {/*Select event type*/}
+                <TouchableOpacity
+                    style={[styles.eventTypeButton, {alignSelf: 'center', width: '50%'}]}
+                    onPress={() => router.push('/eventInterests')}
+                >
+                    <Text style={styles.eventTypeButtonText}>Select Event Type</Text>
+                </TouchableOpacity>
+                {interestError !== '' && <Text style={globalStyles.errorText}>{interestError}</Text>}
+
+                <DateTimePickerModal
+                    isVisible={showTimePicker}
+                    mode="time"
+                    date={eventTime || new Date()}
+                    onConfirm={(selectedTime) => {
+                        setEventTime(selectedTime);
+                        setShowTimePicker(false);
+                    }}
+                    onCancel={() => setShowTimePicker(false)}
+                    pickerContainerStyleIOS={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                />
+                <DateTimePickerModal
+                    isVisible={showEndDatePicker}
+                    mode="date"
+                    date={endDate || new Date()}
+                    minimumDate={eventDate || new Date()}
+                    onConfirm={d => {
+                        setEndDate(d);
+                        setShowEndDatePicker(false);
+                    }}
+                    onCancel={() => setShowEndDatePicker(false)}
+                    pickerContainerStyleIOS={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                />
+
+                <DateTimePickerModal
+                    isVisible={showEndTimePicker}
+                    mode="time"
+                    date={endTime || new Date()}
+                    onConfirm={t => {
+                        setEndTime(t);
+                        setShowEndTimePicker(false);
+                    }}
+                    onCancel={() => setShowEndTimePicker(false)}
+                    pickerContainerStyleIOS={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                />
+
+            </ScrollView>
+            {/*</KeyboardAwareScrollView>*/}
+
+            {/*<Modal*/}
+            {/*    visible={showLocationModal}*/}
+            {/*    animationType="slide"*/}
+            {/*    onRequestClose={() => setShowLocationModal(false)}*/}
+            {/*>*/}
+            {/*    <View style={{ flex: 1, paddingTop: 50, paddingHorizontal: 20 }}>*/}
+            {/*        <GooglePlacesAutocomplete*/}
+            {/*            placeholder="Type city name..."*/}
+            {/*            fetchDetails*/}
+            {/*            onPress={(data, details = null) => {*/}
+            {/*                setLocation(data.description);*/}
+            {/*                const { lat, lng } = details!.geometry.location;*/}
+            {/*                setCoords({ lat, lng });*/}
+            {/*                setShowLocationModal(false);*/}
+            {/*            }}*/}
+            {/*            query={{*/}
+            {/*                key: googleApiKey!,*/}
+            {/*                language: 'en',*/}
+            {/*                types: '(cities)',*/}
+            {/*            }}*/}
+            {/*            styles={{*/}
+            {/*                container: { flex: 1 },*/}
+            {/*                textInputContainer: { width: '100%' },*/}
+            {/*                textInput: styles.input,*/}
+            {/*                listView: { flex: 1, backgroundColor: 'white' },*/}
+            {/*            }}*/}
+            {/*            listViewProps={{ nestedScrollEnabled: true }}*/}
+            {/*        />*/}
+            {/*        <CustomButton*/}
+            {/*            title="Cancel"*/}
+            {/*            onPress={() => setShowLocationModal(false)}*/}
+            {/*            style={{ marginTop: 20 }}*/}
+            {/*        />*/}
+            {/*    </View>*/}
+            {/*</Modal>*/}
+
+
+            {/* Footer */}
+            <View style={[globalStyles.footer, {paddingBottom: 25}]}>
+                <CustomButton
+                    title="Save"
+                    onPress={handleUpdateEvent}
+                    style={globalStyles.nextButton}/>
+            </View>
+        </SafeAreaView>
     );
 }
 

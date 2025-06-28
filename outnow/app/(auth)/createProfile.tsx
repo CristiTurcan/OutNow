@@ -64,7 +64,6 @@ export default function CreateProfile() {
                 }
             );
         } else {
-            // For Android, use custom modal
             setShowPhotoOptions(true);
         }
     };
@@ -74,21 +73,17 @@ export default function CreateProfile() {
             setAgeError('Please select your date of birth.');
             return 0;
         }
-
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
         const m = today.getMonth() - birthDate.getMonth();
-
         if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
             age--;
         }
-
         if (age < 18) {
             setAgeError('You must be at least 18 years old.');
         } else {
             setAgeError('');
         }
-
         return age;
     };
 
@@ -230,6 +225,11 @@ export default function CreateProfile() {
                                 maximumDate={dateOfBirth || new Date()}
                                 onConfirm={handleConfirm}
                                 onCancel={() => setShowDatePicker(false)}
+                                pickerContainerStyleIOS={{
+                                    width: '100%',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
                             />
                         </>
                     )}
@@ -240,7 +240,6 @@ export default function CreateProfile() {
                         placeholder="Where do you live?"
                         fetchDetails={true}
                         onPress={(data, details = null) => {
-                            // here i can extract detailed address info from details.address_components
                             setLocation(data.description);
                             const {lat, lng} = details.geometry.location
                             setCoords({lat, lng})

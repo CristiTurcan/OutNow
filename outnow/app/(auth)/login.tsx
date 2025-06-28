@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Button,
     Keyboard,
     StyleSheet,
@@ -24,7 +25,10 @@ export default function Login() {
             await signIn(email, password);
             router.replace('(tabs)/home');
         } catch (error: any) {
-            alert('Sign in failed: ' + error.message);
+            Alert.alert(
+                "Sign in failed",
+                "Email or username are not valid!"
+            )
         }
     };
 

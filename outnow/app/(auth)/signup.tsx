@@ -17,9 +17,10 @@ import CustomButton from '@/components/customButton';
 import CustomBackButton from '@/components/customBackButton';
 import {router} from 'expo-router';
 import useAuth from '@/hooks/useAuth';
-import auth from '@react-native-firebase/auth';
 import globalStyles from "@/styles/globalStyles";
 import useBusinessProfile from '@/hooks/useBusinessProfile';
+import axios from "axios";
+import {BASE_URL} from "@/config/api";
 
 interface FormData {
     email: string;
@@ -39,15 +40,44 @@ const schema = yup.object().shape({
             'Email is already registered',
             async (value) => {
                 if (!value) return false;
-                try {
-                    const methods = await auth().fetchSignInMethodsForEmail(value);
-                    return methods.length === 0;
-                } catch (error) {
-                    return true;
-                }
+
+                const [userChk, bizChk] = await Promise.all([
+                    axios.get<{ available: boolean }>(
+                        `${BASE_URL}/users/check-email`,
+                        {params: {email: value}}
+                    ),
+                    axios.get<{ available: boolean }>(
+                        `${BASE_URL}/business-accounts/check-email`,
+                        {params: {email: value}}
+                    )
+                ]);
+
+                // valid only if BOTH say “available”
+                return userChk.data.available && bizChk.data.available;
             }
         ),
-    username: yup.string().required('Username is required'),
+    username: yup
+        .string()
+        .required('Username is required')
+        .test(
+            'username-availability',
+            'Username is already taken',
+            async (value) => {
+                if (!value) return false;
+
+                const [userChk, bizChk] = await Promise.all([
+                    axios.get<{ available: boolean }>(
+                        `${BASE_URL}/users/check-username`,
+                        {params: {username: value}}
+                    ),
+                    axios.get<{ available: boolean }>(
+                        `${BASE_URL}/business-accounts/check-username`,
+                        {params: {username: value}}
+                    )
+                ]);
+                return userChk.data.available && bizChk.data.available;
+            }
+        ),
     password: yup
         .string()
         .min(8, 'Password must be at least 8 characters long')
@@ -68,10 +98,13 @@ export default function SignUp() {
     const {
         control,
         handleSubmit,
+        trigger,
+        clearErrors,
         formState: {errors},
     } = useForm<FormData>({
         resolver: yupResolver(schema, {abortEarly: false}),
         mode: 'onBlur',
+        reValidateMode: 'onBlur',
         criteriaMode: 'all',
     });
 
@@ -112,7 +145,10 @@ export default function SignUp() {
                                     <TextInput
                                         style={styles.input}
                                         placeholder="Email"
-                                        onBlur={onBlur}
+                                        onBlur={async () => {
+                                            onBlur();
+                                            await trigger('email');
+                                        }}
                                         onChangeText={onChange}
                                         value={value}
                                         autoCapitalize="none"

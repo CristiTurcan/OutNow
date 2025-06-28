@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
-import { Client } from '@stomp/stompjs';
+import {useEffect, useState} from 'react';
+import {Client} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
-import { BASE_URL } from '@/config/api';
+import {BASE_URL} from '@/config/api';
 import {EventDTO} from "@/types/EventDTO";
 
 
@@ -40,7 +40,9 @@ export function useEventSocket<T extends { eventId: number }>(initialEvents: T[]
         };
 
         client.activate();
-        return () => { client.deactivate(); };
+        return () => {
+            client.deactivate();
+        };
     }, []);
 
     return eventsState;

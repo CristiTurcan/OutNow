@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {Feather, Ionicons} from '@expo/vector-icons';
+import {Ionicons} from '@expo/vector-icons';
 import useFavoriteEvent from "@/hooks/useFavoriteEvent";
 import useUserIdByEmail from "@/hooks/useUserByIdByEmail";
 import {useAuthContext} from "@/contexts/AuthContext";
@@ -65,7 +65,6 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
             }}
         >
             <View style={[styles.card, {width: cardWidth}]}>
-                {/*<Image source={{uri: event.imageUrl}} style={styles.image}/>*/}
                 <Image
                     source={
                         event.imageUrl && event.imageUrl.trim().length > 0
@@ -89,7 +88,6 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
                             : ''}
                     </Text>
                     <Text style={styles.details}>{`@${businessUsername}`}</Text>
-                    <Text style={styles.details}>{`${event.attendees} people are going`}</Text>
                     {!isBusiness && (
                         <View style={styles.iconRow}>
                             <TouchableOpacity onPress={toggleFavorite}>
@@ -106,7 +104,7 @@ const EventCard = ({event, cardWidth, onToggleFavorite}) => {
                                 />
                             </View>
                             <TouchableOpacity>
-                                <Feather name="send" size={24} color="grey"/>
+                                {/*<Feather name="send" size={24} color="grey"/>*/}
                             </TouchableOpacity>
                         </View>
                     )}
@@ -125,6 +123,8 @@ const styles = StyleSheet.create({
         borderColor: '#E0E0E0',
         borderRadius: 8,
         overflow: 'hidden',
+        flex: 1,
+        height: 320
     },
     image: {
         width: '100%',
@@ -132,6 +132,8 @@ const styles = StyleSheet.create({
         resizeMode: 'cover',
     },
     info: {
+        flex: 1,
+        justifyContent: 'space-between',
         padding: 10,
     },
     title: {

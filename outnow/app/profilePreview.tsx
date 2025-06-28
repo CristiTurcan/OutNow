@@ -75,20 +75,16 @@ export default function ProfilePreview() {
         }
     }, [viewingBusiness, userId, profileId, fetchGoingEvents]);
 
-
-    // Load events logic
     const {
         events,
         loading: eventsLoading,
         error: eventsError,
     } = useMyEvents(viewingBusiness ? profile?.email : user?.email || null);
 
-// Filter events if viewing a user profile (to show only events the user is attending)
     const displayedEvents = viewingBusiness
         ? events                                  // normal user: show business’s events
         : events.filter((evt) => goingEvents.includes(evt.eventId)); // business: show their own events the user is going to
 
-    // Follow/unfollow + followers data
     const {
         follow,
         unfollow,

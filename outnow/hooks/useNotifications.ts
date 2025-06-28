@@ -68,7 +68,7 @@ export function useNotifications(userId: number | null, backendUrl: string) {
                     });
                 }
             } catch (err) {
-                console.error('Error in push registration:', err);
+                // console.error('Error in push registration:', err);
             }
         }
 

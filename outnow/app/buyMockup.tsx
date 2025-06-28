@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {Alert, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
+import React, {useRef, useState} from 'react';
+import {Alert, Keyboard, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View} from 'react-native';
 import {useLocalSearchParams, useRouter} from 'expo-router';
 import CustomButton from '@/components/customButton';
 import globalStyles from '@/styles/globalStyles';
@@ -16,10 +16,19 @@ export default function BuyMockup() {
     const {user} = useAuthContext();
     const {userId} = useUserIdByEmail(user?.email || null);
 
+    const [cardName, setCardName] = useState('');
     const [cardNumber, setCardNumber] = useState('');
     const [expiry, setExpiry] = useState('');
     const [cvc, setCvc] = useState('');
-    const [name, setName] = useState('');
+
+    const [nameError, setNameError] = useState<string | null>(null);
+    const [numberError, setNumberError] = useState<string | null>(null);
+    const [expError, setExpError] = useState<string | null>(null);
+    const [cvcError, setCvcError] = useState<string | null>(null);
+
+    const numberRef = useRef<TextInput>(null);
+    const expRef = useRef<TextInput>(null);
+    const cvcRef = useRef<TextInput>(null);
 
     const luhnCheck = (num: string) => {
         const digits = num.replace(/\D/g, '').split('').reverse().map(d => parseInt(d, 10));
@@ -36,7 +45,7 @@ export default function BuyMockup() {
     };
 
     const validate = () => {
-        if (!name.trim()) {
+        if (!cardName.trim()) {
             Alert.alert('Validation Error', 'Please enter the cardholder name.');
             return false;
         }
@@ -65,6 +74,81 @@ export default function BuyMockup() {
         return true;
     };
 
+    const validateName = (text: string) => {
+        if (text.trim().length < 3) {
+            setNameError('Name must be at least 3 characters');
+            return false;
+        }
+        setNameError(null);
+        return true;
+    };
+
+    const validateNumber = (formatted: string) => {
+        const raw = formatted.replace(/\s+/g, '');
+        if (raw.length < 13 || raw.length > 19 || !luhnCheck(raw)) {
+            setNumberError('Invalid card number');
+            return false;
+        }
+        setNumberError(null);
+        return true;
+    };
+
+    const validateExpiry = (text: string) => {
+        const [mm, yy] = text.split('/');
+        const month = parseInt(mm, 10);
+        const year = parseInt('20' + yy, 10);
+        if (!mm || !yy || month < 1 || month > 12 || isNaN(year)) {
+            setExpError('MM/YY format required');
+            return false;
+        }
+        const now = new Date();
+        const expDate = new Date(year, month - 1, 1);
+        if (expDate < new Date(now.getFullYear(), now.getMonth(), 1)) {
+            setExpError('Card expired');
+            return false;
+        }
+        setExpError(null);
+        return true;
+    };
+
+    const validateCvc = (text: string) => {
+        if (!/^[0-9]{3,4}$/.test(text)) {
+            setCvcError('CVC must be 3 or 4 digits');
+            return false;
+        }
+        setCvcError(null);
+        return true;
+    };
+
+    const allValid =
+        !nameError &&
+        !numberError &&
+        !expError &&
+        !cvcError &&
+        cardName &&
+        cardNumber &&
+        expiry &&
+        cvc;
+
+    const onSubmit = async () => {
+        Keyboard.dismiss();
+        if (!validateName(cardName) || !validateNumber(cardNumber) || !validateExpiry(expiry) || !validateCvc(cvc)) {
+            return;
+        }
+        if (!userId) {
+            console.error('User ID missing');
+            return;
+        }
+        try {
+            await addGoingEvent(userId, parseInt(eventId, 10), ticketQty);
+            await fetchGoingEvents(userId);
+            router.replace('/(tabs)/home');
+        } catch (err) {
+            console.error('Purchase error', err);
+            Alert.alert('Purchase failed', 'Please try again.');
+        }
+    };
+
     const handleBuy = () => {
         if (!validate()) return;
         if (!userId) {
@@ -90,42 +174,70 @@ export default function BuyMockup() {
 
             <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
                 <TextInput
-                    style={styles.input}
+                    style={[styles.input, {textTransform: 'uppercase'}]}
                     placeholder="Cardholder Name"
-                    value={name}
-                    onChangeText={setName}
-                    autoCapitalize="words"
+                    value={cardName}
+                    onChangeText={text => {
+                        const sanitized = text.replace(/[^a-zA-Z\s]/g, '').toUpperCase();
+                        setCardName(sanitized);
+                        validateName(sanitized);
+                    }}
+                    onBlur={() => validateName(cardName)}
+                    autoCapitalize={"characters"}
+                    onSubmitEditing={() => numberRef.current?.focus()}
                 />
+                {nameError && <Text style={globalStyles.errorText}>{nameError}</Text>}
 
                 <TextInput
+                    ref={numberRef}
                     style={styles.input}
-                    placeholder="Card Number"
+                    placeholder="1234 5678 9012 3456"
                     value={cardNumber}
-                    onChangeText={text => setCardNumber(text.replace(/(\d{4})(?=\d)/g, '$1 '))}
-                    keyboardType="numeric"
-                    maxLength={19 + 3}
+                    onChangeText={text => {
+                        const raw = text.replace(/\D/g, ''); // keep only digits
+                        const formatted = raw.match(/.{1,4}/g)?.join(' ') ?? raw;
+                        setCardNumber(formatted);
+                        validateNumber(formatted);
+                        if (raw.length === 16) expRef.current?.focus();
+                    }}
+
+                    keyboardType="number-pad"
                 />
+                {numberError && <Text style={globalStyles.errorText}>{numberError}</Text>}
 
-                <View style={styles.row}>
-                    <TextInput
-                        style={[styles.input, styles.half]}
-                        placeholder="MM/YY"
-                        value={expiry}
-                        onChangeText={setExpiry}
-                        keyboardType="numeric"
-                        maxLength={5}
-                    />
+                <TextInput
+                    ref={expRef}
+                    style={styles.input}
+                    placeholder="MM/YY"
+                    value={expiry}
+                    onChangeText={text => {
+                        const clean = text.replace(/\D/g, '');
+                        const m = clean.slice(0, 2);
+                        const y = clean.slice(2, 4);
+                        const formatted = y ? `${m}/${y}` : m;
+                        setExpiry(formatted);
+                        validateExpiry(formatted);
+                        if (y.length === 2) cvcRef.current?.focus();
+                    }}
+                    keyboardType="number-pad"
+                />
+                {expError && <Text style={globalStyles.errorText}>{expError}</Text>}
 
-                    <TextInput
-                        style={[styles.input, styles.half]}
-                        placeholder="CVC"
-                        value={cvc}
-                        onChangeText={setCvc}
-                        keyboardType="numeric"
-                        secureTextEntry
-                        maxLength={4}
-                    />
-                </View>
+                <TextInput
+                    ref={cvcRef}
+                    style={styles.input}
+                    placeholder="CVC"
+                    value={cvc}
+                    onChangeText={text => {
+                        const digits = text.replace(/\D/g, '');
+                        setCvc(digits);
+                        validateCvc(digits);
+                    }}
+
+                    keyboardType="number-pad"
+                    maxLength={4}
+                />
+                {cvcError && <Text style={globalStyles.errorText}>{cvcError}</Text>}
             </ScrollView>
             <View style={styles.footer}>
                 <CustomButton

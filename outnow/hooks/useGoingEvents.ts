@@ -31,7 +31,7 @@ const useGoingEvent = () => {
             await axios.post(
                 `${BASE_URL}/users/${userId}/going/${eventId}`,
                 null,
-                { params: { quantity } }
+                {params: {quantity}}
             );
             setGoingEvents(prev => [...prev, eventId]);
         } catch (err: any) {

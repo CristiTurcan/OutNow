@@ -35,7 +35,6 @@ export default function EditFollow() {
         countLoading,
     } = useFollowedBusiness(userId, bizAccountId);
 
-    // For normal users: when the array of followed IDs changes, fetch each profile
     useEffect(() => {
         if (!isBusiness && followed.length) {
             (async () => {
