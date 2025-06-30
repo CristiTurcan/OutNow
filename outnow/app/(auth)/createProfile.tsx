@@ -147,6 +147,41 @@ export default function CreateProfile() {
                         <Text style={globalStyles.errorText}>Character limit reached: 150/150</Text>
                     )}
 
+                    {/* Location with Google Places Autocomplete */}
+                    <Text style={styles.fieldLabel}>Location</Text>
+                    <GooglePlacesAutocomplete
+                        placeholder="Where do you live?"
+                        fetchDetails={true}
+                        onPress={(data, details = null) => {
+                            setLocation(data.description);
+                            const {lat, lng} = details.geometry.location
+                            setCoords({lat, lng})
+                        }}
+                        query={{
+                            key: googleApiKey,
+                            language: 'en',
+                            types: '(regions)',
+                        }}
+                        styles={{
+                            container: {
+                                flex: 0,
+                                width: '100%',
+                                marginBottom: 12,
+                                zIndex: 999,
+                            },
+                            listView: {
+                                zIndex: 9999,
+                                backgroundColor: '#fff',
+                            },
+                            textInput: styles.input,
+                        }}
+                        textInputProps={{
+                            onTouchStart: () => {
+                                setShowDatePicker(false);
+                            },
+                        }}
+                    />
+
                     {/* Gender Picker Modal */}
                     {!isBusinessAccount && (
                         <>
@@ -181,6 +216,7 @@ export default function CreateProfile() {
                                                         setShowGenderPicker(false);
                                                     }}
                                                     style={styles.genderPicker}
+                                                    itemStyle={{color: '#999'}}
                                                 >
                                                     <Picker.Item label="" value=""/>
                                                     <Picker.Item label="Male" value="Male"/>
@@ -233,41 +269,6 @@ export default function CreateProfile() {
                             />
                         </>
                     )}
-
-                    {/* Location with Google Places Autocomplete */}
-                    <Text style={styles.fieldLabel}>Location</Text>
-                    <GooglePlacesAutocomplete
-                        placeholder="Where do you live?"
-                        fetchDetails={true}
-                        onPress={(data, details = null) => {
-                            setLocation(data.description);
-                            const {lat, lng} = details.geometry.location
-                            setCoords({lat, lng})
-                        }}
-                        query={{
-                            key: googleApiKey,
-                            language: 'en',
-                            types: '(regions)',
-                        }}
-                        styles={{
-                            container: {
-                                flex: 0,
-                                width: '100%',
-                                marginBottom: 12,
-                                zIndex: 999,
-                            },
-                            listView: {
-                                zIndex: 9999,
-                                backgroundColor: '#fff',
-                            },
-                            textInput: styles.input,
-                        }}
-                        textInputProps={{
-                            onTouchStart: () => {
-                                setShowDatePicker(false);
-                            },
-                        }}
-                    />
 
                     {/* Next Button */}
                     <View style={globalStyles.footer}>
@@ -455,7 +456,7 @@ const styles = StyleSheet.create({
     },
     genderPicker: {
         height: "auto",
-        width: '100%'
+        width: '100%',
     },
     photoOptionsOverlay: {
         flex: 1,

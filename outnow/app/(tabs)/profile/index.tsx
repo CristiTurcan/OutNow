@@ -9,6 +9,7 @@ import useBusinessProfile from "@/hooks/useBusinessProfile";
 import {useAuthContext} from '@/contexts/AuthContext';
 import AvatarPicker from "@/components/AvatarPicker";
 import {useImagePicker} from "@/hooks/useImagePicker";
+import {useNavigation} from "@react-navigation/native";
 import useProfile from "@/hooks/useProfile";
 
 
@@ -23,6 +24,7 @@ export default function Index() {
     const [businessProfile, setBusinessProfile] = useState(null);
     const [bpLoading, setBpLoading] = useState(false);
     const [bpError, setBpError] = useState(null);
+    const navigation = useNavigation();
 
     useEffect(() => {
         if (isBusiness && user?.email) {
@@ -79,6 +81,12 @@ export default function Index() {
     const handleLogout = async () => {
         try {
             await signOut();
+
+            // navigation.reset({
+            //     index: 0,
+            //     routes: [{ name: 'login' as never}],
+            // });
+
             router.replace('/(auth)/login');
         } catch (error) {
             console.error("Logout failed:", error);

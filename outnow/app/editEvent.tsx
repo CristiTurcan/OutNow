@@ -399,21 +399,6 @@ export default function EditEvent() {
                 </TouchableOpacity>
                 {endTimeError !== '' && <Text style={globalStyles.errorText}>{endTimeError}</Text>}
 
-
-                {/*<Text style={styles.fieldLabel}>Location</Text>*/}
-                {/*<TouchableOpacity*/}
-                {/*    style={styles.input}*/}
-                {/*    onPress={() => setShowLocationModal(true)}*/}
-                {/*>*/}
-                {/*    <Text style={location ? { color: '#000' } : globalStyles.placeholderText}>*/}
-                {/*        {location || 'Select event location'}*/}
-                {/*    </Text>*/}
-                {/*</TouchableOpacity>*/}
-                {/*{locationError !== '' && (*/}
-                {/*    <Text style={globalStyles.errorText}>{locationError}</Text>*/}
-                {/*)}*/}
-
-
                 {/* Price Field */}
                 <Text style={styles.fieldLabel}>Price</Text>
                 <TextInput
@@ -495,45 +480,6 @@ export default function EditEvent() {
                 />
 
             </ScrollView>
-            {/*</KeyboardAwareScrollView>*/}
-
-            {/*<Modal*/}
-            {/*    visible={showLocationModal}*/}
-            {/*    animationType="slide"*/}
-            {/*    onRequestClose={() => setShowLocationModal(false)}*/}
-            {/*>*/}
-            {/*    <View style={{ flex: 1, paddingTop: 50, paddingHorizontal: 20 }}>*/}
-            {/*        <GooglePlacesAutocomplete*/}
-            {/*            placeholder="Type city name..."*/}
-            {/*            fetchDetails*/}
-            {/*            onPress={(data, details = null) => {*/}
-            {/*                setLocation(data.description);*/}
-            {/*                const { lat, lng } = details!.geometry.location;*/}
-            {/*                setCoords({ lat, lng });*/}
-            {/*                setShowLocationModal(false);*/}
-            {/*            }}*/}
-            {/*            query={{*/}
-            {/*                key: googleApiKey!,*/}
-            {/*                language: 'en',*/}
-            {/*                types: '(cities)',*/}
-            {/*            }}*/}
-            {/*            styles={{*/}
-            {/*                container: { flex: 1 },*/}
-            {/*                textInputContainer: { width: '100%' },*/}
-            {/*                textInput: styles.input,*/}
-            {/*                listView: { flex: 1, backgroundColor: 'white' },*/}
-            {/*            }}*/}
-            {/*            listViewProps={{ nestedScrollEnabled: true }}*/}
-            {/*        />*/}
-            {/*        <CustomButton*/}
-            {/*            title="Cancel"*/}
-            {/*            onPress={() => setShowLocationModal(false)}*/}
-            {/*            style={{ marginTop: 20 }}*/}
-            {/*        />*/}
-            {/*    </View>*/}
-            {/*</Modal>*/}
-
-
             {/* Footer */}
             <View style={[globalStyles.footer, {paddingBottom: 25}]}>
                 <CustomButton

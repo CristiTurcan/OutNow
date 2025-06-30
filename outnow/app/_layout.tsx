@@ -27,7 +27,7 @@ export default function RootLayout() {
     }, []);
 
     useEffect(() => {
-        if (initializing) return;
+        if (initializing || typeof user === 'undefined') return;
 
         const inAuthGroup = segments[0] === '(auth)';
 
@@ -62,7 +62,10 @@ export default function RootLayout() {
                 <NotificationsManager/>
                 <Stack>
                     <Stack.Screen name="index" options={{headerShown: false}}/>
-                    <Stack.Screen name="(auth)" options={{headerShown: false}}/>
+                    <Stack.Screen name="(auth)" options={{
+                        headerShown: false,
+                        gestureEnabled: false,
+                    }}/>
                     <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
                     <Stack.Screen name="createEvent" options={{headerShown: false}}/>
                     <Stack.Screen name="eventInterests" options={{headerShown: false}}/>
